@@ -62,6 +62,8 @@ export interface DemoJob {
   title: string;
   company: string;
   city: string;
+  direction: string;
+  salary: string;
   priority: Priority;
   decision: string;
   match: number;

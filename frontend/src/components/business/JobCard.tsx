@@ -19,13 +19,26 @@ export function JobCard({
         <div className="min-w-0">
           <div className="truncate font-medium">{job.title}</div>
           <div className="mt-1 text-sm text-slate-400">
-            {job.company} · {job.city}
+            {job.company} · {job.city} · {job.salary}
           </div>
+          <div className="mt-1 text-xs text-slate-500">{job.direction}</div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <SourceBadge source={job.source} />
             <Badge tone="blue" className="px-2 py-0.5 text-xs">
               {job.decision}
             </Badge>
+            {job.source.source_url ? (
+              <a
+                className="text-xs text-cyanGlow hover:underline"
+                href={job.source.source_url}
+                rel="noreferrer"
+                target="_blank"
+              >
+                原始链接
+              </a>
+            ) : (
+              <span className="text-xs text-slate-500">无原始链接</span>
+            )}
           </div>
         </div>
         <div className="shrink-0 text-right">

@@ -5,6 +5,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { AuthPage } from "@/pages/AuthPage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import { JobsPage } from "@/pages/JobsPage";
 import { OpportunityPage } from "@/pages/OpportunityPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
 
@@ -23,8 +24,10 @@ export function App() {
         >
           <Route index element={<DashboardPage />} />
           <Route path="opportunity" element={<OpportunityPage />} />
+          <Route path="jobs" element={<JobsPage />} />
+          <Route path="jobs/:jobId" element={<PlaceholderPage title="岗位决策卡" description="岗位决策卡将在 P0 4.7 完成。" />} />
           {primaryNavItems
-            .filter((item) => !["/", "/opportunity"].includes(item.path))
+            .filter((item) => !["/", "/opportunity", "/jobs"].includes(item.path))
             .map((item) => (
               <Route
                 key={item.path}

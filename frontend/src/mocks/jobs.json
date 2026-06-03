@@ -5,14 +5,16 @@
       "title": "AI 应用工程师",
       "company": "星河智能",
       "city": "上海",
+      "direction": "AI 应用工程师",
+      "salary": "25k-40k",
       "priority": "P0",
       "decision": "强烈推荐",
       "match": 92,
       "source": {
-        "source_site": "mock_seed",
-        "source_label": "Demo 数据",
-        "source_type": "mock",
-        "source_url": "",
+        "source_site": "boss",
+        "source_label": "BOSS 直聘",
+        "source_type": "job_board",
+        "source_url": "https://example.com/jobs/job_1001",
         "source_confidence": "high"
       }
     },
@@ -21,14 +23,16 @@
       "title": "LLM 后端工程师",
       "company": "云岭科技",
       "city": "杭州",
+      "direction": "LLM 工程师",
+      "salary": "28k-45k",
       "priority": "P0",
       "decision": "推荐",
       "match": 88,
       "source": {
-        "source_site": "mock_seed",
-        "source_label": "Demo 数据",
-        "source_type": "mock",
-        "source_url": "",
+        "source_site": "liepin",
+        "source_label": "猎聘",
+        "source_type": "job_board",
+        "source_url": "https://example.com/jobs/job_1002",
         "source_confidence": "high"
       }
     },
@@ -37,14 +41,70 @@
       "title": "RAG 平台工程师",
       "company": "霁云数据",
       "city": "北京",
+      "direction": "AI 应用工程师",
+      "salary": "22k-35k",
       "priority": "P1",
       "decision": "推荐",
       "match": 84,
       "source": {
+        "source_site": "company_site",
+        "source_label": "官网",
+        "source_type": "company_site",
+        "source_url": "",
+        "source_confidence": "medium"
+      }
+    },
+    {
+      "id": "job_1004",
+      "title": "AI 后端平台工程师",
+      "company": "北辰模型平台",
+      "city": "北京",
+      "direction": "AI 后端平台",
+      "salary": "24k-38k",
+      "priority": "P1",
+      "decision": "推荐",
+      "match": 81,
+      "source": {
+        "source_site": "referral",
+        "source_label": "内推",
+        "source_type": "referral",
+        "source_url": "https://example.com/jobs/job_1004",
+        "source_confidence": "high"
+      }
+    },
+    {
+      "id": "job_1005",
+      "title": "后端开发工程师",
+      "company": "序列科技",
+      "city": "深圳",
+      "direction": "后端开发工程师",
+      "salary": "20k-32k",
+      "priority": "P2",
+      "decision": "观望",
+      "match": 73,
+      "source": {
+        "source_site": "unknown",
+        "source_label": "",
+        "source_type": "manual",
+        "source_url": "",
+        "source_confidence": "low"
+      }
+    },
+    {
+      "id": "job_1006",
+      "title": "RAG 应用开发工程师",
+      "company": "向量引擎实验室",
+      "city": "远程",
+      "direction": "LLM 工程师",
+      "salary": "18k-30k",
+      "priority": "P1",
+      "decision": "推荐",
+      "match": 79,
+      "source": {
         "source_site": "mock_seed",
         "source_label": "Demo 数据",
         "source_type": "mock",
-        "source_url": "",
+        "source_url": "https://example.com/jobs/job_1006",
         "source_confidence": "high"
       }
     }
