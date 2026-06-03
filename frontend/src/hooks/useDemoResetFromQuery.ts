@@ -1,20 +1,27 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { createDemoModeSearch, isDemoResetSearch } from "@/lib/demoMode";
 import { resetDemoWorkspace } from "@/services/demoResetService";
+
+let isHandlingDemoResetQuery = false;
 
 export function useDemoResetFromQuery() {
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get("reset") !== "demo") {
+    if (!isDemoResetSearch(location.search) || isHandlingDemoResetQuery) {
       return;
     }
 
-    resetDemoWorkspace();
-    params.delete("reset");
-    params.set("mode", "demo");
-    navigate({ pathname: "/", search: `?${params.toString()}` }, { replace: true });
+    isHandlingDemoResetQuery = true;
+    try {
+      resetDemoWorkspace();
+      navigate({ pathname: "/", search: createDemoModeSearch(location.search) }, { replace: true });
+    } finally {
+      window.setTimeout(() => {
+        isHandlingDemoResetQuery = false;
+      }, 0);
+    }
   }, [location.search, navigate]);
 }

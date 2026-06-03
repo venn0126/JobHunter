@@ -18,6 +18,23 @@ if [[ ! -f "$SEED_MANIFEST" ]]; then
   exit 1
 fi
 
+python3 - <<'PY'
+from pathlib import Path
+import hashlib
+import json
+
+manifest_path = Path("data/demo/seed-manifest.json")
+manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+print(f"[reset-demo] seed manifest version: {manifest.get('version', 'unknown')}")
+
+for seed in manifest.get("frontendSeeds", []):
+    seed_path = Path(seed)
+    if not seed_path.is_file():
+        raise SystemExit(f"[reset-demo] missing frontend seed: {seed_path}")
+    digest = hashlib.sha256(seed_path.read_bytes()).hexdigest()[:12]
+    print(f"[reset-demo] seed ok: {seed_path} sha256={digest}")
+PY
+
 DB_PATH="data/runtime/jobhunter.sqlite"
 if [[ -f "$DB_PATH" ]]; then
   BACKUP_PATH="data/runtime/jobhunter-reset-$(date +%Y%m%d-%H%M%S).sqlite.bak"

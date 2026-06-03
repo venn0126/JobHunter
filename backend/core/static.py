@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-NO_CACHE_HEADERS = {"Cache-Control": "no-store, no-cache, must-revalidate"}
+from core.cache import NO_CACHE_HEADERS
 
 
 def mount_frontend(app: FastAPI, frontend_dist: Path) -> None:

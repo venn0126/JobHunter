@@ -10,6 +10,7 @@
 - `make migrate`：初始化运行态 SQLite 文件。
 - `data/demo/seed-manifest.json`：标准演示态种子清单；
 - `make reset-demo`：备份并重建运行态数据，同时同步前端版本文件；
+- `make verify-version-cache`：验证 `version.json`、`/api/version` 与 SPA fallback 均禁缓存；
 - 顶部栏「重置 Demo」：恢复浏览器内 Demo 账号、Persona、岗位筛选、素材库和管线状态。
 - `/?mode=demo&reset=demo`：浏览器内一键恢复标准演示态，并进入大屏 Demo 模式。
 
