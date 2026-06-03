@@ -20,7 +20,8 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
   const [name, setName] = useState("JobHunter User");
   const [password, setPassword] = useState("demo123");
 
-  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/";
+  const fromLocation = (location.state as { from?: { pathname?: string; search?: string } } | null)?.from;
+  const from = fromLocation?.pathname ? `${fromLocation.pathname}${fromLocation.search ?? ""}` : "/";
 
   if (isAuthenticated) {
     return <Navigate to={from} replace />;
@@ -35,7 +36,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
 
   const enterDemo = () => {
     loginAsDemo();
-    navigate("/", { replace: true });
+    navigate(from, { replace: true });
   };
 
   return (

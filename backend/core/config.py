@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     api_prefix: str = "/api"
     data_mode: DataMode = "mock"
+    debug_routes_enabled: bool = False
     project_root: Path = PROJECT_ROOT
     frontend_dist: Path = PROJECT_ROOT / "frontend" / "dist"
     cors_origins: list[str] = Field(

@@ -15,6 +15,7 @@ interface AuthState {
   error: string;
   session: AuthSession | null;
   isAuthenticated: boolean;
+  expireSessionForValidation: () => void;
   login: (email: string, password: string) => boolean;
   loginAsDemo: () => void;
   logout: () => void;
@@ -43,6 +44,13 @@ export const useAuthStore = create<AuthState>()(
       error: "",
       session: null,
       isAuthenticated: false,
+      expireSessionForValidation: () => {
+        set({
+          error: "登录已过期，请重新进入演示账号。",
+          isAuthenticated: false,
+          session: null,
+        });
+      },
       login: (email, password) => {
         if (!email.includes("@") || password.length < 6) {
           set({ error: "请输入有效邮箱和至少 6 位密码" });

@@ -11,35 +11,22 @@ mkdir -p logs/ops
 LOG_PATH="logs/ops/verify-version-cache-$(date +%Y%m%d-%H%M%S).log"
 exec > >(tee -a "$LOG_PATH") 2>&1
 
-PORT="$(python3 - <<'PY'
-import socket
-
-with socket.socket() as sock:
-    sock.bind(("127.0.0.1", 0))
-    print(sock.getsockname()[1])
-PY
-)"
+PORT="$(reserve_local_port)"
 
 echo "[verify-version-cache] building frontend"
 ./scripts/sync-version.sh
 (cd frontend && npm run build)
 
 echo "[verify-version-cache] starting backend on 127.0.0.1:${PORT}"
-(cd backend && source .venv/bin/activate && uvicorn main:app --host 127.0.0.1 --port "$PORT" > "../${LOG_PATH}.server" 2>&1) &
-SERVER_PID="$!"
+start_backend_server "$PORT" "${LOG_PATH}.server"
+SERVER_PID="$BACKEND_SERVER_PID"
 
 cleanup() {
-  kill "$SERVER_PID" >/dev/null 2>&1 || true
-  wait "$SERVER_PID" >/dev/null 2>&1 || true
+  cleanup_backend_server "$SERVER_PID"
 }
 trap cleanup EXIT
 
-for _ in {1..40}; do
-  if curl --noproxy "*" -fsS "http://127.0.0.1:${PORT}/api/health" >/dev/null 2>&1; then
-    break
-  fi
-  sleep 0.25
-done
+wait_for_backend_health "$PORT"
 
 assert_no_cache() {
   local path="$1"

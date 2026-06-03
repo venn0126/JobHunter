@@ -12,6 +12,7 @@ import { OpportunityPage } from "@/pages/OpportunityPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
 import { PipelinePage } from "@/pages/PipelinePage";
 import { UpdatePage } from "@/pages/UpdatePage";
+import { ValidationPage } from "@/pages/ValidationPage";
 
 export function App() {
   return (
@@ -33,8 +34,10 @@ export function App() {
           <Route path="pipeline" element={<PipelinePage />} />
           <Route path="resume" element={<CareerVaultPage />} />
           <Route path="update" element={<UpdatePage />} />
+          <Route path="settings" element={<ValidationPage />} />
+          <Route path="debug" element={<ValidationPage />} />
           {primaryNavItems
-            .filter((item) => !["/", "/opportunity", "/jobs", "/pipeline", "/resume", "/update"].includes(item.path))
+            .filter((item) => !["/", "/opportunity", "/jobs", "/pipeline", "/resume", "/update", "/settings"].includes(item.path))
             .map((item) => (
               <Route
                 key={item.path}

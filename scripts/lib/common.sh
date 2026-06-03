@@ -59,3 +59,47 @@ configure_runtime_env() {
 activate_backend() {
   source backend/.venv/bin/activate
 }
+
+reserve_local_port() {
+  python3 - <<'PY'
+import socket
+
+with socket.socket() as sock:
+    sock.bind(("127.0.0.1", 0))
+    print(sock.getsockname()[1])
+PY
+}
+
+start_backend_server() {
+  local port="$1"
+  local log_path="$2"
+  local root_dir
+  root_dir="$(resolve_root_dir)"
+
+  (cd "$root_dir/backend" && source .venv/bin/activate && uvicorn main:app --host 127.0.0.1 --port "$port" > "$root_dir/$log_path" 2>&1) &
+  BACKEND_SERVER_PID="$!"
+}
+
+cleanup_backend_server() {
+  local server_pid="${1:-}"
+  if [[ -z "$server_pid" ]]; then
+    return
+  fi
+
+  kill "$server_pid" >/dev/null 2>&1 || true
+  wait "$server_pid" >/dev/null 2>&1 || true
+}
+
+wait_for_backend_health() {
+  local port="$1"
+
+  for _ in {1..40}; do
+    if curl --noproxy "*" -fsS "http://127.0.0.1:${port}/api/health" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 0.25
+  done
+
+  echo "[common] backend health check timeout: http://127.0.0.1:${port}/api/health"
+  return 1
+}

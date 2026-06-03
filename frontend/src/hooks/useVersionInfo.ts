@@ -99,3 +99,22 @@ export function useVersionInfo() {
 
   return state;
 }
+
+export function simulateVersionUpdateForValidation() {
+  const current = baselineVersion ?? versionState.current;
+  const latest = {
+    ...current,
+    build_id: `validation-${Date.now()}`,
+    updated_at: new Date().toISOString(),
+  };
+
+  baselineVersion = current;
+  emit({
+    current,
+    hasUpdate: true,
+    latest,
+    loading: false,
+  });
+
+  return latest;
+}
