@@ -1,0 +1,29 @@
+{
+  "active_persona_id": "persona_ai_app",
+  "personas": [
+    {
+      "id": "persona_backend",
+      "name": "后端开发",
+      "target_roles": ["Java 后端", "Go 后端"],
+      "core_skills": ["Java", "Redis", "微服务"],
+      "preferred_cities": ["北京", "上海", "杭州"],
+      "status": "active"
+    },
+    {
+      "id": "persona_ai_app",
+      "name": "AI 应用工程师",
+      "target_roles": ["AI 应用工程师", "LLM 工程师"],
+      "core_skills": ["Python", "LLM", "RAG", "后端服务"],
+      "preferred_cities": ["北京", "上海", "远程"],
+      "status": "active"
+    },
+    {
+      "id": "persona_product",
+      "name": "技术产品经理",
+      "target_roles": ["AI 产品经理", "技术产品经理"],
+      "core_skills": ["需求分析", "数据分析", "AI 产品"],
+      "preferred_cities": ["上海", "杭州", "深圳"],
+      "status": "active"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "id": "job_1001",
+      "title": "AI 应用工程师",
+      "company": "星河智能",
+      "city": "上海",
+      "priority": "P0",
+      "decision": "强烈推荐",
+      "match": 92,
+      "source": {
+        "source_site": "mock_seed",
+        "source_label": "Demo 数据",
+        "source_type": "mock",
+        "source_url": "",
+        "source_confidence": "high"
+      }
+    },
+    {
+      "id": "job_1002",
+      "title": "LLM 后端工程师",
+      "company": "云岭科技",
+      "city": "杭州",
+      "priority": "P0",
+      "decision": "推荐",
+      "match": 88,
+      "source": {
+        "source_site": "mock_seed",
+        "source_label": "Demo 数据",
+        "source_type": "mock",
+        "source_url": "",
+        "source_confidence": "high"
+      }
+    }
+  ]
+}

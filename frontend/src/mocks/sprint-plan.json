@@ -1,0 +1,22 @@
+{
+  "today": [
+    {
+      "id": "task_001",
+      "title": "投递 2 个 P0 岗位",
+      "priority": "P0",
+      "status": "todo"
+    },
+    {
+      "id": "task_002",
+      "title": "补充 RAG 项目素材",
+      "priority": "P0",
+      "status": "todo"
+    },
+    {
+      "id": "task_003",
+      "title": "准备 AI 应用工程师面试作战卡",
+      "priority": "P1",
+      "status": "todo"
+    }
+  ]
+}

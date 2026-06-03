@@ -1,0 +1,19 @@
+{
+  "mode": "personalized",
+  "recommended_directions": [
+    {
+      "name": "AI 应用工程师",
+      "heat": 92,
+      "growth": 18,
+      "fit": "高",
+      "reason": "Python / LLM / 后端服务经验与该方向重合"
+    },
+    {
+      "name": "LLM 工程师",
+      "heat": 89,
+      "growth": 16,
+      "fit": "中高",
+      "reason": "RAG 项目素材可转化为岗位证据"
+    }
+  ]
+}

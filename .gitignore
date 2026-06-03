@@ -16,3 +16,23 @@ Icon
 .Trashes
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
+
+### Node / frontend
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+### Python / backend
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+### Env / runtime
+.env
+.env.local
+.env.demo
+logs/
+data/runtime/
