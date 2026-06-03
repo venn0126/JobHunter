@@ -93,3 +93,42 @@ export interface PipelineSummary {
   label: string;
   count: number;
 }
+
+export interface JobDecisionCard {
+  job_id: string;
+  decision: string;
+  priority: Priority;
+  overall_grade: string;
+  scores: {
+    match: number;
+    job_quality: number;
+    growth: number;
+    salary: number;
+    competition_risk: number;
+    apply_cost: number;
+  };
+  hit_reasons: string[];
+  gaps: Array<{
+    evidence_id: string;
+    text: string;
+  }>;
+  risks: Array<{
+    fix_action: string;
+    level: "低" | "中" | "高";
+    text: string;
+    type: string;
+  }>;
+  next_actions: Array<{
+    label: string;
+    target_path: string;
+  }>;
+}
+
+export interface RecruiterLens {
+  job_id: string;
+  first_impression: string;
+  highlights: string[];
+  concerns: string[];
+  likely_questions: string[];
+  improve_tips: string[];
+}

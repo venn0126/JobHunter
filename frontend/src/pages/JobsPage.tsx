@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
+import { Select } from "@/components/ui/Select";
 import {
   getFilteredJobs,
   selectJobOptions,
@@ -187,8 +188,7 @@ function SelectBox({
   return (
     <label>
       <div className="mb-2 text-xs text-slate-500">{label}</div>
-      <select
-        className="h-11 w-full rounded-2xl border border-white/10 bg-ink-900 px-4 text-sm text-white outline-none transition focus:border-cyanGlow/50"
+      <Select
         value={value}
         onChange={(event) => onChange(event.target.value)}
       >
@@ -198,7 +198,7 @@ function SelectBox({
             {valueLabel ? valueLabel(item) : item}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }

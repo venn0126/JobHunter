@@ -1,0 +1,61 @@
+{
+  "items": [
+    {
+      "job_id": "job_1001",
+      "decision": "强烈推荐",
+      "priority": "P0",
+      "overall_grade": "A",
+      "scores": {
+        "match": 92,
+        "job_quality": 86,
+        "growth": 90,
+        "salary": 78,
+        "competition_risk": 55,
+        "apply_cost": 30
+      },
+      "hit_reasons": [
+        "岗位要求 Python / LLM / 后端服务，与当前求职身份核心技能高度重合。",
+        "候选人有 RAG 项目与服务化经验，可以直接转化为岗位证据。",
+        "岗位方向处于机会热度高位，成长空间和 Demo 叙事价值都较强。"
+      ],
+      "gaps": [
+        {
+          "evidence_id": "ev_rag_project",
+          "text": "简历中对向量检索指标描述不足，建议补充召回率、延迟和上线规模。"
+        },
+        {
+          "evidence_id": "ev_missing_k8s",
+          "text": "JD 提到 Kubernetes，但当前素材库中没有对应证据。"
+        }
+      ],
+      "risks": [
+        {
+          "type": "竞争风险",
+          "level": "中",
+          "text": "岗位发布时间较久，可能已有较多候选人进入流程。",
+          "fix_action": "优先补充 RAG 项目量化成果，并当天完成投递。"
+        },
+        {
+          "type": "证据缺口",
+          "level": "低",
+          "text": "Kubernetes 经验没有有效证据支撑。",
+          "fix_action": "如果有相关部署经历，补充到职业素材库；没有则弱化该项。"
+        }
+      ],
+      "next_actions": [
+        {
+          "label": "加入求职管线",
+          "target_path": "/pipeline"
+        },
+        {
+          "label": "补充 RAG 项目素材",
+          "target_path": "/resume"
+        },
+        {
+          "label": "生成面试作战卡",
+          "target_path": "/interview"
+        }
+      ]
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { getActivePersona, usePersonaStore } from "@/stores/personaStore";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 
 export function Topbar() {
   const version = useVersionInfo();
@@ -31,10 +32,10 @@ export function Topbar() {
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
             <span className="text-slate-400">{isSwitchingPersona ? "切换中" : "当前身份"}</span>
-            <select
+            <Select
               value={activePersonaId}
               onChange={(event) => setActivePersona(event.target.value)}
-              className="bg-transparent text-cyanGlow outline-none"
+              className="h-auto w-auto border-0 bg-transparent px-0 py-0 text-cyanGlow focus:border-transparent"
               disabled={isSwitchingPersona}
             >
               {personas.map((persona) => (
@@ -42,7 +43,7 @@ export function Topbar() {
                   {persona.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <Badge tone="blue" className="py-2">
             {appConfig.dataMode}
