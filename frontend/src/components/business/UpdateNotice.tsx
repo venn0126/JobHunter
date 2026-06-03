@@ -1,20 +1,18 @@
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { appConfig } from "@/config/env";
+import { useStartUpdate } from "@/hooks/useStartUpdate";
 import { useVersionInfo } from "@/hooks/useVersionInfo";
-import { rememberUpdateRestorePath } from "@/lib/updateRestore";
-import { useLocation, useNavigate } from "react-router-dom";
 
 export function UpdateNotice() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const startUpdate = useStartUpdate();
   const versionState = useVersionInfo();
   const showStrongNotice = appConfig.isDemoMode || versionState.hasUpdate;
 
-  const startUpdate = () => {
-    rememberUpdateRestorePath(`${location.pathname}${location.search}`);
-    navigate("/update");
-  };
+  if (versionState.loading) {
+    return <LoadingState label="正在检查版本信息" />;
+  }
 
   return (
     <Card

@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { storageKeys } from "@/lib/storageKeys";
 import type { AuthSession, AuthUser } from "@/types/auth";
 
-const demoUser: AuthUser = {
+const demoUser: Readonly<AuthUser> = {
   id: "demo_user",
   name: "Demo User",
   email: "demo@jobhunter.local",
@@ -18,12 +19,21 @@ interface AuthState {
   loginAsDemo: () => void;
   logout: () => void;
   register: (name: string, email: string, password: string) => boolean;
+  resetDemoSession: () => void;
 }
 
 function createSession(user: AuthUser): AuthSession {
   return {
     accessToken: `mock-token-${user.id}`,
-    user,
+    user: { ...user },
+  };
+}
+
+function createDemoAuthState() {
+  return {
+    error: "",
+    isAuthenticated: true,
+    session: createSession({ ...demoUser }),
   };
 }
 
@@ -54,11 +64,7 @@ export const useAuthStore = create<AuthState>()(
         return true;
       },
       loginAsDemo: () => {
-        set({
-          error: "",
-          isAuthenticated: true,
-          session: createSession(demoUser),
-        });
+        set(createDemoAuthState());
       },
       logout: () => {
         set({ error: "", isAuthenticated: false, session: null });
@@ -86,9 +92,12 @@ export const useAuthStore = create<AuthState>()(
         });
         return true;
       },
+      resetDemoSession: () => {
+        set(createDemoAuthState());
+      },
     }),
     {
-      name: "jobhunter-auth",
+      name: storageKeys.auth,
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         session: state.session,

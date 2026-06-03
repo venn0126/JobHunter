@@ -16,6 +16,7 @@ interface JobState {
   filters: JobFilters;
   jobs: DemoJob[];
   sortKey: JobSortKey;
+  resetDemo: () => void;
   resetFilters: () => void;
   setFilter: <K extends keyof JobFilters>(key: K, value: JobFilters[K]) => void;
   setSortKey: (sortKey: JobSortKey) => void;
@@ -28,11 +29,25 @@ export const emptyJobFilters: JobFilters = {
   sourceSite: "",
 };
 
+function cloneDemoJobs() {
+  return demoData.jobs.items.map((job) => ({
+    ...job,
+    source: { ...job.source },
+  }));
+}
+
+function createDemoJobState() {
+  return {
+    filters: { ...emptyJobFilters },
+    jobs: cloneDemoJobs(),
+    sortKey: "recommended" as const,
+  };
+}
+
 export const useJobStore = create<JobState>((set) => ({
-  filters: emptyJobFilters,
-  jobs: demoData.jobs.items,
-  sortKey: "recommended",
-  resetFilters: () => set({ filters: emptyJobFilters }),
+  ...createDemoJobState(),
+  resetDemo: () => set(createDemoJobState()),
+  resetFilters: () => set({ filters: { ...emptyJobFilters } }),
   setFilter: (key, value) => set((state) => ({ filters: { ...state.filters, [key]: value } })),
   setSortKey: (sortKey) => set({ sortKey }),
 }));

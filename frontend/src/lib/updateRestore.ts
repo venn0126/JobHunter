@@ -1,13 +1,20 @@
-const restorePathKey = "jobhunter-update-restore-path";
+import { storageKeys } from "@/lib/storageKeys";
 
 export function rememberUpdateRestorePath(path: string) {
-  localStorage.setItem(restorePathKey, path);
+  localStorage.setItem(storageKeys.updateRestorePath, normalizeRestorePath(path));
 }
 
 export function readUpdateRestorePath() {
-  return localStorage.getItem(restorePathKey) || "/";
+  return normalizeRestorePath(localStorage.getItem(storageKeys.updateRestorePath) || "/");
 }
 
 export function clearUpdateRestorePath() {
-  localStorage.removeItem(restorePathKey);
+  localStorage.removeItem(storageKeys.updateRestorePath);
+}
+
+function normalizeRestorePath(path: string) {
+  if (!path.startsWith("/") || path.startsWith("//")) {
+    return "/";
+  }
+  return path;
 }

@@ -8,6 +8,7 @@ interface CareerVaultState {
   addItem: (item: Omit<CareerVaultItem, "id">, itemId?: string) => void;
   deleteItem: (itemId: string) => void;
   loadDemoItems: () => void;
+  resetDemo: () => void;
   selectItem: (itemId: string) => void;
   updateItem: (itemId: string, patch: Partial<CareerVaultItem>) => void;
 }
@@ -26,6 +27,14 @@ function createVaultItemId() {
 }
 
 const initialItems = cloneVaultItems();
+
+function createDemoVaultState() {
+  const items = cloneVaultItems();
+  return {
+    items,
+    selectedItemId: items[0]?.id ?? "",
+  };
+}
 
 export const useCareerVaultStore = create<CareerVaultState>((set) => ({
   items: initialItems,
@@ -47,12 +56,9 @@ export const useCareerVaultStore = create<CareerVaultState>((set) => ({
       };
     }),
   loadDemoItems: () => {
-    const items = cloneVaultItems();
-    set({
-      items,
-      selectedItemId: items[0]?.id ?? "",
-    });
+    set(createDemoVaultState());
   },
+  resetDemo: () => set(createDemoVaultState()),
   selectItem: (itemId) => set({ selectedItemId: itemId }),
   updateItem: (itemId, patch) =>
     set((state) => ({

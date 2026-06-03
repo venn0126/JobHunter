@@ -1,0 +1,26 @@
+{
+  "version": "2026-06-03-p0-demo",
+  "description": "JobHunter P0 演示种子数据清单，用于恢复比赛标准演示态。",
+  "frontendSeeds": [
+    "frontend/src/mocks/career-personas.json",
+    "frontend/src/mocks/career-vault.json",
+    "frontend/src/mocks/dashboard.json",
+    "frontend/src/mocks/job-decision-cards.json",
+    "frontend/src/mocks/jobs.json",
+    "frontend/src/mocks/opportunity-market.json",
+    "frontend/src/mocks/recruiter-lens.json",
+    "frontend/src/mocks/sprint-plan.json"
+  ],
+  "browserStateKeys": [
+    "jobhunter-auth",
+    "jobhunter-persona",
+    "jobhunter-demo-mode",
+    "jobhunter-update-restore-path"
+  ],
+  "runtimeSeeds": [
+    {
+      "path": "data/runtime/jobhunter.sqlite",
+      "restoreCommand": "make reset-demo"
+    }
+  ]
+}

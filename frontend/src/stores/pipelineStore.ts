@@ -89,10 +89,17 @@ function createEntry(job: DemoJob | undefined, status: PipelineStatus, time: str
 
   return {
     addedAt: time,
-    job,
+    job: cloneJob(job),
     nextAction: nextAction ?? getDefaultNextAction(status),
     status,
     updatedAt: time,
+  };
+}
+
+function cloneJob(job: DemoJob) {
+  return {
+    ...job,
+    source: { ...job.source },
   };
 }
 
@@ -129,7 +136,7 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
       entries: [
         {
           addedAt: now,
-          job,
+          job: cloneJob(job),
           nextAction: getDefaultNextAction(status),
           status,
           updatedAt: now,

@@ -1,16 +1,17 @@
 import { appConfig } from "@/config/env";
+import { Toast } from "@/components/ui/Toast";
+import { useDemoReset } from "@/hooks/useDemoReset";
+import { useStartUpdate } from "@/hooks/useStartUpdate";
 import { useVersionInfo } from "@/hooks/useVersionInfo";
-import { rememberUpdateRestorePath } from "@/lib/updateRestore";
 import { useAuthStore } from "@/stores/authStore";
 import { getActivePersona, usePersonaStore } from "@/stores/personaStore";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
-import { useLocation, useNavigate } from "react-router-dom";
 
 export function Topbar() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { notice: demoResetNotice, resetDemo } = useDemoReset();
+  const startUpdate = useStartUpdate();
   const version = useVersionInfo();
   const session = useAuthStore((state) => state.session);
   const logout = useAuthStore((state) => state.logout);
@@ -20,11 +21,6 @@ export function Topbar() {
   const personaError = usePersonaStore((state) => state.personaError);
   const setActivePersona = usePersonaStore((state) => state.setActivePersona);
   const activePersona = getActivePersona({ personas, activePersonaId });
-
-  const startUpdate = () => {
-    rememberUpdateRestorePath(`${location.pathname}${location.search}`);
-    navigate("/update");
-  };
 
   return (
     <header className="sticky top-0 z-10 border-b border-white/10 bg-ink-950/70 px-4 py-4 backdrop-blur-xl sm:px-8">
@@ -58,6 +54,9 @@ export function Topbar() {
             {appConfig.dataMode}
           </Badge>
           <Badge className="py-2">v{version.current.version}</Badge>
+          <Button variant="secondary" size="sm" onClick={resetDemo}>
+            重置 Demo
+          </Button>
           <Button variant={version.hasUpdate || appConfig.isDemoMode ? "primary" : "secondary"} size="sm" onClick={startUpdate}>
             {version.hasUpdate ? "发现新版本" : "检查更新"}
           </Button>
@@ -70,6 +69,7 @@ export function Topbar() {
         {activePersona ? `目标方向：${activePersona.target_roles.join(" / ")}` : "尚未选择求职身份"}
         {personaError ? <span className="ml-3 text-risk-high">{personaError}</span> : null}
       </div>
+      {demoResetNotice ? <Toast title="Demo 已重置" message={demoResetNotice} /> : null}
     </header>
   );
 }

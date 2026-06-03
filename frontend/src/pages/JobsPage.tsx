@@ -5,6 +5,7 @@ import { SourceBadge } from "@/components/business/SourceBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Panel } from "@/components/ui/Panel";
 import { Select } from "@/components/ui/Select";
 import {
@@ -150,18 +151,18 @@ export function JobsPage() {
           </Card>
         </>
       ) : (
-        <Card surface="hero" className="p-8">
-          <div className="text-xl font-semibold">没有符合条件的岗位</div>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-            可以清空筛选，或返回机会广场重新选择方向。当前空状态用于验证筛选边界不崩溃。
-          </p>
-          <div className="mt-5 flex gap-3">
+        <EmptyState
+          title="没有符合条件的岗位"
+          description="可以清空筛选，或返回机会广场重新选择方向。当前空状态用于验证筛选边界不崩溃。"
+          action={
+            <>
             <Button onClick={resetFilters}>清空筛选</Button>
             <Button asChild variant="secondary">
               <Link to="/opportunity">返回机会广场</Link>
             </Button>
-          </div>
-        </Card>
+            </>
+          }
+        />
       )}
 
       <Panel title="来源标识边界验证">

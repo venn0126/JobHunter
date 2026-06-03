@@ -5,6 +5,7 @@ import { CareerVaultListItem } from "@/components/business/CareerVaultListItem";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Panel } from "@/components/ui/Panel";
 import { createBlankVaultItem, useCareerVaultStore } from "@/stores/careerVaultStore";
 
@@ -69,15 +70,11 @@ export function CareerVaultPage() {
       </Card>
 
       {items.length === 0 ? (
-        <Card surface="hero" className="p-8">
-          <div className="text-xl font-semibold">暂无职业素材</div>
-          <p className="mt-3 text-sm leading-7 text-slate-400">
-            点击“一键加载 Demo 素材”进入标准演示态，或新增一条项目经历。
-          </p>
-          <Button className="mt-5" onClick={loadDemoItems}>
-            加载 Demo 素材
-          </Button>
-        </Card>
+        <EmptyState
+          title="暂无职业素材"
+          description="点击“一键加载 Demo 素材”进入标准演示态，或新增一条项目经历。"
+          action={<Button onClick={loadDemoItems}>加载 Demo 素材</Button>}
+        />
       ) : (
         <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
           <Panel title="素材列表">

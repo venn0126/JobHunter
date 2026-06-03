@@ -12,8 +12,10 @@ export function AppLayout() {
         <Sidebar />
         <main className="flex min-w-0 flex-1 flex-col">
           <Topbar />
-          <div className="flex-1 px-4 pb-24 pt-6 sm:px-8 lg:pb-6">
-            <Outlet />
+          <div className="w-full px-4 pb-24 pt-6 sm:px-8 lg:pb-6">
+            <div className="mx-auto w-full max-w-screen-2xl 2xl:max-w-[1800px]">
+              <Outlet />
+            </div>
           </div>
         </main>
       </div>

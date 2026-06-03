@@ -14,6 +14,35 @@ body {
   background: #07111f;
 }
 
+#root {
+  min-height: 100vh;
+}
+
+@media (min-width: 1800px) {
+  :root {
+    font-size: 17px;
+  }
+}
+
+.demo-mode {
+  font-size: 18px;
+}
+
+.demo-mode body {
+  background: #050d19;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 button,
 input,
 select,
