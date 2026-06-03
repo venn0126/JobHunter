@@ -18,6 +18,7 @@ interface PersonaState {
   personaError: string;
   personas: CareerPersona[];
   resetDemoPersona: () => void;
+  restorePersona: (personaId: string) => void;
   setActivePersona: (personaId: string) => void;
 }
 
@@ -61,6 +62,14 @@ export const usePersonaStore = create<PersonaState>()(
       resetDemoPersona: () => {
         clearPersonaSwitchTimer();
         set(createDemoPersonaState());
+      },
+      restorePersona: (personaId) => {
+        clearPersonaSwitchTimer();
+        set({
+          activePersonaId: normalizeActivePersonaId(personaId),
+          isSwitchingPersona: false,
+          personaError: "",
+        });
       },
       setActivePersona: (personaId) => {
         clearPersonaSwitchTimer();

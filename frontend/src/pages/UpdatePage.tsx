@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
 import { useVersionInfo } from "@/hooks/useVersionInfo";
-import { clearUpdateRestorePath, readUpdateRestorePath } from "@/lib/updateRestore";
+import { clearUpdateRestorePath, readUpdateRestorePoint } from "@/lib/updateRestore";
+import { useJobStore, type JobFilters } from "@/stores/jobStore";
+import { usePersonaStore } from "@/stores/personaStore";
 
 const steps = ["保存当前页面", "检查版本文件", "等待服务恢复", "恢复原页面"];
 
@@ -13,7 +15,8 @@ export function UpdatePage() {
   const navigate = useNavigate();
   const versionState = useVersionInfo();
   const [currentStep, setCurrentStep] = useState(0);
-  const restorePath = useMemo(readUpdateRestorePath, []);
+  const restorePoint = useMemo(readUpdateRestorePoint, []);
+  const restorePath = restorePoint.path;
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -23,6 +26,20 @@ export function UpdatePage() {
   }, []);
 
   const finishUpdate = () => {
+    if (restorePoint.personaId) {
+      usePersonaStore.getState().restorePersona(restorePoint.personaId);
+    }
+    if (restorePoint.filters) {
+      const { setFilter } = useJobStore.getState();
+      (Object.entries(restorePoint.filters) as Array<[keyof JobFilters, JobFilters[keyof JobFilters]]>).forEach(
+        ([key, value]) => {
+          setFilter(key, value);
+        },
+      );
+    }
+    if (restorePoint.sortKey) {
+      useJobStore.getState().setSortKey(restorePoint.sortKey);
+    }
     clearUpdateRestorePath();
     navigate(restorePath, { replace: true });
   };
