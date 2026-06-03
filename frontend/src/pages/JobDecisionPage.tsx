@@ -5,12 +5,13 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
+import { getCareerVaultPath } from "@/services/careerVaultService";
 import {
-  getCareerVaultPath,
   getDecisionCard,
   getJobById,
   getRecruiterLens,
 } from "@/services/jobDecisionService";
+import { getResumeStudioPath } from "@/services/resumeStudioService";
 import { useCareerVaultStore } from "@/stores/careerVaultStore";
 import { usePipelineStore } from "@/stores/pipelineStore";
 import type { JobDecisionCard, RecruiterLens } from "@/types/demo";
@@ -52,6 +53,9 @@ export function JobDecisionPage() {
               </Button>
               <Button asChild variant="secondary">
                 <Link to={getCareerVaultPath(primaryEvidenceId)}>补充职业素材</Link>
+              </Button>
+              <Button asChild variant="secondary">
+                <Link to={getResumeStudioPath(job.id)}>生成定制简历</Link>
               </Button>
               <Button asChild variant="secondary">
                 <Link to="/interview">生成面试作战卡</Link>

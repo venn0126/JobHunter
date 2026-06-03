@@ -8,10 +8,12 @@ import type { CareerVaultItem } from "@/types/demo";
 
 export function CareerVaultDetail({
   item,
+  jobId,
   onDelete,
   onUpdate,
 }: {
   item: CareerVaultItem;
+  jobId: string;
   onDelete: (itemId: string) => void;
   onUpdate: (itemId: string, patch: Partial<CareerVaultItem>) => void;
 }) {
@@ -53,7 +55,7 @@ export function CareerVaultDetail({
 
       <div className="flex flex-wrap gap-3">
         <Button asChild variant="secondary">
-          <Link to="/jobs/job_1001">用于修复决策卡风险</Link>
+          <Link to={`/jobs/${jobId}`}>用于修复决策卡风险</Link>
         </Button>
         <Button variant="danger" onClick={() => onDelete(item.id)}>
           删除素材

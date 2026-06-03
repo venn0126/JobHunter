@@ -5,6 +5,7 @@ import { useCareerVaultStore } from "@/stores/careerVaultStore";
 import { useJobStore } from "@/stores/jobStore";
 import { usePersonaStore } from "@/stores/personaStore";
 import { usePipelineStore } from "@/stores/pipelineStore";
+import { useResumeStudioStore } from "@/stores/resumeStudioStore";
 
 export interface DemoResetResult {
   message: string;
@@ -16,10 +17,11 @@ export function resetDemoWorkspace(): DemoResetResult {
   useJobStore.getState().resetDemo();
   useCareerVaultStore.getState().resetDemo();
   usePipelineStore.getState().resetDemo();
+  useResumeStudioStore.getState().resetDemo();
   clearUpdateRestorePath();
   enableDemoMode();
 
   return {
-    message: "已恢复标准 Demo：账号、身份、岗位筛选、职业素材和求职管线。",
+    message: "已恢复标准 Demo：账号、身份、岗位筛选、职业素材、简历工作室和求职管线。",
   };
 }

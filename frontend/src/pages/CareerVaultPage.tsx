@@ -2,16 +2,19 @@ import { useEffect, useMemo, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { CareerVaultDetail } from "@/components/business/CareerVaultDetail";
 import { CareerVaultListItem } from "@/components/business/CareerVaultListItem";
+import { ResumeStudioWorkspace } from "@/components/business/ResumeStudioWorkspace";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Panel } from "@/components/ui/Panel";
+import { getResumeStudioDraft } from "@/services/resumeStudioService";
 import { createBlankVaultItem, useCareerVaultStore } from "@/stores/careerVaultStore";
 
 export function CareerVaultPage() {
   const [searchParams] = useSearchParams();
   const evidenceId = searchParams.get("evidence") ?? "";
+  const jobId = searchParams.get("job") ?? undefined;
   const lastAppliedEvidenceIdRef = useRef("");
   const items = useCareerVaultStore((state) => state.items);
   const selectedItemId = useCareerVaultStore((state) => state.selectedItemId);
@@ -20,6 +23,7 @@ export function CareerVaultPage() {
   const loadDemoItems = useCareerVaultStore((state) => state.loadDemoItems);
   const selectItem = useCareerVaultStore((state) => state.selectItem);
   const updateItem = useCareerVaultStore((state) => state.updateItem);
+  const draft = useMemo(() => getResumeStudioDraft(jobId), [jobId]);
   const evidenceItem = useMemo(
     () => (evidenceId ? items.find((item) => item.id === evidenceId) : undefined),
     [evidenceId, items],
@@ -47,16 +51,18 @@ export function CareerVaultPage() {
 
   return (
     <div className="space-y-6">
+      <ResumeStudioWorkspace jobId={jobId} vaultItems={items} />
+
       <Card as="section" surface="hero" className="p-6">
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <Badge tone="cyan" className="mb-4">
+            <Badge tone="blue" className="mb-4">
               职业素材库
             </Badge>
-            <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-              让 AI 的每条建议都有真实证据。
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-slate-400">
+            <h2 className="max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+              简历优化引用的每条证据，都来自这里。
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-8 text-slate-400">
               维护项目经历、技能证据和 STAR 故事，供岗位决策卡、简历工作室和面试作战卡复用。
             </p>
           </div>
@@ -115,7 +121,7 @@ export function CareerVaultPage() {
               </Card>
             ) : null}
             {selectedItem ? (
-              <CareerVaultDetail item={selectedItem} onDelete={deleteItem} onUpdate={updateItem} />
+              <CareerVaultDetail item={selectedItem} jobId={draft.job_id} onDelete={deleteItem} onUpdate={updateItem} />
             ) : (
               <div className="text-sm text-slate-400">请选择一条素材。</div>
             )}
@@ -126,7 +132,7 @@ export function CareerVaultPage() {
       <Panel title="联动入口">
         <div className="grid gap-3 md:grid-cols-3">
           <Button asChild variant="secondary">
-            <Link to="/jobs/job_1001">返回岗位决策卡</Link>
+            <Link to={`/jobs/${draft.job_id}`}>返回岗位决策卡</Link>
           </Button>
           <Button asChild variant="secondary">
             <Link to="/jobs">查看岗位雷达</Link>

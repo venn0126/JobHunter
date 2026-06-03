@@ -1,10 +1,6 @@
 import { demoData } from "@/data/demoData";
 import type { DemoJob, JobDecisionCard, RecruiterLens } from "@/types/demo";
 
-export function getCareerVaultPath(evidenceId?: string) {
-  return evidenceId ? `/resume?evidence=${encodeURIComponent(evidenceId)}` : "/resume";
-}
-
 export function getJobById(jobId: string) {
   return demoData.jobs.items.find((item) => item.id === jobId) ?? demoData.jobs.items[0];
 }

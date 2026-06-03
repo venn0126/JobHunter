@@ -13,6 +13,7 @@
 - `make verify-version-cache`：验证 `version.json`、`/api/version` 与 SPA fallback 均禁缓存；
 - `make verify-validation-sandbox`：验证最小验证入口和 API 失败模拟接口可用；
 - `make verify-update-restore`：验证更新恢复点能保留路由、Persona、岗位筛选和排序，并能忽略损坏路径；
+- `make verify-browser-cache`：验证 HTML / version 禁缓存、assets immutable、旧 hash 资源 404 不回落 HTML；
 - `logs/ops/`：固定保存启动、迁移、升级、回滚、健康检查和专项验证日志；
 - `logs/ops/health-latest.json`：最近一次健康检查结构化结果。
 - 顶部栏「重置 Demo」：恢复浏览器内 Demo 账号、Persona、岗位筛选、素材库和管线状态。

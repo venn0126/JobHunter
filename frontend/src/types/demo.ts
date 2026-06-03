@@ -149,3 +149,34 @@ export interface CareerVaultItem {
     result: string;
   };
 }
+
+export interface ResumeEvidenceRef {
+  quote: string;
+  source_id: string;
+  source_type: "career_vault_project" | "career_vault_skill" | "career_vault_story";
+}
+
+export interface ResumeStudioSection {
+  id: string;
+  after: string;
+  before: string;
+  evidence: ResumeEvidenceRef[];
+  missing_evidence_id?: string;
+  reason: string;
+  section: string;
+  status: "可直接使用" | "建议补充";
+}
+
+export interface ResumeStudioDraft {
+  company: string;
+  job_id: string;
+  job_title: string;
+  keywords: string[];
+  sections: ResumeStudioSection[];
+  summary: {
+    needs_evidence: number;
+    readiness: string;
+    ready_sections: number;
+    target_role: string;
+  };
+}

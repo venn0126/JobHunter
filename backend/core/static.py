@@ -4,7 +4,14 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from core.cache import NO_CACHE_HEADERS
+from core.cache import IMMUTABLE_ASSET_HEADERS, NO_CACHE_HEADERS
+
+
+class ImmutableAssetsStaticFiles(StaticFiles):
+    def file_response(self, *args, **kwargs):
+        response = super().file_response(*args, **kwargs)
+        response.headers.update(IMMUTABLE_ASSET_HEADERS)
+        return response
 
 
 def mount_frontend(app: FastAPI, frontend_dist: Path) -> None:
@@ -13,7 +20,7 @@ def mount_frontend(app: FastAPI, frontend_dist: Path) -> None:
 
     assets_dir = frontend_dist / "assets"
     if assets_dir.exists():
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+        app.mount("/assets", ImmutableAssetsStaticFiles(directory=assets_dir), name="assets")
 
     @app.get("/{full_path:path}", include_in_schema=False)
     def serve_spa(full_path: str):

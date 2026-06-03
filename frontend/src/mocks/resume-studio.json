@@ -1,0 +1,58 @@
+{
+  "items": [
+    {
+      "job_id": "job_1001",
+      "job_title": "AI 应用工程师",
+      "company": "星河智能",
+      "keywords": ["Python", "LLM", "RAG", "后端服务", "向量检索"],
+      "summary": {
+        "target_role": "AI 应用工程师",
+        "readiness": "2 条可直接使用，1 条建议补充",
+        "ready_sections": 2,
+        "needs_evidence": 1
+      },
+      "sections": [
+        {
+          "id": "sec_rag_project",
+          "section": "项目经历",
+          "before": "负责企业知识库问答项目开发，参与后端接口和检索功能建设。",
+          "after": "负责企业知识库 RAG 服务的检索链路与后端接口建设，接入向量检索、重排和评估看板，使问答命中率提升 18%，平均响应延迟降低 32%。",
+          "reason": "JD 强调 LLM 应用、RAG 和后端服务经验，因此突出检索链路、接口建设和量化结果。",
+          "evidence": [
+            {
+              "source_type": "career_vault_project",
+              "source_id": "ev_rag_project",
+              "quote": "问答命中率提升 18%，平均响应延迟降低 32%。"
+            }
+          ],
+          "status": "可直接使用"
+        },
+        {
+          "id": "sec_backend_platform",
+          "section": "后端能力",
+          "before": "熟悉后端服务开发，了解缓存和异步任务。",
+          "after": "具备高并发后端服务优化经验，曾通过 Redis 缓存预热、异步削峰和降级策略，将核心接口 P95 延迟降低 35%，错误率降低 22%。",
+          "reason": "岗位需要 AI 应用工程落地能力，后端稳定性证据可以增强交付可信度。",
+          "evidence": [
+            {
+              "source_type": "career_vault_project",
+              "source_id": "ev_backend_platform",
+              "quote": "核心接口 P95 延迟降低 35%，错误率降低 22%。"
+            }
+          ],
+          "status": "可直接使用"
+        },
+        {
+          "id": "sec_k8s_gap",
+          "section": "技能补充",
+          "before": "",
+          "after": "建议补充 Kubernetes 部署、灰度发布或服务治理经历；若暂无直接经验，可弱化为“了解容器化部署流程”。",
+          "reason": "JD 提到 Kubernetes，但当前职业素材库没有直接证据，不能编造为可直接使用内容。",
+          "evidence": [],
+          "missing_evidence_id": "ev_missing_k8s",
+          "status": "建议补充"
+        }
+      ]
+    }
+  ]
+}
