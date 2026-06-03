@@ -7,7 +7,7 @@ import type {
   DashboardMetric,
   DashboardRadarItem,
   DemoJob,
-  OpportunityDirection,
+  OpportunityMarket,
   PipelineSummary,
   SprintTask,
 } from "@/types/demo";
@@ -20,6 +20,6 @@ export const demoData = {
     radar: DashboardRadarItem[];
   },
   jobs: jobs as { items: DemoJob[] },
-  market: market as { mode: string; recommended_directions: OpportunityDirection[] },
+  market: market as OpportunityMarket,
   sprint: sprint as { today: SprintTask[] },
 };

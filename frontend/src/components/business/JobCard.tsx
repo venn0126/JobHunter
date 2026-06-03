@@ -4,7 +4,15 @@ import { Card } from "@/components/ui/Card";
 import { SourceBadge } from "@/components/business/SourceBadge";
 import type { DemoJob } from "@/types/demo";
 
-export function JobCard({ job }: { job: DemoJob }) {
+export function JobCard({
+  job,
+  onAddToPipeline,
+  onViewDecision,
+}: {
+  job: DemoJob;
+  onAddToPipeline?: (job: DemoJob) => void;
+  onViewDecision?: (job: DemoJob) => void;
+}) {
   return (
     <Card surface="subtle" className="p-4">
       <div className="flex items-start justify-between gap-4">
@@ -26,10 +34,10 @@ export function JobCard({ job }: { job: DemoJob }) {
         </div>
       </div>
       <div className="mt-4 flex gap-2">
-        <Button variant="secondary" size="sm" className="flex-1">
+        <Button variant="secondary" size="sm" className="flex-1" onClick={() => onViewDecision?.(job)}>
           查看决策
         </Button>
-        <Button size="sm" className="flex-1">
+        <Button size="sm" className="flex-1" onClick={() => onAddToPipeline?.(job)}>
           加入管线
         </Button>
       </div>

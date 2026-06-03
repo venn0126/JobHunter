@@ -14,6 +14,47 @@ export interface OpportunityDirection {
   growth: number;
   fit: string;
   reason: string;
+  tags: string[];
+  filters: {
+    role: string;
+    skills: string[];
+  };
+}
+
+export interface GlobalHotRole {
+  name: string;
+  heat: number;
+  growth: number;
+  tags: string[];
+  filters: {
+    role: string;
+    skills: string[];
+  };
+}
+
+export interface GlobalHotCity {
+  name: string;
+  heat: number;
+}
+
+export interface GlobalHotSkill {
+  name: string;
+  heat: number;
+  growth: number;
+}
+
+export interface OpportunityMarket {
+  mode: "global" | "personalized";
+  global: {
+    hot_roles: GlobalHotRole[];
+    hot_cities: GlobalHotCity[];
+    hot_skills: GlobalHotSkill[];
+  };
+  personalized: {
+    recommended_directions: OpportunityDirection[];
+    next_actions: string[];
+  };
+  recommended_directions: OpportunityDirection[];
 }
 
 export interface DemoJob {

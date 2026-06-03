@@ -5,6 +5,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { AuthPage } from "@/pages/AuthPage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import { OpportunityPage } from "@/pages/OpportunityPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
 
 export function App() {
@@ -21,8 +22,9 @@ export function App() {
           }
         >
           <Route index element={<DashboardPage />} />
+          <Route path="opportunity" element={<OpportunityPage />} />
           {primaryNavItems
-            .filter((item) => item.path !== "/")
+            .filter((item) => !["/", "/opportunity"].includes(item.path))
             .map((item) => (
               <Route
                 key={item.path}

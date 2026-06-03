@@ -1,19 +1,139 @@
 {
   "mode": "personalized",
+  "global": {
+    "hot_roles": [
+      {
+        "name": "AI 应用工程师",
+        "heat": 92,
+        "growth": 18,
+        "tags": ["LLM", "RAG", "Python"],
+        "filters": {
+          "role": "AI 应用工程师",
+          "skills": ["Python", "LLM"]
+        }
+      },
+      {
+        "name": "后端开发工程师",
+        "heat": 88,
+        "growth": 8,
+        "tags": ["Java", "Go", "微服务"],
+        "filters": {
+          "role": "后端开发工程师",
+          "skills": ["Java", "Go"]
+        }
+      },
+      {
+        "name": "数据工程师",
+        "heat": 83,
+        "growth": 11,
+        "tags": ["Spark", "治理", "实时数仓"],
+        "filters": {
+          "role": "数据工程师",
+          "skills": ["Spark", "SQL"]
+        }
+      }
+    ],
+    "hot_cities": [
+      {
+        "name": "北京",
+        "heat": 90
+      },
+      {
+        "name": "上海",
+        "heat": 86
+      },
+      {
+        "name": "杭州",
+        "heat": 82
+      }
+    ],
+    "hot_skills": [
+      {
+        "name": "Agent",
+        "heat": 95,
+        "growth": 25
+      },
+      {
+        "name": "RAG",
+        "heat": 91,
+        "growth": 22
+      },
+      {
+        "name": "React",
+        "heat": 80,
+        "growth": 6
+      }
+    ]
+  },
+  "personalized": {
+    "recommended_directions": [
+      {
+        "name": "AI 应用工程师",
+        "heat": 92,
+        "growth": 18,
+        "fit": "高",
+        "reason": "Python / LLM / 后端服务经验与该方向重合",
+        "tags": ["Python", "LLM", "后端服务"],
+        "filters": {
+          "role": "AI 应用工程师",
+          "skills": ["Python", "LLM"]
+        }
+      },
+      {
+        "name": "LLM 工程师",
+        "heat": 89,
+        "growth": 16,
+        "fit": "中高",
+        "reason": "RAG 项目素材可转化为岗位证据",
+        "tags": ["RAG", "向量检索", "Prompt"],
+        "filters": {
+          "role": "LLM 工程师",
+          "skills": ["RAG", "Prompt"]
+        }
+      },
+      {
+        "name": "AI 后端平台",
+        "heat": 86,
+        "growth": 13,
+        "fit": "中高",
+        "reason": "后端工程经验可以迁移到模型服务和平台工程",
+        "tags": ["FastAPI", "服务治理", "模型服务"],
+        "filters": {
+          "role": "AI 后端平台",
+          "skills": ["FastAPI", "服务治理"]
+        }
+      }
+    ],
+    "next_actions": [
+      "查看 AI 应用工程师岗位",
+      "补充 RAG 项目素材",
+      "将 AI 应用工程师加入求职偏好"
+    ]
+  },
   "recommended_directions": [
     {
       "name": "AI 应用工程师",
       "heat": 92,
       "growth": 18,
       "fit": "高",
-      "reason": "Python / LLM / 后端服务经验与该方向重合"
+      "reason": "Python / LLM / 后端服务经验与该方向重合",
+      "tags": ["Python", "LLM", "后端服务"],
+      "filters": {
+        "role": "AI 应用工程师",
+        "skills": ["Python", "LLM"]
+      }
     },
     {
       "name": "LLM 工程师",
       "heat": 89,
       "growth": 16,
       "fit": "中高",
-      "reason": "RAG 项目素材可转化为岗位证据"
+      "reason": "RAG 项目素材可转化为岗位证据",
+      "tags": ["RAG", "向量检索", "Prompt"],
+      "filters": {
+        "role": "LLM 工程师",
+        "skills": ["RAG", "Prompt"]
+      }
     }
   ]
 }
