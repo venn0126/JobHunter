@@ -54,9 +54,9 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
               </p>
             </div>
             <div className="mt-10 grid gap-3 text-sm text-slate-300 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">演示账号一键进入</div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">Mock 数据稳定可讲</div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">刷新保持登录态</div>
+              <Card surface="subtle" className="p-4">演示账号一键进入</Card>
+              <Card surface="subtle" className="p-4">Mock 数据稳定可讲</Card>
+              <Card surface="subtle" className="p-4">刷新保持登录态</Card>
             </div>
           </section>
 

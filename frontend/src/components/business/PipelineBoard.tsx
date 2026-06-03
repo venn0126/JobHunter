@@ -1,19 +1,14 @@
 import { Card } from "@/components/ui/Card";
+import type { PipelineSummary } from "@/types/demo";
 
-export interface PipelineColumnSummary {
-  id: string;
-  label: string;
-  count: number;
-}
-
-const defaultColumns: PipelineColumnSummary[] = [
+const defaultColumns: PipelineSummary[] = [
   { id: "interested", label: "感兴趣", count: 3 },
   { id: "tailored", label: "已定制简历", count: 2 },
   { id: "applied", label: "已投递", count: 5 },
   { id: "interviewing", label: "面试中", count: 1 },
 ];
 
-export function PipelineBoard({ columns = defaultColumns }: { columns?: PipelineColumnSummary[] }) {
+export function PipelineBoard({ columns = defaultColumns }: { columns?: PipelineSummary[] }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {columns.map((column) => (

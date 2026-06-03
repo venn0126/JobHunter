@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, ReactElement } from "react";
+import { cloneElement } from "react";
 import { cn } from "@/lib/classNames";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -18,23 +19,33 @@ const sizeClassName: Record<ButtonSize, string> = {
 };
 
 export function Button({
+  asChild,
   children,
   className,
   size = "md",
   variant = "primary",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
+  asChild?: boolean;
   size?: ButtonSize;
   variant?: ButtonVariant;
 }) {
+  const classNames = cn(
+    "inline-flex items-center justify-center rounded-full border font-medium transition disabled:cursor-not-allowed disabled:opacity-50",
+    variantClassName[variant],
+    sizeClassName[size],
+    className,
+  );
+
+  if (asChild && children) {
+    return cloneElement(children as ReactElement<{ className?: string }>, {
+      className: cn(classNames, (children as ReactElement<{ className?: string }>).props.className),
+    });
+  }
+
   return (
     <button
-      className={cn(
-        "inline-flex items-center justify-center rounded-full border font-medium transition disabled:cursor-not-allowed disabled:opacity-50",
-        variantClassName[variant],
-        sizeClassName[size],
-        className,
-      )}
+      className={classNames}
       {...props}
     >
       {children}

@@ -5,6 +5,7 @@ export interface SprintTask {
   title: string;
   priority: Priority;
   status: "todo" | "doing" | "done";
+  target_path: string;
 }
 
 export interface OpportunityDirection {
@@ -30,4 +31,22 @@ export interface DemoJob {
     source_url: string;
     source_confidence: "high" | "medium" | "low";
   };
+}
+
+export interface DashboardMetric {
+  id: string;
+  label: string;
+  value: string;
+  hint: string;
+}
+
+export interface DashboardRadarItem {
+  label: string;
+  value: number;
+}
+
+export interface PipelineSummary {
+  id: string;
+  label: string;
+  count: number;
 }

@@ -1,0 +1,72 @@
+{
+  "metrics": [
+    {
+      "id": "priority_jobs",
+      "label": "今日优先岗位",
+      "value": "5",
+      "hint": "P0 / P1 推荐"
+    },
+    {
+      "id": "strong_jobs",
+      "label": "强推荐岗位",
+      "value": "3",
+      "hint": "匹配度 88%+"
+    },
+    {
+      "id": "followups",
+      "label": "待跟进事项",
+      "value": "4",
+      "hint": "含 2 个 HR 沟通"
+    },
+    {
+      "id": "interview_tasks",
+      "label": "面试准备任务",
+      "value": "2",
+      "hint": "本周待完成"
+    }
+  ],
+  "pipeline": [
+    {
+      "id": "interested",
+      "label": "感兴趣",
+      "count": 6
+    },
+    {
+      "id": "tailored",
+      "label": "已定制简历",
+      "count": 3
+    },
+    {
+      "id": "applied",
+      "label": "已投递",
+      "count": 8
+    },
+    {
+      "id": "interviewing",
+      "label": "面试中",
+      "count": 2
+    }
+  ],
+  "radar": [
+    {
+      "label": "后端工程",
+      "value": 88
+    },
+    {
+      "label": "LLM 应用",
+      "value": 82
+    },
+    {
+      "label": "RAG 项目",
+      "value": 76
+    },
+    {
+      "label": "系统设计",
+      "value": 72
+    },
+    {
+      "label": "业务表达",
+      "value": 68
+    }
+  ]
+}

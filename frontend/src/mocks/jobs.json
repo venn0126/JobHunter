@@ -31,6 +31,22 @@
         "source_url": "",
         "source_confidence": "high"
       }
+    },
+    {
+      "id": "job_1003",
+      "title": "RAG 平台工程师",
+      "company": "霁云数据",
+      "city": "北京",
+      "priority": "P1",
+      "decision": "推荐",
+      "match": 84,
+      "source": {
+        "source_site": "mock_seed",
+        "source_label": "Demo 数据",
+        "source_type": "mock",
+        "source_url": "",
+        "source_confidence": "high"
+      }
     }
   ]
 }
