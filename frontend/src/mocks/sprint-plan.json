@@ -12,7 +12,7 @@
       "title": "补充 RAG 项目素材",
       "priority": "P0",
       "status": "todo",
-      "target_path": "/resume"
+      "target_path": "/resume?evidence=ev_rag_project"
     },
     {
       "id": "task_003",

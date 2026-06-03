@@ -31,12 +31,14 @@
       "risks": [
         {
           "type": "竞争风险",
+          "evidence_id": "ev_rag_project",
           "level": "中",
           "text": "岗位发布时间较久，可能已有较多候选人进入流程。",
           "fix_action": "优先补充 RAG 项目量化成果，并当天完成投递。"
         },
         {
           "type": "证据缺口",
+          "evidence_id": "ev_missing_k8s",
           "level": "低",
           "text": "Kubernetes 经验没有有效证据支撑。",
           "fix_action": "如果有相关部署经历，补充到职业素材库；没有则弱化该项。"

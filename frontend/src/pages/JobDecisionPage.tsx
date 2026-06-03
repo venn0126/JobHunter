@@ -1,19 +1,27 @@
+import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { SourceBadge } from "@/components/business/SourceBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
-import { demoData } from "@/data/demoData";
-import type { DemoJob, JobDecisionCard, RecruiterLens } from "@/types/demo";
-
-const validEvidenceIds = new Set(["ev_rag_project"]);
+import {
+  getCareerVaultPath,
+  getDecisionCard,
+  getJobById,
+  getRecruiterLens,
+} from "@/services/jobDecisionService";
+import { useCareerVaultStore } from "@/stores/careerVaultStore";
+import type { JobDecisionCard, RecruiterLens } from "@/types/demo";
 
 export function JobDecisionPage() {
   const { jobId = "" } = useParams();
-  const job = demoData.jobs.items.find((item) => item.id === jobId) ?? demoData.jobs.items[0];
+  const vaultItems = useCareerVaultStore((state) => state.items);
+  const job = getJobById(jobId);
   const decision = getDecisionCard(job);
   const lens = getRecruiterLens(job);
+  const validEvidenceIds = useMemo(() => new Set(vaultItems.map((item) => item.id)), [vaultItems]);
+  const primaryEvidenceId = decision.gaps.find((gap) => validEvidenceIds.has(gap.evidence_id))?.evidence_id;
 
   return (
     <div className="space-y-6">
@@ -34,7 +42,7 @@ export function JobDecisionPage() {
                 <Link to="/pipeline">加入求职管线</Link>
               </Button>
               <Button asChild variant="secondary">
-                <Link to="/resume">补充职业素材</Link>
+                <Link to={getCareerVaultPath(primaryEvidenceId)}>补充职业素材</Link>
               </Button>
               <Button asChild variant="secondary">
                 <Link to="/interview">生成面试作战卡</Link>
@@ -66,7 +74,7 @@ export function JobDecisionPage() {
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-400">{risk.text}</p>
                 <Button asChild className="mt-4" size="sm" variant="secondary">
-                  <Link to="/resume">{risk.fix_action}</Link>
+                  <Link to={getCareerVaultPath(risk.evidence_id ?? primaryEvidenceId)}>{risk.fix_action}</Link>
                 </Button>
               </Card>
             ))}
@@ -85,7 +93,9 @@ export function JobDecisionPage() {
               </div>
               <p className="text-sm leading-6 text-slate-400">{gap.text}</p>
               <Button asChild className="mt-4" size="sm" variant="secondary">
-                <Link to="/resume">跳转职业素材库</Link>
+                <Link to={getCareerVaultPath(gap.evidence_id)}>
+                  {validEvidenceIds.has(gap.evidence_id) ? "查看对应素材" : "补充缺失素材"}
+                </Link>
               </Button>
             </Card>
           ))}
@@ -105,57 +115,6 @@ export function JobDecisionPage() {
         <RecruiterLensPanel lens={lens} />
       </section>
     </div>
-  );
-}
-
-function getDecisionCard(job: DemoJob): JobDecisionCard {
-  return (
-    demoData.decisionCards.items.find((item) => item.job_id === job.id) ?? {
-      job_id: job.id,
-      decision: job.match >= 85 ? "推荐" : "观望",
-      priority: job.priority,
-      overall_grade: job.match >= 85 ? "A-" : "B",
-      scores: {
-        match: job.match,
-        job_quality: 78,
-        growth: 76,
-        salary: 70,
-        competition_risk: 60,
-        apply_cost: 40,
-      },
-      hit_reasons: [
-        "岗位方向与当前求职身份存在交集。",
-        "岗位信息来自 Mock 兜底数据，页面结构可稳定演示。",
-        "后续算法接口接入后可替换为真实决策结果。",
-      ],
-      gaps: [{ evidence_id: "ev_missing", text: "当前岗位暂无完整证据链，建议补充职业素材后重新分析。" }],
-      risks: [
-        {
-          fix_action: "补充职业素材库",
-          level: "中",
-          text: "决策数据使用 Mock 兜底，解释深度有限。",
-          type: "数据不足",
-        },
-      ],
-      next_actions: [
-        { label: "加入求职管线", target_path: "/pipeline" },
-        { label: "补充职业素材", target_path: "/resume" },
-        { label: "准备面试作战卡", target_path: "/interview" },
-      ],
-    }
-  );
-}
-
-function getRecruiterLens(job: DemoJob): RecruiterLens {
-  return (
-    demoData.recruiterLens.items.find((item) => item.job_id === job.id) ?? {
-      job_id: job.id,
-      first_impression: "招聘官会优先查看岗位关键词、项目证据和最近经历是否匹配。",
-      highlights: ["方向相关", "具备可迁移项目经验", "适合进入进一步评估"],
-      concerns: ["证据链不足", "量化结果不够", "岗位细节需要进一步确认"],
-      likely_questions: ["你为什么适合这个岗位？", "最能证明能力的项目是什么？", "你如何补齐岗位短板？"],
-      improve_tips: ["补充项目证据", "突出量化成果", "准备岗位相关案例"],
-    }
   );
 }
 

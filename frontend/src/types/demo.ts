@@ -113,6 +113,7 @@ export interface JobDecisionCard {
     text: string;
   }>;
   risks: Array<{
+    evidence_id?: string;
     fix_action: string;
     level: "低" | "中" | "高";
     text: string;
@@ -131,4 +132,20 @@ export interface RecruiterLens {
   concerns: string[];
   likely_questions: string[];
   improve_tips: string[];
+}
+
+export interface CareerVaultItem {
+  id: string;
+  type: "project" | "skill" | "story" | "certificate";
+  title: string;
+  summary: string;
+  tags: string[];
+  skills: string[];
+  impact: string;
+  star: {
+    situation: string;
+    task: string;
+    action: string;
+    result: string;
+  };
 }
