@@ -92,23 +92,23 @@
 
 | ID | 任务 | 优先级 | 状态 | 验收标准 |
 |---|---|---|---|---|
-| P0-01 | 初始化前端工程骨架 | P0 | 未开始 | 有 `frontend/` 基础工程，可本地运行 |
-| P0-02 | 初始化后端工程骨架 | P0 | 未开始 | 有 `backend/` 基础 API 服务，可本地运行 |
-| P0-03 | 建立统一目录结构 | P0 | 未开始 | 与架构文档约定一致 |
-| P0-04 | 接入 TypeScript / 路由 / 状态管理 | P0 | 未开始 | 页面结构可扩展，能支持后续模块接入 |
-| P0-05 | 建立 Mock 数据机制 | P0 | 未开始 | 支持 `mock / api / hybrid` 三种模式 |
-| P0-06 | 建立一键命令体系 | P0 | 未开始 | 至少有 `make init / dev / start / migrate / upgrade / health` |
-| P0-07 | 建立版本信息机制 | P0 | 未开始 | 有 `version.json` 或等价接口 |
-| P0-08 | 建立 Git 分支与发布规范 | P0 | 未开始 | `main / feat/* / hotfix/*` 规则明确 |
+| P0-01 | 初始化前端工程骨架 | P0 | 已完成 | 有 `frontend/` 基础工程，可本地运行 |
+| P0-02 | 初始化后端工程骨架 | P0 | 已完成 | 有 `backend/` 基础 API 服务，可本地运行 |
+| P0-03 | 建立统一目录结构 | P0 | 已完成 | 与架构文档约定一致 |
+| P0-04 | 接入 TypeScript / 路由 / 状态管理 | P0 | 已完成 | 页面结构可扩展，能支持后续模块接入 |
+| P0-05 | 建立 Mock 数据机制 | P0 | 已完成 | 支持 `mock / api / hybrid` 三种模式 |
+| P0-06 | 建立一键命令体系 | P0 | 已完成 | 至少有 `make init / dev / start / migrate / upgrade / health` |
+| P0-07 | 建立版本信息机制 | P0 | 已完成 | 有 `version.json` 或等价接口 |
+| P0-08 | 建立 Git 分支与发布规范 | P0 | 已完成 | `main / feat/* / hotfix/*` 规则明确 |
 
 子项：
 
-- [ ] 建立 `frontend/src/` 分层结构；
-- [ ] 建立 `backend/api/`、`backend/services/`、`backend/schemas/`；
-- [ ] 建立 `scripts/` 和 `Makefile`；
-- [ ] 建立 `.env.local.example` 与 `.env.demo.example`；
-- [ ] 建立 Demo 数据目录与命名规范；
-- [ ] 建立 `dataMode` 配置读取方式。
+- [x] 建立 `frontend/src/` 分层结构；
+- [x] 建立 `backend/api/`、`backend/services/`、`backend/schemas/`；
+- [x] 建立 `scripts/` 和 `Makefile`；
+- [x] 建立 `.env.local.example` 与 `.env.demo.example`；
+- [x] 建立 Demo 数据目录与命名规范；
+- [x] 建立 `dataMode` 配置读取方式。
 
 ---
 
@@ -116,20 +116,20 @@
 
 | ID | 任务 | 优先级 | 状态 | 验收标准 |
 |---|---|---|---|---|
-| P0-09 | 左侧导航实现 | P0 | 未开始 | 与 UX 文档一致，包含 8 个主入口 |
-| P0-10 | 顶部栏实现 | P0 | 未开始 | 包含用户区、身份切换器、更新提示 |
-| P0-11 | 深色主题与全局样式 | P0 | 未开始 | 页面整体风格接近首页 Base |
-| P0-12 | 基础组件库 | P0 | 未开始 | Button / Input / Modal / Drawer / Badge / Toast 可复用 |
-| P0-13 | 首页 Base 业务组件 | P0 | 未开始 | MetricCard / SprintTaskCard / JobCard / SourceBadge / PipelineBoard |
+| P0-09 | 左侧导航实现 | P0 | 已完成 | 与 UX 文档一致，包含 8 个主入口 |
+| P0-10 | 顶部栏实现 | P0 | 已完成 | 包含用户区、身份切换器、更新提示 |
+| P0-11 | 深色主题与全局样式 | P0 | 已完成 | 页面整体风格接近首页 Base |
+| P0-12 | 基础组件库 | P0 | 已完成 | Button / Input / Modal / Drawer / Badge / Toast 可复用 |
+| P0-13 | 首页 Base 业务组件 | P0 | 已完成 | MetricCard / SprintTaskCard / JobCard / SourceBadge / PipelineBoard |
 
 子项：
 
-- [ ] 完成 AppLayout；
-- [ ] 完成 Sidebar 当前选中态；
-- [ ] 完成 Topbar 身份切换胶囊；
-- [ ] 完成全局卡片样式、圆角、描边、阴影；
-- [ ] 完成主色、辅助色、风险色配置；
-- [ ] 完成桌面主布局，支持后续页面复用。
+- [x] 完成 AppLayout；
+- [x] 完成 Sidebar 当前选中态；
+- [x] 完成 Topbar 身份切换胶囊；
+- [x] 完成全局卡片样式、圆角、描边、阴影；
+- [x] 完成主色、辅助色、风险色配置；
+- [x] 完成桌面主布局，支持后续页面复用。
 
 ---
 

@@ -1,3 +1,6 @@
+import { JobCard } from "@/components/business/JobCard";
+import { PipelineBoard } from "@/components/business/PipelineBoard";
+import { SprintTaskCard } from "@/components/business/SprintTaskCard";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { MetricCard } from "@/components/ui/MetricCard";
@@ -15,16 +18,16 @@ export function DashboardPage() {
         <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
           <div>
             <Badge tone="cyan" className="mb-4">
-              P0 4.1 工程与运行基建
+              P0 4.2 全局布局与视觉基础
             </Badge>
             <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-              工程骨架已接入，后续页面可按 P0 清单逐段扩展。
+              从海投到精投，建立可解释的 AI 求职作战驾驶舱。
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-slate-400">
-              当前已具备 React / Vite / TypeScript、路由、状态管理、Mock 数据、FastAPI、版本文件和一键命令入口。
+              当前阶段已接入全局布局、暗色视觉基准、可复用组件库和首页业务组件，为后续岗位雷达、管线和决策卡扩展打底。
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              {["mock/api/hybrid", "persona_id", "version.json", "make health"].map((item) => (
+              {["求职身份", "机会热度", "岗位雷达", "求职管线"].map((item) => (
                 <Badge key={item} className="px-4 py-2">
                   {item}
                 </Badge>
@@ -34,7 +37,7 @@ export function DashboardPage() {
           <Card className="border-cyanGlow/20 bg-ink-900/80 p-5">
             <div className="text-sm text-slate-400">当前数据模式</div>
             <div className="mt-3 text-5xl font-semibold text-cyanGlow">{dataMode}</div>
-            <div className="mt-6 h-32 rounded-full border border-cyanGlow/20 bg-[radial-gradient(circle,rgba(53,242,208,0.26),rgba(74,163,255,0.08)_48%,transparent_70%)]" />
+            <div className="mt-6 h-36 rounded-full border border-cyanGlow/20 bg-[radial-gradient(circle,rgba(53,242,208,0.30),rgba(74,163,255,0.10)_48%,transparent_70%)]" />
           </Card>
         </div>
       </Card>
@@ -50,14 +53,7 @@ export function DashboardPage() {
         <Panel title="今日求职 Sprint">
           <div className="space-y-3">
             {sprint.today.map((task) => (
-              <Card key={task.id} surface="subtle" className="p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-sm text-slate-200">{task.title}</span>
-                  <Badge tone="cyan" className="border-0 px-2 text-xs">
-                    {task.priority}
-                  </Badge>
-                </div>
-              </Card>
+              <SprintTaskCard key={task.id} task={task} />
             ))}
           </div>
         </Panel>
@@ -77,23 +73,15 @@ export function DashboardPage() {
         <Panel title="岗位雷达 Top 推荐">
           <div className="space-y-3">
             {jobs.items.map((job) => (
-              <Card key={job.id} surface="subtle" className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="font-medium">{job.title}</div>
-                    <div className="mt-1 text-sm text-slate-400">
-                      {job.company} · {job.city}
-                    </div>
-                  </div>
-                  <Badge tone="blue" className="border-0 px-2 text-xs">
-                    {job.match}%
-                  </Badge>
-                </div>
-              </Card>
+              <JobCard key={job.id} job={job} />
             ))}
           </div>
         </Panel>
       </section>
+
+      <Panel title="求职管线">
+        <PipelineBoard />
+      </Panel>
     </div>
   );
 }
