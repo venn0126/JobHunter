@@ -10,6 +10,7 @@ import { JobDecisionPage } from "@/pages/JobDecisionPage";
 import { JobsPage } from "@/pages/JobsPage";
 import { OpportunityPage } from "@/pages/OpportunityPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
+import { PipelinePage } from "@/pages/PipelinePage";
 
 export function App() {
   return (
@@ -28,9 +29,10 @@ export function App() {
           <Route path="opportunity" element={<OpportunityPage />} />
           <Route path="jobs" element={<JobsPage />} />
           <Route path="jobs/:jobId" element={<JobDecisionPage />} />
+          <Route path="pipeline" element={<PipelinePage />} />
           <Route path="resume" element={<CareerVaultPage />} />
           {primaryNavItems
-            .filter((item) => !["/", "/opportunity", "/jobs", "/resume"].includes(item.path))
+            .filter((item) => !["/", "/opportunity", "/jobs", "/pipeline", "/resume"].includes(item.path))
             .map((item) => (
               <Route
                 key={item.path}

@@ -12,17 +12,10 @@ export interface JobFilters {
   sourceSite: string;
 }
 
-interface PipelineEntry {
-  addedAt: string;
-  job: DemoJob;
-}
-
 interface JobState {
   filters: JobFilters;
   jobs: DemoJob[];
-  pipelineEntries: PipelineEntry[];
   sortKey: JobSortKey;
-  addToPipeline: (job: DemoJob) => "added" | "exists";
   resetFilters: () => void;
   setFilter: <K extends keyof JobFilters>(key: K, value: JobFilters[K]) => void;
   setSortKey: (sortKey: JobSortKey) => void;
@@ -35,21 +28,10 @@ export const emptyJobFilters: JobFilters = {
   sourceSite: "",
 };
 
-export const useJobStore = create<JobState>((set, get) => ({
+export const useJobStore = create<JobState>((set) => ({
   filters: emptyJobFilters,
   jobs: demoData.jobs.items,
-  pipelineEntries: [],
   sortKey: "recommended",
-  addToPipeline: (job) => {
-    const exists = get().pipelineEntries.some((entry) => entry.job.id === job.id);
-    if (exists) {
-      return "exists";
-    }
-    set((state) => ({
-      pipelineEntries: [{ addedAt: new Date().toISOString(), job }, ...state.pipelineEntries],
-    }));
-    return "added";
-  },
   resetFilters: () => set({ filters: emptyJobFilters }),
   setFilter: (key, value) => set((state) => ({ filters: { ...state.filters, [key]: value } })),
   setSortKey: (sortKey) => set({ sortKey }),

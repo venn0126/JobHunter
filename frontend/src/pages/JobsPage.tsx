@@ -13,6 +13,7 @@ import {
   useJobStore,
   type JobSortKey,
 } from "@/stores/jobStore";
+import { usePipelineStore } from "@/stores/pipelineStore";
 import type { Priority } from "@/types/common";
 import type { DemoJob } from "@/types/demo";
 
@@ -28,7 +29,7 @@ export function JobsPage() {
   const setFilter = useJobStore((state) => state.setFilter);
   const setSortKey = useJobStore((state) => state.setSortKey);
   const resetFilters = useJobStore((state) => state.resetFilters);
-  const addToPipeline = useJobStore((state) => state.addToPipeline);
+  const addToPipeline = usePipelineStore((state) => state.addJob);
   const options = useMemo(() => selectJobOptions(jobs), [jobs]);
   const filteredJobs = useMemo(() => getFilteredJobs(jobs, filters, sortKey), [filters, jobs, sortKey]);
   const [notice, setNotice] = useState("");
@@ -49,7 +50,9 @@ export function JobsPage() {
 
   const handleAddToPipeline = (job: DemoJob) => {
     const result = addToPipeline(job);
-    setNotice(result === "added" ? `已加入管线：${job.title}` : `已在管线中：${job.title}`);
+    const message = result === "added" ? `已加入管线：${job.title}` : `已在管线中：${job.title}`;
+    setNotice(message);
+    navigate(`/pipeline?job=${job.id}`, { state: { notice: message } });
   };
 
   const handleViewDecision = (job: DemoJob) => {

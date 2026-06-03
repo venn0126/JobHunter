@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { SourceBadge } from "@/components/business/SourceBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -12,16 +12,25 @@ import {
   getRecruiterLens,
 } from "@/services/jobDecisionService";
 import { useCareerVaultStore } from "@/stores/careerVaultStore";
+import { usePipelineStore } from "@/stores/pipelineStore";
 import type { JobDecisionCard, RecruiterLens } from "@/types/demo";
 
 export function JobDecisionPage() {
+  const navigate = useNavigate();
   const { jobId = "" } = useParams();
   const vaultItems = useCareerVaultStore((state) => state.items);
+  const addJobToPipeline = usePipelineStore((state) => state.addJob);
   const job = getJobById(jobId);
   const decision = getDecisionCard(job);
   const lens = getRecruiterLens(job);
   const validEvidenceIds = useMemo(() => new Set(vaultItems.map((item) => item.id)), [vaultItems]);
   const primaryEvidenceId = decision.gaps.find((gap) => validEvidenceIds.has(gap.evidence_id))?.evidence_id;
+
+  const handleAddJobToPipeline = () => {
+    const result = addJobToPipeline(job);
+    const notice = result === "added" ? `已加入管线：${job.title}` : `已在管线中：${job.title}`;
+    navigate(`/pipeline?job=${job.id}`, { state: { notice } });
+  };
 
   return (
     <div className="space-y-6">
@@ -38,8 +47,8 @@ export function JobDecisionPage() {
               {job.company} · {job.city} · {job.salary} · {job.direction}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button asChild>
-                <Link to="/pipeline">加入求职管线</Link>
+              <Button onClick={handleAddJobToPipeline}>
+                加入求职管线
               </Button>
               <Button asChild variant="secondary">
                 <Link to={getCareerVaultPath(primaryEvidenceId)}>补充职业素材</Link>
@@ -105,11 +114,17 @@ export function JobDecisionPage() {
       <section className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
         <Panel title="建议行动">
           <div className="space-y-3">
-            {decision.next_actions.map((action) => (
-              <Button key={action.label} asChild className="w-full" variant="secondary">
-                <Link to={action.target_path}>{action.label}</Link>
-              </Button>
-            ))}
+            {decision.next_actions.map((action) =>
+              action.target_path === "/pipeline" ? (
+                <Button key={action.label} className="w-full" variant="secondary" onClick={handleAddJobToPipeline}>
+                  {action.label}
+                </Button>
+              ) : (
+                <Button key={action.label} asChild className="w-full" variant="secondary">
+                  <Link to={action.target_path}>{action.label}</Link>
+                </Button>
+              ),
+            )}
           </div>
         </Panel>
         <RecruiterLensPanel lens={lens} />

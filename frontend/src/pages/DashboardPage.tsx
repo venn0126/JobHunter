@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { AbilityRadar } from "@/components/business/AbilityRadar";
 import { JobCard } from "@/components/business/JobCard";
 import { OpportunityHeatCard } from "@/components/business/OpportunityHeatCard";
@@ -12,11 +13,23 @@ import { MetricCard } from "@/components/ui/MetricCard";
 import { Panel } from "@/components/ui/Panel";
 import { demoData } from "@/data/demoData";
 import { useAppStore } from "@/stores/appStore";
+import { getPipelineSummary, usePipelineStore } from "@/stores/pipelineStore";
+import type { DemoJob } from "@/types/demo";
 
 export function DashboardPage() {
+  const navigate = useNavigate();
   const dataMode = useAppStore((state) => state.dataMode);
+  const pipelineEntries = usePipelineStore((state) => state.entries);
+  const addJobToPipeline = usePipelineStore((state) => state.addJob);
   const { dashboard, jobs, market, sprint } = demoData;
   const topJobs = jobs.items.slice(0, 3);
+  const pipelineSummary = useMemo(() => getPipelineSummary(pipelineEntries), [pipelineEntries]);
+
+  const handleAddJobToPipeline = (job: DemoJob) => {
+    const result = addJobToPipeline(job);
+    const notice = result === "added" ? `已加入管线：${job.title}` : `已在管线中：${job.title}`;
+    navigate(`/pipeline?job=${job.id}`, { state: { notice } });
+  };
 
   return (
     <div className="space-y-6">
@@ -84,14 +97,19 @@ export function DashboardPage() {
         <Panel title="岗位雷达 Top 推荐">
           <div className="space-y-3">
             {topJobs.map((job) => (
-              <JobCard key={job.id} job={job} />
+              <JobCard
+                key={job.id}
+                job={job}
+                onAddToPipeline={handleAddJobToPipeline}
+                onViewDecision={() => navigate(`/jobs/${job.id}`)}
+              />
             ))}
           </div>
         </Panel>
       </section>
 
       <Panel title="求职管线">
-        <PipelineBoard columns={dashboard.pipeline} />
+        <PipelineBoard columns={pipelineSummary} />
       </Panel>
     </div>
   );
