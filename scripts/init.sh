@@ -5,6 +5,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 ROOT_DIR="$(resolve_root_dir)"
 cd "$ROOT_DIR"
 
+start_ops_log init
 load_local_env
 
 echo "[init] installing frontend dependencies"

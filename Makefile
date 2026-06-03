@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: init dev start migrate upgrade health sync-version reset-demo verify-version-cache verify-validation-sandbox
+.PHONY: init dev start migrate upgrade health sync-version reset-demo rollback verify-version-cache verify-validation-sandbox
 
 init:
 	./scripts/init.sh
@@ -25,6 +25,9 @@ sync-version:
 
 reset-demo:
 	./scripts/reset-demo.sh
+
+rollback:
+	./scripts/rollback.sh
 
 verify-version-cache:
 	./scripts/verify-version-cache.sh

@@ -34,6 +34,16 @@ ensure_dependencies() {
   fi
 }
 
+start_ops_log() {
+  local name="$1"
+  mkdir -p logs/ops
+  OPS_RUN_ID="${OPS_RUN_ID:-$(date +%Y%m%d-%H%M%S)}"
+  OPS_LOG_PATH="logs/ops/${name}-${OPS_RUN_ID}.log"
+  export OPS_RUN_ID OPS_LOG_PATH
+  exec > >(tee -a "$OPS_LOG_PATH") 2>&1
+  echo "[$name] log: $OPS_LOG_PATH"
+}
+
 configure_dev_env() {
   BACKEND_HOST="${BACKEND_HOST:-127.0.0.1}"
   BACKEND_PORT="${BACKEND_PORT:-8000}"

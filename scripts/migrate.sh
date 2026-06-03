@@ -5,7 +5,8 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 ROOT_DIR="$(resolve_root_dir)"
 cd "$ROOT_DIR"
 
-mkdir -p data/runtime logs/ops
+start_ops_log migrate
+mkdir -p data/runtime
 
 DB_PATH="data/runtime/jobhunter.sqlite"
 if [[ -f "$DB_PATH" ]]; then
@@ -41,3 +42,5 @@ finally:
 
 print(f"[migrate] ready: {db_path}")
 PY
+
+echo "[migrate] ok"

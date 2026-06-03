@@ -6,10 +6,8 @@ ROOT_DIR="$(resolve_root_dir)"
 cd "$ROOT_DIR"
 
 ensure_dependencies "verify-version-cache"
-mkdir -p logs/ops
-
-LOG_PATH="logs/ops/verify-version-cache-$(date +%Y%m%d-%H%M%S).log"
-exec > >(tee -a "$LOG_PATH") 2>&1
+start_ops_log verify-version-cache
+LOG_PATH="$OPS_LOG_PATH"
 
 PORT="$(reserve_local_port)"
 

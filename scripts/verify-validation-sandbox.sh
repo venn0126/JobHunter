@@ -6,10 +6,8 @@ ROOT_DIR="$(resolve_root_dir)"
 cd "$ROOT_DIR"
 
 ensure_dependencies "verify-validation-sandbox"
-mkdir -p logs/ops
-
-LOG_PATH="logs/ops/verify-validation-sandbox-$(date +%Y%m%d-%H%M%S).log"
-exec > >(tee -a "$LOG_PATH") 2>&1
+start_ops_log verify-validation-sandbox
+LOG_PATH="$OPS_LOG_PATH"
 
 PORT="$(reserve_local_port)"
 

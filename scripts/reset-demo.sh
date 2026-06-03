@@ -5,10 +5,8 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 ROOT_DIR="$(resolve_root_dir)"
 cd "$ROOT_DIR"
 
-mkdir -p data/runtime logs/ops
-
-LOG_PATH="logs/ops/reset-demo-$(date +%Y%m%d-%H%M%S).log"
-exec > >(tee -a "$LOG_PATH") 2>&1
+start_ops_log reset-demo
+mkdir -p data/runtime
 
 echo "[reset-demo] restoring standard demo state"
 
@@ -48,5 +46,5 @@ fi
 
 echo "[reset-demo] seed manifest: $SEED_MANIFEST"
 echo "[reset-demo] browser state: click the topbar \"重置 Demo\" button after opening the app"
-echo "[reset-demo] log: $LOG_PATH"
+echo "[reset-demo] log: $OPS_LOG_PATH"
 echo "[reset-demo] ok"
