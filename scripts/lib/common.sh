@@ -42,6 +42,8 @@ configure_dev_env() {
   export BACKEND_HOST BACKEND_PORT FRONTEND_HOST FRONTEND_PORT
   export VITE_API_BASE_URL="${VITE_API_BASE_URL:-http://${BACKEND_HOST}:${BACKEND_PORT}/api}"
   export VITE_DATA_MODE="${VITE_DATA_MODE:-${DATA_MODE:-mock}}"
+  export VITE_DEMO_MODE="${VITE_DEMO_MODE:-${DEMO_MODE:-false}}"
+  export VITE_VERSION_POLL_INTERVAL_MS="${VITE_VERSION_POLL_INTERVAL_MS:-60000}"
 }
 
 configure_runtime_env() {
@@ -50,6 +52,8 @@ configure_runtime_env() {
   export BACKEND_HOST BACKEND_PORT
   export VITE_API_BASE_URL="${VITE_API_BASE_URL:-/api}"
   export VITE_DATA_MODE="${VITE_DATA_MODE:-${DATA_MODE:-mock}}"
+  export VITE_DEMO_MODE="${VITE_DEMO_MODE:-${DEMO_MODE:-false}}"
+  export VITE_VERSION_POLL_INTERVAL_MS="${VITE_VERSION_POLL_INTERVAL_MS:-30000}"
 }
 
 activate_backend() {

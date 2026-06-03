@@ -7,6 +7,13 @@ cd "$ROOT_DIR"
 
 mkdir -p data/runtime logs/ops
 
+DB_PATH="data/runtime/jobhunter.sqlite"
+if [[ -f "$DB_PATH" ]]; then
+  BACKUP_PATH="data/runtime/jobhunter-$(date +%Y%m%d-%H%M%S).sqlite.bak"
+  cp "$DB_PATH" "$BACKUP_PATH"
+  echo "[migrate] backup: $BACKUP_PATH"
+fi
+
 python3 - <<'PY'
 from datetime import datetime, timezone
 from pathlib import Path

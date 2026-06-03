@@ -1,12 +1,16 @@
 import { appConfig } from "@/config/env";
 import { useVersionInfo } from "@/hooks/useVersionInfo";
+import { rememberUpdateRestorePath } from "@/lib/updateRestore";
 import { useAuthStore } from "@/stores/authStore";
 import { getActivePersona, usePersonaStore } from "@/stores/personaStore";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export function Topbar() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const version = useVersionInfo();
   const session = useAuthStore((state) => state.session);
   const logout = useAuthStore((state) => state.logout);
@@ -16,6 +20,11 @@ export function Topbar() {
   const personaError = usePersonaStore((state) => state.personaError);
   const setActivePersona = usePersonaStore((state) => state.setActivePersona);
   const activePersona = getActivePersona({ personas, activePersonaId });
+
+  const startUpdate = () => {
+    rememberUpdateRestorePath(`${location.pathname}${location.search}`);
+    navigate("/update");
+  };
 
   return (
     <header className="sticky top-0 z-10 border-b border-white/10 bg-ink-950/70 px-4 py-4 backdrop-blur-xl sm:px-8">
@@ -48,9 +57,9 @@ export function Topbar() {
           <Badge tone="blue" className="py-2">
             {appConfig.dataMode}
           </Badge>
-          <Badge className="py-2">v{version.version}</Badge>
-          <Button variant="secondary" size="sm">
-            发现新版本
+          <Badge className="py-2">v{version.current.version}</Badge>
+          <Button variant={version.hasUpdate || appConfig.isDemoMode ? "primary" : "secondary"} size="sm" onClick={startUpdate}>
+            {version.hasUpdate ? "发现新版本" : "检查更新"}
           </Button>
           <Button variant="ghost" size="sm" onClick={logout}>
             退出
