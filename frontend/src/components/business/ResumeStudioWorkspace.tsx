@@ -7,6 +7,7 @@ import { Panel } from "@/components/ui/Panel";
 import { useTimedNotice } from "@/hooks/useTimedNotice";
 import { copyText } from "@/lib/clipboard";
 import { getCareerVaultPath } from "@/services/careerVaultService";
+import { getResumeLabPath } from "@/services/resumeLabService";
 import {
   getAcceptedResumeSections,
   getResumeVersionName,
@@ -89,6 +90,9 @@ export function ResumeStudioWorkspace({
             <Button onClick={handleSaveVersion}>保存为新版本</Button>
             <Button variant="secondary" onClick={handleCopyAccepted}>
               复制当前版本
+            </Button>
+            <Button asChild variant="secondary">
+              <Link to={getResumeLabPath()}>查看版本实验</Link>
             </Button>
           </div>
         </div>

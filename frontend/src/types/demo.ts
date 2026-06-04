@@ -180,3 +180,25 @@ export interface ResumeStudioDraft {
     target_role: string;
   };
 }
+
+export interface ResumeLabVersion {
+  id: string;
+  name: string;
+  status: "推荐使用" | "继续观察" | "建议调整" | "已停用";
+  applied_count: number;
+  best_for: string[];
+  interview_count: number;
+  interview_rate: number;
+  no_response_count: number;
+  recommendation: string;
+  updated_at: string;
+}
+
+export interface ResumeLab {
+  summary: {
+    best_version_id: string;
+    primary_job_id: string;
+    recommendation: string;
+  };
+  versions: ResumeLabVersion[];
+}

@@ -1,0 +1,45 @@
+{
+  "summary": {
+    "best_version_id": "resume_ai_app_v2",
+    "primary_job_id": "job_1001",
+    "recommendation": "建议优先使用 AI 应用强化版投递 LLM / RAG 相关岗位，面试率显著高于通用后端版。"
+  },
+  "versions": [
+    {
+      "id": "resume_backend_v1",
+      "name": "后端通用版",
+      "status": "建议调整",
+      "applied_count": 10,
+      "interview_count": 1,
+      "no_response_count": 7,
+      "interview_rate": 10,
+      "best_for": ["Java 后端", "平台工程"],
+      "recommendation": "保留系统设计和高并发经历，但需要补充 AI 应用关键词，否则在 LLM 岗位中辨识度不足。",
+      "updated_at": "2026-06-01"
+    },
+    {
+      "id": "resume_ai_app_v2",
+      "name": "AI 应用强化版",
+      "status": "推荐使用",
+      "applied_count": 6,
+      "interview_count": 3,
+      "no_response_count": 2,
+      "interview_rate": 50,
+      "best_for": ["AI 应用工程师", "LLM 工程师", "RAG 平台工程师"],
+      "recommendation": "当前最佳版本，RAG 项目和后端服务证据更贴合目标岗位，建议继续用于 P0 / P1 AI 应用岗位。",
+      "updated_at": "2026-06-03"
+    },
+    {
+      "id": "resume_rag_remote_v1",
+      "name": "RAG 远程岗位版",
+      "status": "继续观察",
+      "applied_count": 4,
+      "interview_count": 1,
+      "no_response_count": 2,
+      "interview_rate": 25,
+      "best_for": ["RAG 应用开发", "远程 AI 工程"],
+      "recommendation": "远程岗位方向样本量还少，可继续投递 3-5 个岗位后再判断是否替代 AI 应用强化版。",
+      "updated_at": "2026-06-02"
+    }
+  ]
+}

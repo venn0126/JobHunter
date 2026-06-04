@@ -11,6 +11,7 @@ import { JobsPage } from "@/pages/JobsPage";
 import { OpportunityPage } from "@/pages/OpportunityPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
 import { PipelinePage } from "@/pages/PipelinePage";
+import { ResumeLabPage } from "@/pages/ResumeLabPage";
 import { UpdatePage } from "@/pages/UpdatePage";
 import { ValidationPage } from "@/pages/ValidationPage";
 
@@ -33,6 +34,7 @@ export function App() {
           <Route path="jobs/:jobId" element={<JobDecisionPage />} />
           <Route path="pipeline" element={<PipelinePage />} />
           <Route path="resume" element={<CareerVaultPage />} />
+          <Route path="resume-lab" element={<ResumeLabPage />} />
           <Route path="update" element={<UpdatePage />} />
           <Route path="settings" element={<ValidationPage />} />
           <Route path="debug" element={<ValidationPage />} />
