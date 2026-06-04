@@ -648,10 +648,10 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 
 | ID | 任务 | 优先级 | 状态 | 验收标准 |
 |---|---|---|---|---|
-| P3-01 | 后端工程分层与配置 | P3 | 未开始 | Router / Service / Repository / Model / Schema 分层清晰，配置集中 |
-| P3-02 | PostgreSQL 接入与 Alembic 迁移 | P3 | 未开始 | 可执行 migration，核心表可创建，可重复迁移 |
-| P3-03 | Redis 接入与缓存 / 任务状态抽象 | P3 | 未开始 | 有统一 Redis client、key 规范、TTL 和降级策略 |
-| P3-04 | 统一响应、异常、request_id、中间件 | P3 | 未开始 | 所有接口返回统一 `ApiResponse<T>`，异常不裸露堆栈 |
+| P3-01 | 后端工程分层与配置 | P3 | 待验收 | Router / Service / Repository / Model / Schema 分层清晰，配置集中 |
+| P3-02 | PostgreSQL 接入与 Alembic 迁移 | P3 | 待验收 | 可执行 migration，核心表可创建，可重复迁移 |
+| P3-03 | Redis 接入与缓存 / 任务状态抽象 | P3 | 待验收 | 有统一 Redis client、key 规范、TTL 和降级策略 |
+| P3-04 | 统一响应、异常、request_id、中间件 | P3 | 待验收 | 所有接口返回统一 `ApiResponse<T>`，异常不裸露堆栈 |
 | P3-05 | Auth / 用户资料 API | P3 | 未开始 | 登录、注册、刷新、退出、个人资料读写可用 |
 | P3-06 | Persona API | P3 | 未开始 | 身份列表、新增、编辑、激活可用，`persona_id` 可贯穿 |
 | P3-07 | Mock Bootstrap / Demo Reset API | P3 | 未开始 | 后端可输出当前前端 Demo 所需完整数据并支持重置 |
@@ -663,7 +663,7 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | P3-13 | Interview / Sprint / Task Progress API | P3 | 未开始 | 面试作战卡、冲刺任务、任务进度查询可用 |
 | P3-14 | System Health / Version / Update API | P3 | 未开始 | 健康检查、版本、更新任务状态可用 |
 | P3-15 | 前端 API / hybrid 联调 | P3 | 未开始 | `mock / api / hybrid` 可切换，核心页面不缺接口 |
-| P3-16 | 后端测试、脚本、文档收口 | P3 | 未开始 | smoke test、health、部署命令和清单状态完成 |
+| P3-16 | 后端测试、脚本、文档收口 | P3 | 待验收 | smoke test、health、部署命令和清单状态完成 |
 
 ### 7.5 当前前端接口覆盖矩阵
 
@@ -693,7 +693,7 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 
 | 小节 | 覆盖任务 | 状态 | 主要交付 | 验收标准 |
 |---|---|---|---|---|
-| P3-A 后端基础架构与一键启动 | P3-01、P3-04、P3-16 | 未开始 | 分层目录、配置、依赖、Docker Compose、`make dev`、`make deploy-local` | 一条命令可启动开发环境和完整部署环境，端口占用和 Docker 缺失有明确提示 |
+| P3-A 后端基础架构与一键启动 | P3-01、P3-04、P3-16 | 待验收 | 分层目录、配置、依赖、Docker Compose、`make dev`、`make deploy-local` | 一条命令可启动开发环境和完整部署环境，端口占用和 Docker 缺失有明确提示 |
 | P3-B PostgreSQL 数据模型与迁移 | P3-02 | 未开始 | SQLAlchemy、Alembic、核心表、索引、迁移脚本 | migration 可重复执行，核心表和索引符合前端数据需要 |
 | P3-C Redis 缓存与任务状态 | P3-03、P3-13 | 未开始 | Redis client、key 规范、TTL、任务状态抽象 | 缓存可读写，Redis 不可用时有明确降级，写入后能失效相关缓存 |
 | P3-D Auth / User / Persona | P3-05、P3-06 | 未开始 | 认证、个人设置、身份列表、身份切换 | 登录注册、刷新、退出、资料编辑和 Persona 切换可用 |
@@ -800,6 +800,19 @@ P3 Review 补充结论：
 - 已把分页、幂等、缓存失效、文件上传、CORS、端口占用和 Redis 降级列为固定门槛；
 - 已确认 P3 仍保持最小闭环，不把 Celery / RQ、真实爬虫、生产级监控纳入当前阶段。
 
+P3-A 完成记录：
+
+- [x] 已新增 `docker-compose.yml`，提供 PostgreSQL 16 和 Redis 7；
+- [x] 已新增 `make infra-up / infra-down / infra-logs / deploy-local / seed-demo`；
+- [x] 已将 `make dev`、`make start`、`make deploy-local` 串接 PostgreSQL / Redis 启动和迁移；
+- [x] 已将迁移基线切到 Alembic，新增 `backend/alembic.ini`、`backend/migrations/` 和 `0001_p3a_baseline`；
+- [x] 已新增 `DATABASE_URL`、`REDIS_URL` 等环境变量样例；
+- [x] 已增强 `/api/health`，可返回 PostgreSQL / Redis 依赖状态；
+- [x] 已新增 `/api/system/health`、`/api/system/version`，兼容 P3 接口规划；
+- [x] 已完成本地静态验证：`python3 -m compileall backend`、`npm run typecheck`、`npm run build`、`bash -n scripts/*.sh`、`git diff --check`；
+- [ ] 待远程服务器验证：Docker 启动后执行 `make init && make infra-up && make migrate && make health`；
+- [ ] 待远程服务器验证：执行 `make deploy-local`，确认 FastAPI 可托管前端静态产物。
+
 ---
 
 ## 八、模块依赖关系
@@ -878,9 +891,9 @@ P3 后台业务接口
 | 简历版本实验 |  | P1 | 已完成 |  | 2026-06-04 | 已完成 Resume A/B Lab 基础页、最佳版本推荐、版本列表、核心指标卡、版本详情、版本对比和证据联动 |
 | 面试作战卡 |  | P1 | 已完成 |  | 2026-06-04 | 已完成公司简报、面试重点、高频问题、回答框架、关联证据、7 天计划、复习状态、复制回答要点和补素材跳转 |
 | 反馈复盘 |  | P1 | 已完成 |  | 2026-06-04 | 已完成反馈统计、结果分布、复盘趋势、版本表现、反馈录入、管线联动和下一轮策略建议 |
-| 后端基础架构与一键启动 |  | P3 | 未开始 |  |  | 规划 FastAPI 分层、PostgreSQL、Redis、`make dev` 和 `make deploy-local` |
-| PostgreSQL 数据层 |  | P3 | 未开始 |  |  | 规划 SQLAlchemy、Alembic、核心业务表和 Demo seed |
-| Redis 缓存与任务状态 |  | P3 | 未开始 |  |  | 规划缓存 key、TTL、生成结果缓存和任务状态 |
+| 后端基础架构与一键启动 |  | P3 | 待验收 |  |  | 已完成 Docker Compose、PG/Redis 启动脚本、`make dev`、`make deploy-local`、health 增强；待远程 Docker 实跑 |
+| PostgreSQL 数据层 |  | P3 | 待验收 |  |  | 已建立 Alembic 基线和 `schema_migrations`；业务表进入 P3-B |
+| Redis 缓存与任务状态 |  | P3 | 待验收 |  |  | 已建立 Redis 连接与 health 检查；缓存 key 和任务状态业务封装进入 P3-C |
 | 后台认证与用户身份 |  | P3 | 未开始 |  |  | 规划 Auth、User、Persona 和 `persona_id` 贯穿 |
 | 后台业务接口 |  | P3 | 未开始 |  |  | 规划 Dashboard、Market、Jobs、Vault、Pipeline、Feedback 等接口 |
 | 生成类后台接口 |  | P3 | 未开始 |  |  | 规划 Decision、Recruiter Lens、Tailor、Interview 的 Mock 生成、缓存和任务状态 |

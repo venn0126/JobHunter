@@ -1,9 +1,18 @@
 SHELL := /bin/bash
 
-.PHONY: init dev start migrate upgrade health sync-version reset-demo rollback verify-version-cache verify-validation-sandbox verify-update-restore verify-browser-cache
+.PHONY: init infra-up infra-down infra-logs dev start deploy-local migrate seed-demo upgrade health sync-version reset-demo rollback verify-version-cache verify-validation-sandbox verify-update-restore verify-browser-cache
 
 init:
 	./scripts/init.sh
+
+infra-up:
+	./scripts/infra-up.sh
+
+infra-down:
+	./scripts/infra-down.sh
+
+infra-logs:
+	./scripts/infra-logs.sh
 
 dev:
 	./scripts/dev.sh
@@ -11,8 +20,14 @@ dev:
 start:
 	./scripts/start.sh
 
+deploy-local:
+	./scripts/deploy-local.sh
+
 migrate:
 	./scripts/migrate.sh
+
+seed-demo:
+	./scripts/seed-demo.sh
 
 upgrade:
 	./scripts/upgrade.sh

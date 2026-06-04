@@ -11,6 +11,7 @@ load_local_env
 configure_dev_env
 
 ensure_dependencies "dev"
+./scripts/migrate.sh
 
 cleanup() {
   if [[ -n "${BACKEND_PID:-}" ]]; then kill "$BACKEND_PID" 2>/dev/null || true; fi
@@ -19,7 +20,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 echo "[dev] backend:  http://${BACKEND_HOST}:${BACKEND_PORT}"
-(cd backend && source .venv/bin/activate && uvicorn main:app --reload --host "$BACKEND_HOST" --port "$BACKEND_PORT") &
+(cd backend && source .venv/bin/activate && DATABASE_URL="$DATABASE_URL" REDIS_URL="$REDIS_URL" uvicorn main:app --reload --host "$BACKEND_HOST" --port "$BACKEND_PORT") &
 BACKEND_PID=$!
 
 echo "[dev] frontend: http://${FRONTEND_HOST}:${FRONTEND_PORT}"
