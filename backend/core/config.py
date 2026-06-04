@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     api_prefix: str = "/api"
     data_mode: DataMode = "mock"
     debug_routes_enabled: bool = False
-    database_url: str = "postgresql://jobhunter:jobhunter@127.0.0.1:5432/jobhunter"
+    database_url: str = "postgresql+psycopg://jobhunter:jobhunter@127.0.0.1:5432/jobhunter"
     redis_url: str = "redis://127.0.0.1:6379/0"
     project_root: Path = PROJECT_ROOT
     frontend_dist: Path = PROJECT_ROOT / "frontend" / "dist"

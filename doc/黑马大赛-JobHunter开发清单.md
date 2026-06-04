@@ -734,6 +734,7 @@ P3-A 必须先完成以下命令目标，后续接口开发才能继续：
 
 ```bash
 make init          # 首次安装依赖、生成 .env、检查环境
+make bootstrap-system # Ubuntu / Debian 服务器系统依赖自检和安装
 make dev           # 本地开发：Vite 前端 + FastAPI 后端 + PostgreSQL + Redis
 make migrate       # 执行 PostgreSQL Alembic migration
 make seed-demo     # 初始化 / 恢复 Demo 数据
@@ -803,7 +804,9 @@ P3 Review 补充结论：
 P3-A 完成记录：
 
 - [x] 已新增 `docker-compose.yml`，提供 PostgreSQL 16 和 Redis 7；
-- [x] 已新增 `make infra-up / infra-down / infra-logs / deploy-local / seed-demo`；
+- [x] 已新增 `make bootstrap-system / infra-up / infra-down / infra-logs / deploy-local / seed-demo`；
+- [x] 已将 Ubuntu / Debian 服务器系统依赖自检和安装并入 `make init`，覆盖 `python3-venv`、Node.js、npm、Docker、Docker Compose、git、make；
+- [x] 已修复后端虚拟环境半初始化问题：如果 `backend/.venv` 缺少 `bin/activate`，`make init` 会自动删除并重建；
 - [x] 已将 `make dev`、`make start`、`make deploy-local` 串接 PostgreSQL / Redis 启动和迁移；
 - [x] 已将迁移基线切到 Alembic，新增 `backend/alembic.ini`、`backend/migrations/` 和 `0001_p3a_baseline`；
 - [x] 已新增 `DATABASE_URL`、`REDIS_URL` 等环境变量样例；

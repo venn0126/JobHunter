@@ -1,6 +1,9 @@
 SHELL := /bin/bash
 
-.PHONY: init infra-up infra-down infra-logs dev start deploy-local migrate seed-demo upgrade health sync-version reset-demo rollback verify-version-cache verify-validation-sandbox verify-update-restore verify-browser-cache
+.PHONY: bootstrap-system init infra-up infra-down infra-logs dev start deploy-local migrate seed-demo upgrade health sync-version reset-demo rollback verify-version-cache verify-validation-sandbox verify-update-restore verify-browser-cache
+
+bootstrap-system:
+	./scripts/bootstrap-system.sh
 
 init:
 	./scripts/init.sh

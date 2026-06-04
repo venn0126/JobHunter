@@ -2,6 +2,7 @@ from logging.config import fileConfig
 import os
 
 from alembic import context
+from core.database_url import to_sqlalchemy_url
 from sqlalchemy import engine_from_config, pool
 
 config = context.config
@@ -16,7 +17,7 @@ def get_database_url() -> str:
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
         raise RuntimeError("DATABASE_URL is required for migrations")
-    return database_url
+    return to_sqlalchemy_url(database_url)
 
 
 def run_migrations_offline() -> None:
