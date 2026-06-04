@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
-import { useTimedNotice } from "@/hooks/useTimedNotice";
+import { useToast } from "@/hooks/useToast";
 import { copyText } from "@/lib/clipboard";
 import { getCareerVaultPath } from "@/services/careerVaultService";
 import { getResumeLabPath } from "@/services/resumeLabService";
@@ -27,7 +27,7 @@ export function ResumeStudioWorkspace({
   jobId?: string;
   vaultItems: CareerVaultItem[];
 }) {
-  const { notice, showNotice } = useTimedNotice(2600);
+  const { showToast } = useToast();
   const draft = useMemo(() => getResumeStudioDraft(jobId), [jobId]);
   const jobDraftState = useResumeStudioStore(
     (state) => state.draftsByJobId[draft.job_id] ?? emptyResumeStudioJobState,
@@ -45,31 +45,31 @@ export function ResumeStudioWorkspace({
   const handleCopySection = useCallback(
     (section: ResumeStudioSection) => {
       void copyText(section.after);
-      showNotice(`已复制：${section.section}`);
+      showToast({ message: section.section, title: "已复制简历片段" });
     },
-    [showNotice],
+    [showToast],
   );
 
   const handleCopyAccepted = useCallback(() => {
     const content = acceptedSections.map((section) => section.after).join("\n\n");
     if (!content) {
-      showNotice("请先接受至少一条修改。");
+      showToast({ title: "请先接受至少一条修改", tone: "warning" });
       return;
     }
 
     void copyText(content);
-    showNotice("已复制当前版本草稿。");
-  }, [acceptedSections, showNotice]);
+    showToast({ title: "已复制当前版本草稿" });
+  }, [acceptedSections, showToast]);
 
   const handleSaveVersion = useCallback(() => {
     if (!acceptedSections.length) {
-      showNotice("请先接受至少一条修改。");
+      showToast({ title: "请先接受至少一条修改", tone: "warning" });
       return;
     }
 
     saveVersion(draft.job_id, defaultVersionName);
-    showNotice(`已保存为新版本：${defaultVersionName}`);
-  }, [acceptedSections.length, defaultVersionName, draft.job_id, saveVersion, showNotice]);
+    showToast({ message: defaultVersionName, title: "已保存为新版本" });
+  }, [acceptedSections.length, defaultVersionName, draft.job_id, saveVersion, showToast]);
 
   return (
     <>
@@ -97,12 +97,6 @@ export function ResumeStudioWorkspace({
           </div>
         </div>
       </Card>
-
-      {notice ? (
-        <Card surface="accent" className="p-4 text-sm text-cyanGlow">
-          {notice}
-        </Card>
-      ) : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card className="p-5">

@@ -20,6 +20,25 @@ export function getInterviewQuestionEvidence(question: InterviewGuideQuestion, v
   }));
 }
 
+export function getMissingInterviewEvidenceId(
+  evidenceLinks: Array<{
+    evidenceId: string;
+    item?: CareerVaultItem;
+  }>,
+) {
+  return evidenceLinks.find(({ item }) => !item)?.evidenceId;
+}
+
+export function formatInterviewQuestionCopy(question: InterviewGuideQuestion) {
+  return [
+    `问题：${question.question}`,
+    `面试官意图：${question.intent}`,
+    "回答框架：",
+    ...question.framework.map((item, index) => `${index + 1}. ${item}`),
+    `风险提醒：${question.risk_tip}`,
+  ].join("\n");
+}
+
 function createFallbackInterviewGuide(jobId = "job_unknown"): InterviewGuide {
   return {
     company_brief: {

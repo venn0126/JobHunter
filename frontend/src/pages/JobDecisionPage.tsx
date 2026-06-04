@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
+import { useToast } from "@/hooks/useToast";
 import { getCareerVaultPath } from "@/services/careerVaultService";
 import { getInterviewGuidePath } from "@/services/interviewGuideService";
 import {
@@ -12,6 +13,7 @@ import {
   getJobById,
   getRecruiterLens,
 } from "@/services/jobDecisionService";
+import { getPipelineAddToast } from "@/services/pipelineNoticeService";
 import { getResumeStudioPath } from "@/services/resumeStudioService";
 import { useCareerVaultStore } from "@/stores/careerVaultStore";
 import { usePipelineStore } from "@/stores/pipelineStore";
@@ -20,6 +22,7 @@ import type { JobDecisionCard, RecruiterLens } from "@/types/demo";
 export function JobDecisionPage() {
   const navigate = useNavigate();
   const { jobId = "" } = useParams();
+  const { showToast } = useToast();
   const vaultItems = useCareerVaultStore((state) => state.items);
   const addJobToPipeline = usePipelineStore((state) => state.addJob);
   const job = getJobById(jobId);
@@ -30,8 +33,8 @@ export function JobDecisionPage() {
 
   const handleAddJobToPipeline = () => {
     const result = addJobToPipeline(job);
-    const notice = result === "added" ? `已加入管线：${job.title}` : `已在管线中：${job.title}`;
-    navigate(`/pipeline?job=${job.id}`, { state: { notice } });
+    showToast(getPipelineAddToast(job, result));
+    navigate(`/pipeline?job=${job.id}`);
   };
 
   return (

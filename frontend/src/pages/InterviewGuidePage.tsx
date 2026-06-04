@@ -1,21 +1,42 @@
 import { Link, useSearchParams } from "react-router-dom";
+import { InterviewPlanCard } from "@/components/business/InterviewPlanCard";
 import { InterviewQuestionCard } from "@/components/business/InterviewQuestionCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Panel } from "@/components/ui/Panel";
-import { getInterviewGuide, getInterviewQuestionEvidence } from "@/services/interviewGuideService";
+import { useToast } from "@/hooks/useToast";
+import { copyText } from "@/lib/clipboard";
+import {
+  formatInterviewQuestionCopy,
+  getInterviewGuide,
+  getInterviewQuestionEvidence,
+} from "@/services/interviewGuideService";
 import { getJobById } from "@/services/jobDecisionService";
 import { getResumeStudioPath } from "@/services/resumeStudioService";
 import { useCareerVaultStore } from "@/stores/careerVaultStore";
+import { emptyInterviewPlanState, useInterviewGuideStore } from "@/stores/interviewGuideStore";
+import type { InterviewGuideQuestion } from "@/types/demo";
 
 export function InterviewGuidePage() {
   const [searchParams] = useSearchParams();
   const requestedJobId = searchParams.get("job") ?? undefined;
   const guide = getInterviewGuide(requestedJobId);
   const job = getJobById(guide.job_id);
+  const { showToast } = useToast();
   const vaultItems = useCareerVaultStore((state) => state.items);
+  const reviewedPlan = useInterviewGuideStore((state) => state.reviewedPlanByJobId[job.id] ?? emptyInterviewPlanState);
+  const togglePlanReviewed = useInterviewGuideStore((state) => state.togglePlanReviewed);
+  const reviewedPlanCount = guide.seven_day_plan.filter((item) => reviewedPlan[item.day]).length;
+
+  const handleCopyQuestion = (question: InterviewGuideQuestion) => {
+    void copyText(formatInterviewQuestionCopy(question));
+    showToast({
+      message: question.question,
+      title: "已复制回答要点",
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -89,6 +110,7 @@ export function InterviewGuidePage() {
                 evidenceLinks={getInterviewQuestionEvidence(question, vaultItems)}
                 jobId={job.id}
                 key={question.id}
+                onCopy={handleCopyQuestion}
                 question={question}
               />
             ))}
@@ -107,16 +129,15 @@ export function InterviewGuidePage() {
       </Panel>
 
       <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <Panel title="7 天准备计划预览">
+        <Panel title={`7 天准备计划：${reviewedPlanCount}/${guide.seven_day_plan.length} 已复习`}>
           <div className="space-y-3">
             {guide.seven_day_plan.map((item) => (
-              <Card key={item.day} surface="subtle" className="p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone="blue">Day {item.day}</Badge>
-                  <div className="font-medium">{item.title}</div>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-slate-400">{item.focus}</p>
-              </Card>
+              <InterviewPlanCard
+                item={item}
+                key={item.day}
+                reviewed={Boolean(reviewedPlan[item.day])}
+                onToggle={() => togglePlanReviewed(job.id, item.day)}
+              />
             ))}
           </div>
         </Panel>

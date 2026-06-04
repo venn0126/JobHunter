@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Panel } from "@/components/ui/Panel";
 import { Select } from "@/components/ui/Select";
+import { useToast } from "@/hooks/useToast";
+import { getPipelineAddToast } from "@/services/pipelineNoticeService";
 import {
   getFilteredJobs,
   selectJobOptions,
@@ -31,9 +33,9 @@ export function JobsPage() {
   const setSortKey = useJobStore((state) => state.setSortKey);
   const resetFilters = useJobStore((state) => state.resetFilters);
   const addToPipeline = usePipelineStore((state) => state.addJob);
+  const { showToast } = useToast();
   const options = useMemo(() => selectJobOptions(jobs), [jobs]);
   const filteredJobs = useMemo(() => getFilteredJobs(jobs, filters, sortKey), [filters, jobs, sortKey]);
-  const [notice, setNotice] = useState("");
   const [page, setPage] = useState(1);
   const pageCount = Math.max(1, Math.ceil(filteredJobs.length / pageSize));
   const visibleJobs = filteredJobs.slice((page - 1) * pageSize, page * pageSize);
@@ -51,9 +53,8 @@ export function JobsPage() {
 
   const handleAddToPipeline = (job: DemoJob) => {
     const result = addToPipeline(job);
-    const message = result === "added" ? `已加入管线：${job.title}` : `已在管线中：${job.title}`;
-    setNotice(message);
-    navigate(`/pipeline?job=${job.id}`, { state: { notice: message } });
+    showToast(getPipelineAddToast(job, result));
+    navigate(`/pipeline?job=${job.id}`);
   };
 
   const handleViewDecision = (job: DemoJob) => {
@@ -115,7 +116,6 @@ export function JobsPage() {
           <Button variant="secondary" size="sm" onClick={resetFilters}>
             清空筛选
           </Button>
-          {notice ? <span className="text-sm text-cyanGlow">{notice}</span> : null}
         </div>
       </Panel>
 

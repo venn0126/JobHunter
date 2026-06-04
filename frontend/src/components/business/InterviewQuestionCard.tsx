@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getCareerVaultPath } from "@/services/careerVaultService";
+import { getMissingInterviewEvidenceId } from "@/services/interviewGuideService";
 import type { CareerVaultItem, InterviewGuideQuestion } from "@/types/demo";
 
 export function InterviewQuestionCard({
   evidenceLinks,
   jobId,
+  onCopy,
   question,
 }: {
   evidenceLinks: Array<{
@@ -14,8 +17,11 @@ export function InterviewQuestionCard({
     item?: CareerVaultItem;
   }>;
   jobId: string;
+  onCopy: (question: InterviewGuideQuestion) => void;
   question: InterviewGuideQuestion;
 }) {
+  const missingEvidenceId = getMissingInterviewEvidenceId(evidenceLinks);
+
   return (
     <Card surface="subtle" className="p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -27,6 +33,17 @@ export function InterviewQuestionCard({
           <h3 className="text-lg font-semibold">{question.question}</h3>
         </div>
         <Badge tone="warning">风险提醒</Badge>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Button size="sm" onClick={() => onCopy(question)}>
+          复制回答要点
+        </Button>
+        {missingEvidenceId ? (
+          <Button asChild size="sm" variant="secondary">
+            <Link to={getCareerVaultPath(missingEvidenceId, { jobId })}>补充缺失素材</Link>
+          </Button>
+        ) : null}
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_0.8fr]">

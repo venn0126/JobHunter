@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { useMemo } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { PipelineKanbanCard } from "@/components/business/PipelineKanbanCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
+import { useToast } from "@/hooks/useToast";
+import { getPipelineMoveToast } from "@/services/pipelineNoticeService";
 import {
   getPipelineEntriesByStatus,
   getPipelineSummary,
@@ -13,29 +15,26 @@ import {
   pipelineStatusLabel,
   usePipelineStore,
   type PipelineEntry,
-  type MovePipelineResult,
 } from "@/stores/pipelineStore";
 import type { PipelineStatus } from "@/types/common";
 
 export function PipelinePage() {
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   const focusJobId = searchParams.get("job") ?? "";
+  const { showToast } = useToast();
   const entries = usePipelineStore((state) => state.entries);
   const moveEntry = usePipelineStore((state) => state.moveEntry);
   const resetDemo = usePipelineStore((state) => state.resetDemo);
-  const initialNotice = (location.state as { notice?: string } | null)?.notice ?? "";
-  const [notice, setNotice] = useState(initialNotice);
   const summary = useMemo(() => getPipelineSummary(entries), [entries]);
 
   const handleMove = (jobId: string, status: PipelineStatus) => {
     const result = moveEntry(jobId, status);
-    setNotice(createMoveNotice(result, status));
+    showToast(getPipelineMoveToast(result, status));
   };
 
   const handleResetDemo = () => {
     resetDemo();
-    setNotice("已恢复 Demo 管线");
+    showToast({ title: "已恢复 Demo 管线" });
   };
 
   return (
@@ -72,12 +71,6 @@ export function PipelinePage() {
           </Card>
         ))}
       </section>
-
-      {notice ? (
-        <Card surface="subtle" className="border-cyanGlow/20 bg-cyanGlow/10 p-4 text-sm text-cyanGlow">
-          {notice}
-        </Card>
-      ) : null}
 
       <section className="grid gap-4 xl:grid-cols-6">
         {pipelineColumns.map((column) => {
@@ -144,14 +137,4 @@ function MobileMoveCard({
       </div>
     </Card>
   );
-}
-
-function createMoveNotice(result: MovePipelineResult, status: PipelineStatus) {
-  if (result === "moved") {
-    return `已移动到：${pipelineStatusLabel[status]}`;
-  }
-  if (result === "invalid") {
-    return "非法状态流转已拦截，请按管线顺序推进。";
-  }
-  return "未找到对应管线岗位。";
 }

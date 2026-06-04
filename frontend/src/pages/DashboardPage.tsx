@@ -12,6 +12,8 @@ import { Card } from "@/components/ui/Card";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { Panel } from "@/components/ui/Panel";
 import { demoData } from "@/data/demoData";
+import { useToast } from "@/hooks/useToast";
+import { getPipelineAddToast } from "@/services/pipelineNoticeService";
 import { useAppStore } from "@/stores/appStore";
 import { getPipelineSummary, usePipelineStore } from "@/stores/pipelineStore";
 import type { DemoJob } from "@/types/demo";
@@ -19,6 +21,7 @@ import type { DemoJob } from "@/types/demo";
 export function DashboardPage() {
   const navigate = useNavigate();
   const dataMode = useAppStore((state) => state.dataMode);
+  const { showToast } = useToast();
   const pipelineEntries = usePipelineStore((state) => state.entries);
   const addJobToPipeline = usePipelineStore((state) => state.addJob);
   const { dashboard, jobs, market, sprint } = demoData;
@@ -27,8 +30,8 @@ export function DashboardPage() {
 
   const handleAddJobToPipeline = (job: DemoJob) => {
     const result = addJobToPipeline(job);
-    const notice = result === "added" ? `已加入管线：${job.title}` : `已在管线中：${job.title}`;
-    navigate(`/pipeline?job=${job.id}`, { state: { notice } });
+    showToast(getPipelineAddToast(job, result));
+    navigate(`/pipeline?job=${job.id}`);
   };
 
   return (
