@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { CompactStatCard } from "@/components/ui/CompactStatCard";
 import type { ResumeLabVersion } from "@/types/demo";
 
 export function ResumeLabVersionCard({
@@ -34,9 +35,9 @@ export function ResumeLabVersionCard({
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-3">
-        <VersionMetric label="投递" value={version.applied_count} />
-        <VersionMetric label="面试" value={version.interview_count} />
-        <VersionMetric label="无回复" value={version.no_response_count} />
+        <CompactStatCard label="投递" value={version.applied_count} />
+        <CompactStatCard label="面试" value={version.interview_count} />
+        <CompactStatCard label="无回复" value={version.no_response_count} />
       </div>
 
       <div className="mt-4">
@@ -63,15 +64,6 @@ export function ResumeLabVersionCard({
           <Link to={editPath}>回到简历工作室修改</Link>
         </Button>
       </div>
-    </Card>
-  );
-}
-
-function VersionMetric({ label, value }: { label: string; value: number }) {
-  return (
-    <Card surface="subtle" className="p-3">
-      <div className="text-xs text-slate-500">{label}</div>
-      <div className="mt-1 text-xl font-semibold">{value}</div>
     </Card>
   );
 }

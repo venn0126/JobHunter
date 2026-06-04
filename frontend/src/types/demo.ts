@@ -240,3 +240,44 @@ export interface ResumeLab {
   };
   versions: ResumeLabVersion[];
 }
+
+export type ApplicationFeedbackOutcome =
+  | "applied"
+  | "interview"
+  | "no_response"
+  | "offer"
+  | "rejected"
+  | "withdrawn";
+
+export interface ApplicationFeedbackRecord {
+  applied_at: string;
+  channel: string;
+  feedback_tags: string[];
+  follow_up_at?: string;
+  id: string;
+  job_id: string;
+  next_action: string;
+  notes: string;
+  outcome: ApplicationFeedbackOutcome;
+  resume_version_id: string;
+  stage: string;
+  updated_at: string;
+}
+
+export interface FeedbackStrategySuggestion {
+  action_path: string;
+  description: string;
+  id: string;
+  priority: Priority;
+  title: string;
+}
+
+export interface ApplicationFeedbackReview {
+  records: ApplicationFeedbackRecord[];
+  strategy_suggestions: FeedbackStrategySuggestion[];
+  summary: {
+    primary_focus: string;
+    recommendation: string;
+    target_interview_rate: number;
+  };
+}

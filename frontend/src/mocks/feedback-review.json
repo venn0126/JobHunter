@@ -1,0 +1,114 @@
+{
+  "summary": {
+    "primary_focus": "提高 AI 应用岗位面试率",
+    "recommendation": "继续使用 AI 应用强化版简历投递 P0 岗位；对无回复岗位做 48 小时跟进，并把被拒原因沉淀到素材库和面试作战卡。",
+    "target_interview_rate": 35
+  },
+  "records": [
+    {
+      "id": "fb_1001",
+      "job_id": "job_1001",
+      "resume_version_id": "resume_ai_app_v2",
+      "outcome": "interview",
+      "stage": "一面待准备",
+      "channel": "BOSS 直聘",
+      "applied_at": "2026-06-01",
+      "updated_at": "2026-06-03",
+      "follow_up_at": "2026-06-05",
+      "feedback_tags": ["RAG 项目命中", "后端稳定性认可", "需准备服务治理"],
+      "notes": "HR 重点确认 RAG 项目是否真实上线，以及接口延迟优化是否有监控数据。",
+      "next_action": "补充服务治理证据，并用面试作战卡准备 RAG 架构追问。"
+    },
+    {
+      "id": "fb_1002",
+      "job_id": "job_1002",
+      "resume_version_id": "resume_ai_app_v2",
+      "outcome": "no_response",
+      "stage": "投递后 48 小时无回复",
+      "channel": "猎聘",
+      "applied_at": "2026-06-01",
+      "updated_at": "2026-06-03",
+      "follow_up_at": "2026-06-04",
+      "feedback_tags": ["LLM 关键词不足", "需要主动跟进"],
+      "notes": "岗位更强调模型服务部署与 Prompt 评估，当前简历仍偏 RAG 应用落地。",
+      "next_action": "发送一次跟进，并在简历工作室补充模型评估和线上监控表述。"
+    },
+    {
+      "id": "fb_1003",
+      "job_id": "job_1003",
+      "resume_version_id": "resume_rag_remote_v1",
+      "outcome": "interview",
+      "stage": "技术面排期",
+      "channel": "官网",
+      "applied_at": "2026-06-02",
+      "updated_at": "2026-06-04",
+      "follow_up_at": "2026-06-06",
+      "feedback_tags": ["远程协作加分", "RAG 方向匹配"],
+      "notes": "对方关注独立推进能力和异步协作案例，需要补一个跨团队上线故事。",
+      "next_action": "补充跨团队协作 STAR 故事，并准备远程协作反问。"
+    },
+    {
+      "id": "fb_1004",
+      "job_id": "job_1004",
+      "resume_version_id": "resume_backend_v1",
+      "outcome": "rejected",
+      "stage": "简历筛选未通过",
+      "channel": "内推",
+      "applied_at": "2026-05-30",
+      "updated_at": "2026-06-02",
+      "feedback_tags": ["AI 平台经验不足", "Kubernetes 证据缺口"],
+      "notes": "内推反馈：后端基础不错，但 AI 平台和容器化部署经历表达不足。",
+      "next_action": "不要继续用后端通用版投 AI 平台岗位，先补充 Kubernetes 或服务治理素材。"
+    },
+    {
+      "id": "fb_1005",
+      "job_id": "job_1005",
+      "resume_version_id": "resume_backend_v1",
+      "outcome": "no_response",
+      "stage": "投递后无回复",
+      "channel": "手动记录",
+      "applied_at": "2026-05-28",
+      "updated_at": "2026-06-01",
+      "feedback_tags": ["岗位优先级低", "方向偏离 AI 应用"],
+      "notes": "通用后端岗位匹配度一般，不建议占用 P0 投递精力。",
+      "next_action": "降级为 P2 观察，不再主动跟进。"
+    },
+    {
+      "id": "fb_1006",
+      "job_id": "job_1006",
+      "resume_version_id": "resume_rag_remote_v1",
+      "outcome": "applied",
+      "stage": "已投递待跟进",
+      "channel": "Demo 数据",
+      "applied_at": "2026-06-04",
+      "updated_at": "2026-06-04",
+      "follow_up_at": "2026-06-06",
+      "feedback_tags": ["远程岗位", "样本量不足"],
+      "notes": "远程 RAG 方向仍需继续积累样本，暂不替代 AI 应用强化版。",
+      "next_action": "等待 48 小时后跟进，继续记录反馈。"
+    }
+  ],
+  "strategy_suggestions": [
+    {
+      "id": "strategy_1001",
+      "priority": "P0",
+      "title": "优先使用 AI 应用强化版投递 P0 岗位",
+      "description": "当前 AI 应用强化版面试率最高，且已命中 RAG 项目和后端稳定性证据。",
+      "action_path": "/resume-lab?version=resume_ai_app_v2"
+    },
+    {
+      "id": "strategy_1002",
+      "priority": "P0",
+      "title": "补齐服务治理和 Kubernetes 证据",
+      "description": "被拒和无回复记录都暴露出容器化部署、线上监控、服务治理表达不足。",
+      "action_path": "/resume?evidence=ev_platform_governance"
+    },
+    {
+      "id": "strategy_1003",
+      "priority": "P1",
+      "title": "对 48 小时无回复岗位做一次跟进",
+      "description": "无回复岗位集中在 LLM 后端方向，建议先跟进高匹配岗位，低优先级岗位直接降级观察。",
+      "action_path": "/pipeline"
+    }
+  ]
+}
