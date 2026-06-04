@@ -740,6 +740,10 @@ make migrate       # 执行 PostgreSQL Alembic migration
 make seed-demo     # 初始化 / 恢复 Demo 数据
 make health        # 检查前端、后端、PostgreSQL、Redis
 make deploy-local  # 本地完整部署：构建前端后由 FastAPI 托管静态产物
+make deploy-start  # 后台启动完整部署环境，写入 pid 和运行日志
+make deploy-stop   # 停止后台部署服务
+make deploy-status # 查看后台部署状态
+make deploy-logs   # 跟踪后台部署日志
 ```
 
 `make dev` 默认行为：
@@ -759,6 +763,14 @@ make deploy-local  # 本地完整部署：构建前端后由 FastAPI 托管静�
 - 启动 FastAPI；
 - FastAPI 托管 `frontend/dist`；
 - 适合演示、快速交付和另一台机器拉代码后直接运行。
+
+`make deploy-start / deploy-stop / deploy-status / deploy-logs` 默认行为：
+
+- 后台启动完整部署环境，不占用 SSH 终端；
+- `logs/runtime/jobhunter.pid` 记录运行 PID；
+- `logs/runtime/deploy.log` 记录 Uvicorn 运行日志；
+- 启动前检查端口占用，避免重复部署冲突；
+- 启动后等待 `/api/health` 通过，不通过则清理 PID 并输出最近日志。
 
 ### 7.8 P3 每小节固定完成门槛
 
@@ -804,7 +816,7 @@ P3 Review 补充结论：
 P3-A 完成记录：
 
 - [x] 已新增 `docker-compose.yml`，提供 PostgreSQL 16 和 Redis 7；
-- [x] 已新增 `make bootstrap-system / infra-up / infra-down / infra-logs / deploy-local / seed-demo`；
+- [x] 已新增 `make bootstrap-system / infra-up / infra-down / infra-logs / deploy-local / deploy-start / deploy-stop / deploy-status / deploy-logs / seed-demo`；
 - [x] 已将 Ubuntu / Debian 服务器系统依赖自检和安装并入 `make init`，覆盖 `python3-venv`、Node.js、npm、Docker、Docker Compose、git、make；
 - [x] 已修复后端虚拟环境半初始化问题：如果 `backend/.venv` 缺少 `bin/activate`，`make init` 会自动删除并重建；
 - [x] 已将 `make dev`、`make start`、`make deploy-local` 串接 PostgreSQL / Redis 启动和迁移；
@@ -812,9 +824,11 @@ P3-A 完成记录：
 - [x] 已新增 `DATABASE_URL`、`REDIS_URL` 等环境变量样例；
 - [x] 已增强 `/api/health`，可返回 PostgreSQL / Redis 依赖状态；
 - [x] 已新增 `/api/system/health`、`/api/system/version`，兼容 P3 接口规划；
+- [x] 已修复 Alembic 与 psycopg v3 的驱动兼容：迁移统一使用 `postgresql+psycopg://`，旧 `postgresql://` 写法自动兼容；
+- [x] 已新增后台部署脚本：`make deploy-start / deploy-stop / deploy-status / deploy-logs`，支持 PID、日志和端口占用检查；
 - [x] 已完成本地静态验证：`python3 -m compileall backend`、`npm run typecheck`、`npm run build`、`bash -n scripts/*.sh`、`git diff --check`；
-- [ ] 待远程服务器验证：Docker 启动后执行 `make init && make infra-up && make migrate && make health`；
-- [ ] 待远程服务器验证：执行 `make deploy-local`，确认 FastAPI 可托管前端静态产物。
+- [x] 已完成远程服务器验证：Docker 启动后执行 `make init && make infra-up && make migrate`，PostgreSQL / Redis 容器健康；
+- [x] 已完成远程服务器验证：执行 `make deploy-local`，确认 FastAPI 可托管前端静态产物，`0.0.0.0:8000` 可公网访问。
 
 ---
 
@@ -894,7 +908,7 @@ P3 后台业务接口
 | 简历版本实验 |  | P1 | 已完成 |  | 2026-06-04 | 已完成 Resume A/B Lab 基础页、最佳版本推荐、版本列表、核心指标卡、版本详情、版本对比和证据联动 |
 | 面试作战卡 |  | P1 | 已完成 |  | 2026-06-04 | 已完成公司简报、面试重点、高频问题、回答框架、关联证据、7 天计划、复习状态、复制回答要点和补素材跳转 |
 | 反馈复盘 |  | P1 | 已完成 |  | 2026-06-04 | 已完成反馈统计、结果分布、复盘趋势、版本表现、反馈录入、管线联动和下一轮策略建议 |
-| 后端基础架构与一键启动 |  | P3 | 待验收 |  |  | 已完成 Docker Compose、PG/Redis 启动脚本、`make dev`、`make deploy-local`、health 增强；待远程 Docker 实跑 |
+| 后端基础架构与一键启动 |  | P3 | 已完成 |  | 2026-06-04 | 已完成 Docker Compose、PG/Redis 启动脚本、`make dev`、`make deploy-local`、后台部署脚本、health 增强和远程实跑 |
 | PostgreSQL 数据层 |  | P3 | 待验收 |  |  | 已建立 Alembic 基线和 `schema_migrations`；业务表进入 P3-B |
 | Redis 缓存与任务状态 |  | P3 | 待验收 |  |  | 已建立 Redis 连接与 health 检查；缓存 key 和任务状态业务封装进入 P3-C |
 | 后台认证与用户身份 |  | P3 | 未开始 |  |  | 规划 Auth、User、Persona 和 `persona_id` 贯穿 |

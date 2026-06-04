@@ -10,12 +10,7 @@ load_runtime_env
 configure_runtime_env
 
 ensure_dependencies "deploy-local"
-./scripts/migrate.sh
-./scripts/seed-demo.sh
-
-echo "[deploy-local] building frontend"
-./scripts/sync-version.sh
-(cd frontend && npm run build)
+prepare_runtime_build "deploy-local" "true"
 
 echo "[deploy-local] serving app at http://${BACKEND_HOST}:${BACKEND_PORT}"
 (cd backend && source .venv/bin/activate && DATABASE_URL="$DATABASE_URL" REDIS_URL="$REDIS_URL" uvicorn main:app --host "$BACKEND_HOST" --port "$BACKEND_PORT")

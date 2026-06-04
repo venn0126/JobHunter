@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap-system init infra-up infra-down infra-logs dev start deploy-local migrate seed-demo upgrade health sync-version reset-demo rollback verify-version-cache verify-validation-sandbox verify-update-restore verify-browser-cache
+.PHONY: bootstrap-system init infra-up infra-down infra-logs dev start deploy-local deploy-start deploy-stop deploy-status deploy-logs migrate seed-demo upgrade health sync-version reset-demo rollback verify-version-cache verify-validation-sandbox verify-update-restore verify-browser-cache
 
 bootstrap-system:
 	./scripts/bootstrap-system.sh
@@ -25,6 +25,18 @@ start:
 
 deploy-local:
 	./scripts/deploy-local.sh
+
+deploy-start:
+	./scripts/deploy-start.sh
+
+deploy-stop:
+	./scripts/deploy-stop.sh
+
+deploy-status:
+	./scripts/deploy-status.sh
+
+deploy-logs:
+	./scripts/deploy-logs.sh
 
 migrate:
 	./scripts/migrate.sh

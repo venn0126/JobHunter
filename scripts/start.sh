@@ -11,11 +11,7 @@ load_runtime_env
 configure_runtime_env
 
 ensure_dependencies "start"
-./scripts/migrate.sh
-
-echo "[start] building frontend"
-./scripts/sync-version.sh
-(cd frontend && npm run build)
+prepare_runtime_build "start" "false"
 
 echo "[start] serving app at http://${BACKEND_HOST}:${BACKEND_PORT}"
 (cd backend && source .venv/bin/activate && DATABASE_URL="$DATABASE_URL" REDIS_URL="$REDIS_URL" uvicorn main:app --host "$BACKEND_HOST" --port "$BACKEND_PORT")

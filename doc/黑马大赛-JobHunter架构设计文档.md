@@ -3130,6 +3130,10 @@ make migrate    # 一键执行数据库迁移
 make upgrade    # 一键升级当前环境
 make rollback   # 一键回滚到上一稳定版本
 make health     # 一键检查服务健康状态
+make deploy-start  # 后台启动演示部署服务
+make deploy-stop   # 停止后台演示部署服务
+make deploy-status # 查看后台部署状态
+make deploy-logs   # 跟踪后台部署日志
 ```
 
 如果不使用 `Makefile`，则需要提供一个等价统一入口，例如：

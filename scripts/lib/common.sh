@@ -34,6 +34,24 @@ ensure_dependencies() {
   fi
 }
 
+ensure_port_available() {
+  local host="$1"
+  local port="$2"
+  python3 - "$host" "$port" <<'PY'
+import socket
+import sys
+
+host = sys.argv[1]
+port = int(sys.argv[2])
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        sock.bind((host, port))
+    except OSError as exc:
+        raise SystemExit(f"[common] port is already in use: {host}:{port} ({exc})")
+PY
+}
+
 ensure_command() {
   local name="$1"
   local hint="$2"
@@ -194,4 +212,66 @@ wait_for_backend_health() {
 
   echo "[common] backend health check timeout: http://127.0.0.1:${port}/api/health"
   return 1
+}
+
+build_frontend_dist() {
+  local name="$1"
+  echo "[$name] building frontend"
+  ./scripts/sync-version.sh
+  (cd frontend && npm run build)
+}
+
+prepare_runtime_build() {
+  local name="$1"
+  local should_seed="${2:-false}"
+
+  ./scripts/migrate.sh
+  if [[ "$should_seed" == "true" ]]; then
+    ./scripts/seed-demo.sh
+  fi
+  build_frontend_dist "$name"
+}
+
+deploy_runtime_dir() {
+  echo "logs/runtime"
+}
+
+deploy_pid_file() {
+  echo "$(deploy_runtime_dir)/jobhunter.pid"
+}
+
+deploy_log_file() {
+  echo "$(deploy_runtime_dir)/deploy.log"
+}
+
+is_pid_running() {
+  local pid="$1"
+  [[ -n "$pid" ]] && kill -0 "$pid" >/dev/null 2>&1
+}
+
+read_deploy_pid() {
+  local pid_file
+  pid_file="$(deploy_pid_file)"
+  if [[ -f "$pid_file" ]]; then
+    tr -d '[:space:]' < "$pid_file"
+  fi
+}
+
+is_deploy_process() {
+  local pid="$1"
+  local args=""
+  if ! is_pid_running "$pid"; then
+    return 1
+  fi
+  args="$(ps -o args= -p "$pid" 2>/dev/null || true)"
+  [[ "$args" == *"uvicorn"* && "$args" == *"main:app"* ]]
+}
+
+write_deploy_log_header() {
+  local log_file="$1"
+  mkdir -p "$(dirname "$log_file")"
+  {
+    echo ""
+    echo "===== deploy run $(date '+%Y-%m-%d %H:%M:%S %z') ====="
+  } >> "$log_file"
 }
