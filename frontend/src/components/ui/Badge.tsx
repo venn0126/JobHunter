@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react";
 import { cn } from "@/lib/classNames";
 
-type BadgeTone = "default" | "cyan" | "blue" | "muted" | "warning" | "danger";
+export type BadgeTone = "default" | "cyan" | "blue" | "muted" | "warning" | "danger";
 
 const toneClassName: Record<BadgeTone, string> = {
   default: "border-white/10 bg-white/5 text-slate-300",

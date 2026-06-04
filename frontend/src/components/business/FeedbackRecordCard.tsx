@@ -1,23 +1,14 @@
-import type { ComponentProps } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { feedbackOutcomeLabel, type FeedbackRecordView } from "@/services/feedbackReviewService";
+import {
+  feedbackOutcomeLabel,
+  feedbackOutcomeTone,
+  type FeedbackRecordView,
+} from "@/services/feedbackReviewService";
 import { getInterviewGuidePath } from "@/services/interviewGuideService";
 import { getResumeLabPath } from "@/services/resumeLabService";
-import type { ApplicationFeedbackOutcome } from "@/types/demo";
-
-type BadgeTone = NonNullable<ComponentProps<typeof Badge>["tone"]>;
-
-const outcomeTone: Record<ApplicationFeedbackOutcome, BadgeTone> = {
-  applied: "blue",
-  interview: "cyan",
-  no_response: "warning",
-  offer: "cyan",
-  rejected: "danger",
-  withdrawn: "muted",
-};
 
 export function FeedbackRecordCard({ view }: { view: FeedbackRecordView }) {
   const { job, record, resumeVersion } = view;
@@ -27,7 +18,7 @@ export function FeedbackRecordCard({ view }: { view: FeedbackRecordView }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <Badge tone={outcomeTone[record.outcome]}>{feedbackOutcomeLabel[record.outcome]}</Badge>
+            <Badge tone={feedbackOutcomeTone[record.outcome]}>{feedbackOutcomeLabel[record.outcome]}</Badge>
             <Badge tone="muted">{record.channel}</Badge>
           </div>
           <h3 className="text-lg font-semibold">{job?.title ?? record.job_id}</h3>

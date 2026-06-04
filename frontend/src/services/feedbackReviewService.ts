@@ -1,4 +1,6 @@
 import { demoData } from "@/data/demoData";
+import type { BadgeTone } from "@/components/ui/Badge";
+import type { PipelineStatus } from "@/types/common";
 import type {
   ApplicationFeedbackOutcome,
   ApplicationFeedbackRecord,
@@ -22,8 +24,66 @@ export const feedbackOutcomeLabel: Record<ApplicationFeedbackOutcome, string> = 
   withdrawn: "已放弃",
 };
 
+export const feedbackOutcomeTone: Record<ApplicationFeedbackOutcome, BadgeTone> = {
+  applied: "blue",
+  interview: "cyan",
+  no_response: "warning",
+  offer: "cyan",
+  rejected: "danger",
+  withdrawn: "muted",
+};
+
+export const feedbackOutcomePipelineStatus: Record<ApplicationFeedbackOutcome, PipelineStatus> = {
+  applied: "applied",
+  interview: "interviewing",
+  no_response: "applied",
+  offer: "offer",
+  rejected: "rejected",
+  withdrawn: "withdrawn",
+};
+
+export const feedbackOutcomeOptions: ApplicationFeedbackOutcome[] = [
+  "interview",
+  "no_response",
+  "rejected",
+  "applied",
+  "offer",
+  "withdrawn",
+];
+
 export function getFeedbackReview(): ApplicationFeedbackReview {
   return demoData.feedbackReview;
+}
+
+export function parseFeedbackTags(value: string) {
+  return value
+    .split(/[、,，\n]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export function getDefaultFeedbackNotes(outcome: ApplicationFeedbackOutcome, jobTitle: string) {
+  const notes: Record<ApplicationFeedbackOutcome, string> = {
+    applied: `${jobTitle} 已投递，等待 48 小时后跟进。`,
+    interview: `${jobTitle} 已收到面试反馈，需要进入面试作战卡准备。`,
+    no_response: `${jobTitle} 暂无回复，建议做一次跟进或降低优先级。`,
+    offer: `${jobTitle} 已进入 Offer 评估，需要比较薪资和风险。`,
+    rejected: `${jobTitle} 未通过筛选，需要沉淀原因并调整简历版本。`,
+    withdrawn: `${jobTitle} 已主动放弃，记录原因后归档。`,
+  };
+  return notes[outcome];
+}
+
+export function getDefaultFeedbackNextAction(outcome: ApplicationFeedbackOutcome) {
+  const actions: Record<ApplicationFeedbackOutcome, string> = {
+    applied: "48 小时后跟进投递反馈",
+    interview: "进入面试作战卡准备高频追问",
+    no_response: "发送一次跟进，仍无回复则降级观察",
+    offer: "评估薪资、成长性和入职风险",
+    rejected: "复盘被拒原因并调整简历证据",
+    withdrawn: "归档放弃原因，停止主动跟进",
+  };
+  return actions[outcome];
 }
 
 export function getFeedbackRecordViews(records: ApplicationFeedbackRecord[]): FeedbackRecordView[] {

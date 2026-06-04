@@ -1,7 +1,7 @@
-import type { ComponentProps } from "react";
 import { Link } from "react-router-dom";
+import { FeedbackEntryForm } from "@/components/business/FeedbackEntryForm";
 import { FeedbackRecordCard } from "@/components/business/FeedbackRecordCard";
-import { Badge } from "@/components/ui/Badge";
+import { Badge, type BadgeTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { CompactStatCard } from "@/components/ui/CompactStatCard";
@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { Panel } from "@/components/ui/Panel";
 import {
+  feedbackOutcomeTone,
   getFeedbackMetrics,
   getFeedbackOutcomeRows,
   getFeedbackReview,
@@ -18,18 +19,19 @@ import {
   getUpcomingFollowUps,
   type FeedbackRecordView,
 } from "@/services/feedbackReviewService";
+import { useFeedbackReviewStore } from "@/stores/feedbackReviewStore";
+import { demoData } from "@/data/demoData";
 import type { FeedbackStrategySuggestion } from "@/types/demo";
-
-type BadgeTone = NonNullable<ComponentProps<typeof Badge>["tone"]>;
 
 export function FeedbackPage() {
   const review = getFeedbackReview();
-  const metrics = getFeedbackMetrics(review.records);
-  const outcomeRows = getFeedbackOutcomeRows(review.records);
-  const versionRows = getResumeVersionFeedbackRows(review.records);
-  const recentViews = getRecentFeedbackViews(review.records);
-  const followUps = getUpcomingFollowUps(review.records);
-  const trend = getFeedbackTrend(review.records);
+  const records = useFeedbackReviewStore((state) => state.records);
+  const metrics = getFeedbackMetrics(records);
+  const outcomeRows = getFeedbackOutcomeRows(records);
+  const versionRows = getResumeVersionFeedbackRows(records);
+  const recentViews = getRecentFeedbackViews(records);
+  const followUps = getUpcomingFollowUps(records);
+  const trend = getFeedbackTrend(records);
 
   return (
     <div className="space-y-6">
@@ -82,7 +84,11 @@ export function FeedbackPage() {
         </div>
       </Card>
 
-      {review.records.length > 0 ? (
+      <Panel title="记录反馈并同步管线">
+        <FeedbackEntryForm jobs={demoData.jobs.items} resumeVersions={demoData.resumeLab.versions} />
+      </Panel>
+
+      {records.length > 0 ? (
         <>
           <section className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
             <Panel title="结果分布">
@@ -92,8 +98,8 @@ export function FeedbackPage() {
                     count={row.count}
                     key={row.id}
                     label={row.label}
-                    total={review.records.length}
-                    tone={getOutcomeTone(row.id)}
+                    total={records.length}
+                    tone={feedbackOutcomeTone[row.id]}
                   />
                 ))}
               </div>
@@ -261,17 +267,4 @@ function StrategyCard({ suggestion }: { suggestion: FeedbackStrategySuggestion }
       </Button>
     </Card>
   );
-}
-
-function getOutcomeTone(outcome: string): BadgeTone {
-  if (outcome === "interview" || outcome === "offer") {
-    return "cyan";
-  }
-  if (outcome === "rejected") {
-    return "danger";
-  }
-  if (outcome === "no_response") {
-    return "warning";
-  }
-  return "blue";
 }

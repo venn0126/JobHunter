@@ -3,20 +3,40 @@ import { SourceBadge } from "@/components/business/SourceBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { cn } from "@/lib/classNames";
 import { getNextPipelineStatuses, pipelineStatusLabel, type PipelineEntry } from "@/stores/pipelineStore";
 import type { PipelineStatus } from "@/types/common";
 
 export function PipelineKanbanCard({
+  dragging,
   entry,
+  onDragEnd,
+  onDragStart,
   onMove,
 }: {
+  dragging?: boolean;
   entry: PipelineEntry;
+  onDragEnd?: () => void;
+  onDragStart?: () => void;
   onMove: (jobId: string, status: PipelineStatus) => void;
 }) {
   const nextStatuses = getNextPipelineStatuses(entry.status);
 
   return (
-    <Card surface="subtle" className="p-4">
+    <Card
+      draggable
+      surface="subtle"
+      className={cn(
+        "cursor-grab p-4 transition active:cursor-grabbing",
+        dragging ? "scale-[0.98] border-cyanGlow/40 opacity-60" : "hover:border-cyanGlow/25",
+      )}
+      onDragEnd={onDragEnd}
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", entry.job.id);
+        onDragStart?.();
+      }}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate font-medium">{entry.job.title}</div>

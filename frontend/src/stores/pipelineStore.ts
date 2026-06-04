@@ -13,12 +13,14 @@ export interface PipelineEntry {
 
 export type AddPipelineResult = "added" | "exists";
 export type MovePipelineResult = "moved" | "invalid" | "missing";
+export type SyncPipelineResult = "added" | "synced";
 
 interface PipelineState {
   entries: PipelineEntry[];
   addJob: (job: DemoJob, status?: PipelineStatus) => AddPipelineResult;
   moveEntry: (jobId: string, nextStatus: PipelineStatus) => MovePipelineResult;
   resetDemo: () => void;
+  syncEntry: (job: DemoJob, status: PipelineStatus, nextAction?: string) => SyncPipelineResult;
 }
 
 export const pipelineColumns: Array<{ id: PipelineStatus; label: string }> = [
@@ -66,6 +68,20 @@ export function getPipelineEntriesByStatus(entries: PipelineEntry[], status: Pip
   return entries
     .filter((entry) => entry.status === status)
     .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
+}
+
+export function getArchivedPipelineEntries(entries: PipelineEntry[]) {
+  return entries
+    .filter((entry) => entry.status === "rejected" || entry.status === "withdrawn")
+    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
+}
+
+export function getActivePipelineEntries(entries: PipelineEntry[]) {
+  return entries.filter((entry) => activeStatuses.includes(entry.status));
+}
+
+export function getPipelineEntryByJobId(entries: PipelineEntry[], jobId: string) {
+  return entries.find((entry) => entry.job.id === jobId);
 }
 
 export function getNextPipelineStatuses(status: PipelineStatus) {
@@ -170,4 +186,38 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
     return "moved";
   },
   resetDemo: () => set({ entries: createInitialEntries() }),
+  syncEntry: (job, status, nextAction) => {
+    const now = new Date().toISOString();
+    const exists = get().entries.some((entry) => entry.job.id === job.id);
+
+    if (!exists) {
+      set((state) => ({
+        entries: [
+          {
+            addedAt: now,
+            job: cloneJob(job),
+            nextAction: nextAction ?? getDefaultNextAction(status),
+            status,
+            updatedAt: now,
+          },
+          ...state.entries,
+        ],
+      }));
+      return "added";
+    }
+
+    set((state) => ({
+      entries: state.entries.map((entry) =>
+        entry.job.id === job.id
+          ? {
+              ...entry,
+              nextAction: nextAction ?? getDefaultNextAction(status),
+              status,
+              updatedAt: now,
+            }
+          : entry,
+      ),
+    }));
+    return "synced";
+  },
 }));
