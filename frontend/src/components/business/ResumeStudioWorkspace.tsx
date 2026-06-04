@@ -1,9 +1,11 @@
 import { useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { EvidenceDetailDrawer } from "@/components/business/EvidenceDetailDrawer";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
+import { useEvidenceDetail } from "@/hooks/useEvidenceDetail";
 import { useToast } from "@/hooks/useToast";
 import { copyText } from "@/lib/clipboard";
 import { getCareerVaultPath } from "@/services/careerVaultService";
@@ -28,6 +30,7 @@ export function ResumeStudioWorkspace({
   vaultItems: CareerVaultItem[];
 }) {
   const { showToast } = useToast();
+  const evidenceDetail = useEvidenceDetail(vaultItems);
   const draft = useMemo(() => getResumeStudioDraft(jobId), [jobId]);
   const jobDraftState = useResumeStudioStore(
     (state) => state.draftsByJobId[draft.job_id] ?? emptyResumeStudioJobState,
@@ -141,6 +144,7 @@ export function ResumeStudioWorkspace({
                 onAccept={() => acceptSection(draft.job_id, section.id)}
                 onCopy={() => handleCopySection(section)}
                 onRevoke={() => revokeSection(draft.job_id, section.id)}
+                onViewEvidence={evidenceDetail.openEvidence}
               />
             ))}
           </div>
@@ -163,6 +167,13 @@ export function ResumeStudioWorkspace({
           </div>
         </Panel>
       </section>
+      <EvidenceDetailDrawer
+        evidenceId={evidenceDetail.activeEvidenceId}
+        item={evidenceDetail.activeEvidenceItem}
+        jobId={draft.job_id}
+        open={evidenceDetail.isEvidenceOpen}
+        onClose={evidenceDetail.closeEvidence}
+      />
     </>
   );
 }

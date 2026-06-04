@@ -90,7 +90,11 @@ export function PipelinePage() {
                     ? "min-h-40 space-y-3 rounded-2xl border border-cyanGlow/40 bg-cyanGlow/10 p-2"
                     : "min-h-40 space-y-3 rounded-2xl border border-transparent p-2"
                 }
-                onDragLeave={pipelineDrag.clearDragOver}
+                onDragLeave={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                    pipelineDrag.clearDragOver();
+                  }
+                }}
                 onDragOver={(event) => {
                   event.preventDefault();
                   pipelineDrag.setDragOverStatus(column.id);

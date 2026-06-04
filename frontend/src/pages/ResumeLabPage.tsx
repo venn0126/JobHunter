@@ -1,4 +1,5 @@
 import { Link, useSearchParams } from "react-router-dom";
+import { EvidenceDetailDrawer } from "@/components/business/EvidenceDetailDrawer";
 import { ResumeLabComparePanel } from "@/components/business/ResumeLabComparePanel";
 import { ResumeLabVersionCard } from "@/components/business/ResumeLabVersionCard";
 import { ResumeLabVersionDetail } from "@/components/business/ResumeLabVersionDetail";
@@ -8,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { Panel } from "@/components/ui/Panel";
+import { useEvidenceDetail } from "@/hooks/useEvidenceDetail";
 import { getResumeStudioPath } from "@/services/resumeStudioService";
 import {
   getActiveResumeVersionId,
@@ -31,6 +33,7 @@ export function ResumeLabPage() {
   const requestedCompareVersionIds = searchParams.getAll("compare");
   const shouldShowCompare = requestedCompareVersionIds.length > 0;
   const vaultItems = useCareerVaultStore((state) => state.items);
+  const evidenceDetail = useEvidenceDetail(vaultItems);
   const lab = getResumeLab();
   const versions = sortResumeVersions(lab.versions);
   const bestVersion = getBestResumeVersion(lab);
@@ -128,6 +131,7 @@ export function ResumeLabPage() {
           <ResumeLabVersionDetail
             evidenceLinks={activeVersionEvidence}
             jobs={activeVersionJobs}
+            onViewEvidence={evidenceDetail.openEvidence}
             primaryJobId={lab.summary.primary_job_id}
             version={activeVersion}
           />
@@ -139,6 +143,14 @@ export function ResumeLabPage() {
           <ResumeLabComparePanel compareVersions={compareVersions} lab={lab} selectedVersionId={activeVersionId} />
         </Panel>
       ) : null}
+
+      <EvidenceDetailDrawer
+        evidenceId={evidenceDetail.activeEvidenceId}
+        item={evidenceDetail.activeEvidenceItem}
+        jobId={lab.summary.primary_job_id}
+        open={evidenceDetail.isEvidenceOpen}
+        onClose={evidenceDetail.closeEvidence}
+      />
     </div>
   );
 }

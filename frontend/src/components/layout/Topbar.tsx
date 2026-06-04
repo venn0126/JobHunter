@@ -1,32 +1,15 @@
-import { appConfig } from "@/config/env";
-import { useDemoReset } from "@/hooks/useDemoReset";
-import { useStartUpdate } from "@/hooks/useStartUpdate";
-import { useToast } from "@/hooks/useToast";
-import { useVersionInfo } from "@/hooks/useVersionInfo";
 import { useAuthStore } from "@/stores/authStore";
 import { getActivePersona, usePersonaStore } from "@/stores/personaStore";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 
 export function Topbar() {
-  const { resetDemo } = useDemoReset();
-  const { showToast } = useToast();
-  const startUpdate = useStartUpdate();
-  const version = useVersionInfo();
   const session = useAuthStore((state) => state.session);
-  const logout = useAuthStore((state) => state.logout);
   const personas = usePersonaStore((state) => state.personas);
   const activePersonaId = usePersonaStore((state) => state.activePersonaId);
   const isSwitchingPersona = usePersonaStore((state) => state.isSwitchingPersona);
   const personaError = usePersonaStore((state) => state.personaError);
   const setActivePersona = usePersonaStore((state) => state.setActivePersona);
   const activePersona = getActivePersona({ personas, activePersonaId });
-
-  const handleResetDemo = () => {
-    const result = resetDemo();
-    showToast({ message: result.message, title: "Demo 已重置" });
-  };
 
   return (
     <header className="sticky top-0 z-10 border-b border-white/10 bg-ink-950/70 px-4 py-4 backdrop-blur-xl sm:px-8">
@@ -56,19 +39,6 @@ export function Topbar() {
               ))}
             </Select>
           </label>
-          <Badge tone="blue" className="py-2">
-            {appConfig.dataMode}
-          </Badge>
-          <Badge className="py-2">v{version.current.version}</Badge>
-          <Button variant="secondary" size="sm" onClick={handleResetDemo}>
-            重置 Demo
-          </Button>
-          <Button variant={version.hasUpdate || appConfig.isDemoMode ? "primary" : "secondary"} size="sm" onClick={startUpdate}>
-            {version.hasUpdate ? "发现新版本" : "检查更新"}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={logout}>
-            退出
-          </Button>
         </div>
       </div>
       <div className="mt-3 text-sm text-slate-500">

@@ -45,6 +45,6 @@ fi
 ./scripts/sync-version.sh
 
 echo "[reset-demo] seed manifest: $SEED_MANIFEST"
-echo "[reset-demo] browser state: click the topbar \"重置 Demo\" button after opening the app"
+echo "[reset-demo] browser state: open /settings and click \"重置标准 Demo\" after opening the app"
 echo "[reset-demo] log: $OPS_LOG_PATH"
 echo "[reset-demo] ok"

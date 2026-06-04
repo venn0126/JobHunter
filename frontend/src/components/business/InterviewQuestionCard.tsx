@@ -10,6 +10,7 @@ export function InterviewQuestionCard({
   evidenceLinks,
   jobId,
   onCopy,
+  onViewEvidence,
   question,
 }: {
   evidenceLinks: Array<{
@@ -18,6 +19,7 @@ export function InterviewQuestionCard({
   }>;
   jobId: string;
   onCopy: (question: InterviewGuideQuestion) => void;
+  onViewEvidence: (evidenceId: string) => void;
   question: InterviewGuideQuestion;
 }) {
   const missingEvidenceId = getMissingInterviewEvidenceId(evidenceLinks);
@@ -65,16 +67,17 @@ export function InterviewQuestionCard({
           <div className="mb-3 text-sm text-slate-500">关联项目证据</div>
           <div className="space-y-3">
             {evidenceLinks.map(({ evidenceId, item }) => (
-              <Link
-                className="block rounded-2xl border border-cyanGlow/20 bg-cyanGlow/10 p-3 transition hover:border-cyanGlow/40"
+              <button
+                className="block w-full rounded-2xl border border-cyanGlow/20 bg-cyanGlow/10 p-3 text-left transition hover:border-cyanGlow/40"
                 key={`${question.id}-${evidenceId}`}
-                to={getCareerVaultPath(evidenceId, { jobId })}
+                type="button"
+                onClick={() => onViewEvidence(evidenceId)}
               >
                 <div className="font-medium text-cyanGlow">{item?.title ?? evidenceId}</div>
                 <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-300">
                   {item?.impact ?? "当前证据暂未收录，可跳转职业素材库补齐。"}
                 </p>
-              </Link>
+              </button>
             ))}
           </div>
           <Card surface="subtle" className="mt-4 border-risk-medium/20 bg-risk-medium/10 p-3">

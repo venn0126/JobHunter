@@ -10,6 +10,11 @@ export function enableDemoMode() {
   applyDemoModeClass(true);
 }
 
+export function disableDemoMode() {
+  localStorage.removeItem(storageKeys.demoMode);
+  applyDemoModeClass(false);
+}
+
 export function enableDemoModeFromSearch(search: string) {
   const params = new URLSearchParams(search);
   const enabledByQuery = params.get(demoModeParam) === demoQueryValue;
@@ -38,4 +43,8 @@ export function createDemoModeSearch(search: string) {
   params.delete(demoResetParam);
   params.set(demoModeParam, demoQueryValue);
   return `?${params.toString()}`;
+}
+
+export function getDemoResetPath() {
+  return `/?${demoModeParam}=${demoQueryValue}&${demoResetParam}=${demoQueryValue}`;
 }

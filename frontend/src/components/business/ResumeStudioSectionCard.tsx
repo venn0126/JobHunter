@@ -14,6 +14,7 @@ export function ResumeStudioSectionCard({
   evidenceLinks,
   onAccept,
   onCopy,
+  onViewEvidence,
   onRevoke,
   section,
   toEvidencePath,
@@ -22,6 +23,7 @@ export function ResumeStudioSectionCard({
   evidenceLinks: ResumeEvidenceLink[];
   onAccept: () => void;
   onCopy: () => void;
+  onViewEvidence: (evidenceId: string) => void;
   onRevoke: () => void;
   section: ResumeStudioSection;
   toEvidencePath: (evidenceId?: string) => string;
@@ -48,14 +50,15 @@ export function ResumeStudioSectionCard({
             {hasEvidence ? (
               <div className="space-y-2">
                 {evidenceLinks.map(({ item, reference }) => (
-                  <Link
-                    className="block rounded-2xl border border-cyanGlow/20 bg-cyanGlow/10 p-3 text-sm transition hover:border-cyanGlow/40"
+                  <button
+                    className="block w-full rounded-2xl border border-cyanGlow/20 bg-cyanGlow/10 p-3 text-left text-sm transition hover:border-cyanGlow/40"
                     key={`${section.id}-${reference.source_id}`}
-                    to={toEvidencePath(reference.source_id)}
+                    type="button"
+                    onClick={() => onViewEvidence(reference.source_id)}
                   >
                     <div className="font-medium text-cyanGlow">{item?.title ?? reference.source_id}</div>
                     <div className="mt-1 line-clamp-2 leading-6 text-slate-300">{reference.quote}</div>
-                  </Link>
+                  </button>
                 ))}
               </div>
             ) : (

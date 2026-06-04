@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { EvidenceDetailDrawer } from "@/components/business/EvidenceDetailDrawer";
 import { SourceBadge } from "@/components/business/SourceBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
+import { useEvidenceDetail } from "@/hooks/useEvidenceDetail";
 import { useToast } from "@/hooks/useToast";
 import { getCareerVaultPath } from "@/services/careerVaultService";
 import { getInterviewGuidePath } from "@/services/interviewGuideService";
@@ -24,6 +26,7 @@ export function JobDecisionPage() {
   const { jobId = "" } = useParams();
   const { showToast } = useToast();
   const vaultItems = useCareerVaultStore((state) => state.items);
+  const evidenceDetail = useEvidenceDetail(vaultItems);
   const addJobToPipeline = usePipelineStore((state) => state.addJob);
   const job = getJobById(jobId);
   const decision = getDecisionCard(job);
@@ -90,9 +93,16 @@ export function JobDecisionPage() {
                   </Badge>
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-400">{risk.text}</p>
-                <Button asChild className="mt-4" size="sm" variant="secondary">
-                  <Link to={getCareerVaultPath(risk.evidence_id ?? primaryEvidenceId)}>{risk.fix_action}</Link>
-                </Button>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {risk.evidence_id && validEvidenceIds.has(risk.evidence_id) ? (
+                    <Button size="sm" variant="secondary" onClick={() => evidenceDetail.openEvidence(risk.evidence_id)}>
+                      查看证据详情
+                    </Button>
+                  ) : null}
+                  <Button asChild size="sm" variant="secondary">
+                    <Link to={getCareerVaultPath(risk.evidence_id ?? primaryEvidenceId)}>{risk.fix_action}</Link>
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>
@@ -109,11 +119,18 @@ export function JobDecisionPage() {
                 </Badge>
               </div>
               <p className="text-sm leading-6 text-slate-400">{gap.text}</p>
-              <Button asChild className="mt-4" size="sm" variant="secondary">
-                <Link to={getCareerVaultPath(gap.evidence_id)}>
-                  {validEvidenceIds.has(gap.evidence_id) ? "查看对应素材" : "补充缺失素材"}
-                </Link>
-              </Button>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {validEvidenceIds.has(gap.evidence_id) ? (
+                  <Button size="sm" variant="secondary" onClick={() => evidenceDetail.openEvidence(gap.evidence_id)}>
+                    查看证据详情
+                  </Button>
+                ) : null}
+                <Button asChild size="sm" variant="secondary">
+                  <Link to={getCareerVaultPath(gap.evidence_id)}>
+                    {validEvidenceIds.has(gap.evidence_id) ? "进入素材库编辑" : "补充缺失素材"}
+                  </Link>
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
@@ -139,6 +156,13 @@ export function JobDecisionPage() {
         </Panel>
         <RecruiterLensPanel lens={lens} />
       </section>
+      <EvidenceDetailDrawer
+        evidenceId={evidenceDetail.activeEvidenceId}
+        item={evidenceDetail.activeEvidenceItem}
+        jobId={job.id}
+        open={evidenceDetail.isEvidenceOpen}
+        onClose={evidenceDetail.closeEvidence}
+      />
     </div>
   );
 }

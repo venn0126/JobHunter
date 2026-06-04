@@ -1,5 +1,6 @@
 import { enableDemoMode } from "@/lib/demoMode";
 import { clearUpdateRestorePath } from "@/lib/updateRestore";
+import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useCareerVaultStore } from "@/stores/careerVaultStore";
 import { useFeedbackReviewStore } from "@/stores/feedbackReviewStore";
@@ -13,6 +14,7 @@ export interface DemoResetResult {
 }
 
 export function resetDemoWorkspace(): DemoResetResult {
+  useAppStore.getState().resetDataMode();
   useAuthStore.getState().resetDemoSession();
   usePersonaStore.getState().resetDemoPersona();
   useJobStore.getState().resetDemo();
@@ -24,6 +26,6 @@ export function resetDemoWorkspace(): DemoResetResult {
   enableDemoMode();
 
   return {
-    message: "已恢复标准 Demo：账号、身份、岗位筛选、职业素材、简历工作室、反馈复盘和求职管线。",
+    message: "已恢复标准 Demo：数据模式、账号、身份、岗位筛选、职业素材、简历工作室、反馈复盘和求职管线。",
   };
 }

@@ -21,6 +21,7 @@ interface AuthState {
   logout: () => void;
   register: (name: string, email: string, password: string) => boolean;
   resetDemoSession: () => void;
+  updateProfile: (profile: { email?: string; name: string }) => void;
 }
 
 function createSession(user: AuthUser): AuthSession {
@@ -102,6 +103,33 @@ export const useAuthStore = create<AuthState>()(
       },
       resetDemoSession: () => {
         set(createDemoAuthState());
+      },
+      updateProfile: ({ email, name }) => {
+        const normalizedName = name.trim();
+        if (!normalizedName) {
+          set({ error: "请输入昵称" });
+          return;
+        }
+
+        set((state) => {
+          if (!state.session) {
+            return state;
+          }
+
+          const normalizedEmail = email?.trim() || state.session.user.email;
+          return {
+            error: "",
+            session: {
+              ...state.session,
+              user: {
+                ...state.session.user,
+                avatarText: normalizedName.slice(0, 2).toUpperCase(),
+                email: normalizedEmail,
+                name: normalizedName,
+              },
+            },
+          };
+        });
       },
     }),
     {

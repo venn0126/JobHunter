@@ -1,4 +1,5 @@
 import { Link, useSearchParams } from "react-router-dom";
+import { EvidenceDetailDrawer } from "@/components/business/EvidenceDetailDrawer";
 import { InterviewPlanCard } from "@/components/business/InterviewPlanCard";
 import { InterviewQuestionCard } from "@/components/business/InterviewQuestionCard";
 import { Badge } from "@/components/ui/Badge";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Panel } from "@/components/ui/Panel";
+import { useEvidenceDetail } from "@/hooks/useEvidenceDetail";
 import { useToast } from "@/hooks/useToast";
 import { copyText } from "@/lib/clipboard";
 import {
@@ -26,6 +28,7 @@ export function InterviewGuidePage() {
   const job = getJobById(guide.job_id);
   const { showToast } = useToast();
   const vaultItems = useCareerVaultStore((state) => state.items);
+  const evidenceDetail = useEvidenceDetail(vaultItems);
   const reviewedPlan = useInterviewGuideStore((state) => state.reviewedPlanByJobId[job.id] ?? emptyInterviewPlanState);
   const togglePlanReviewed = useInterviewGuideStore((state) => state.togglePlanReviewed);
   const reviewedPlanCount = guide.seven_day_plan.filter((item) => reviewedPlan[item.day]).length;
@@ -111,6 +114,7 @@ export function InterviewGuidePage() {
                 jobId={job.id}
                 key={question.id}
                 onCopy={handleCopyQuestion}
+                onViewEvidence={evidenceDetail.openEvidence}
                 question={question}
               />
             ))}
@@ -155,6 +159,14 @@ export function InterviewGuidePage() {
           </div>
         </Panel>
       </section>
+
+      <EvidenceDetailDrawer
+        evidenceId={evidenceDetail.activeEvidenceId}
+        item={evidenceDetail.activeEvidenceItem}
+        jobId={job.id}
+        open={evidenceDetail.isEvidenceOpen}
+        onClose={evidenceDetail.closeEvidence}
+      />
     </div>
   );
 }

@@ -1,8 +1,8 @@
+import { simulateVersionUpdateForValidation } from "@/hooks/useVersionInfo";
 import { apiGet } from "@/services/apiClient";
 import { useAuthStore } from "@/stores/authStore";
-import { simulateVersionUpdateForValidation } from "@/hooks/useVersionInfo";
 
-export type ValidationStatus = "passed" | "simulated";
+export type ValidationStatus = "failed" | "passed" | "simulated";
 
 export interface ValidationResult {
   details?: string;
@@ -55,8 +55,17 @@ export function simulateVersionUpdate(): ValidationResult {
 
   return {
     details: latest.build_id,
-    message: "已模拟发现新版本，顶部栏应显示“发现新版本”。",
+    message: "已模拟发现新版本，设置页账户与版本区域应显示“发现新版本”。",
     status: "simulated",
     title: "发现新版本",
+  };
+}
+
+export function simulateUpdateFailure(): ValidationResult {
+  return {
+    details: "当前版本和页面状态均会保留，可重新检查版本或继续使用当前页面。",
+    message: "已模拟更新失败兜底：不清空本地状态，不跳转未知页面，并保留重试入口。",
+    status: "failed",
+    title: "更新失败",
   };
 }

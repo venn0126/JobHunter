@@ -2,13 +2,13 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { getCareerVaultPath } from "@/services/careerVaultService";
 import { getResumeStudioPath } from "@/services/resumeStudioService";
 import type { CareerVaultItem, DemoJob, ResumeLabVersion } from "@/types/demo";
 
 export function ResumeLabVersionDetail({
   evidenceLinks,
   jobs,
+  onViewEvidence,
   primaryJobId,
   version,
 }: {
@@ -17,6 +17,7 @@ export function ResumeLabVersionDetail({
     item?: CareerVaultItem;
   }>;
   jobs: DemoJob[];
+  onViewEvidence: (evidenceId: string) => void;
   primaryJobId: string;
   version: ResumeLabVersion;
 }) {
@@ -50,24 +51,28 @@ export function ResumeLabVersionDetail({
         <Card surface="subtle" className="p-5">
           <h4 className="mb-4 font-semibold">关键修改与证据</h4>
           <div className="space-y-4">
-            {version.key_changes.map((change, index) => (
-              <Card key={`${version.id}-${change.section}-${index}`} surface="subtle" className="p-4">
-                <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <Badge tone={change.evidence_id ? "blue" : "warning"}>{change.section}</Badge>
-                  <span className="text-xs text-slate-500">{change.evidence_id ? "已关联证据" : "建议补充证据"}</span>
-                </div>
-                <div className="grid gap-3 lg:grid-cols-2">
-                  <ResumeChangeText title="修改前" value={change.before || "原简历未覆盖该内容。"} />
-                  <ResumeChangeText title="优化后" value={change.after} />
-                </div>
-                <p className="mt-3 text-sm leading-6 text-slate-400">{change.reason}</p>
-                {change.evidence_id ? (
-                  <Button asChild className="mt-3" size="sm" variant="secondary">
-                    <Link to={getCareerVaultPath(change.evidence_id, { jobId: primaryJobId })}>查看引用证据</Link>
-                  </Button>
-                ) : null}
-              </Card>
-            ))}
+            {version.key_changes.map((change, index) => {
+              const evidenceId = change.evidence_id;
+
+              return (
+                <Card key={`${version.id}-${change.section}-${index}`} surface="subtle" className="p-4">
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <Badge tone={evidenceId ? "blue" : "warning"}>{change.section}</Badge>
+                    <span className="text-xs text-slate-500">{evidenceId ? "已关联证据" : "建议补充证据"}</span>
+                  </div>
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <ResumeChangeText title="修改前" value={change.before || "原简历未覆盖该内容。"} />
+                    <ResumeChangeText title="优化后" value={change.after} />
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-400">{change.reason}</p>
+                  {evidenceId ? (
+                    <Button className="mt-3" size="sm" variant="secondary" onClick={() => onViewEvidence(evidenceId)}>
+                      查看引用证据
+                    </Button>
+                  ) : null}
+                </Card>
+              );
+            })}
           </div>
         </Card>
 
@@ -77,14 +82,15 @@ export function ResumeLabVersionDetail({
             {evidenceLinks.length > 0 ? (
               <div className="space-y-3">
                 {evidenceLinks.map(({ change, item }) => (
-                  <Link
-                    className="block rounded-2xl border border-cyanGlow/20 bg-cyanGlow/10 p-3 transition hover:border-cyanGlow/40"
+                  <button
+                    className="block w-full rounded-2xl border border-cyanGlow/20 bg-cyanGlow/10 p-3 text-left transition hover:border-cyanGlow/40"
                     key={`${version.id}-${change.evidence_id}`}
-                    to={getCareerVaultPath(change.evidence_id, { jobId: primaryJobId })}
+                    type="button"
+                    onClick={() => onViewEvidence(change.evidence_id ?? "")}
                   >
                     <div className="font-medium text-cyanGlow">{item?.title ?? change.evidence_id}</div>
                     <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-300">{item?.impact ?? change.reason}</p>
-                  </Link>
+                  </button>
                 ))}
               </div>
             ) : (

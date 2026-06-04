@@ -20,6 +20,10 @@ interface PersonaState {
   resetDemoPersona: () => void;
   restorePersona: (personaId: string) => void;
   setActivePersona: (personaId: string) => void;
+  updatePersona: (
+    personaId: string,
+    persona: Pick<CareerPersona, "core_skills" | "name" | "preferred_cities" | "target_roles">,
+  ) => void;
 }
 
 let personaSwitchTimerId: number | undefined;
@@ -55,6 +59,38 @@ function normalizeActivePersonaId(personaId: unknown) {
     : demoData.careerPersonas.active_persona_id;
 }
 
+function normalizePersistedPersonas(personas: unknown) {
+  if (!Array.isArray(personas)) {
+    return undefined;
+  }
+
+  const demoPersonaIds = new Set(demoData.careerPersonas.personas.map((persona) => persona.id));
+  const normalizedPersonas = personas.filter(
+    (persona): persona is CareerPersona =>
+      Boolean(persona) &&
+      typeof persona === "object" &&
+      typeof (persona as CareerPersona).id === "string" &&
+      demoPersonaIds.has((persona as CareerPersona).id) &&
+      typeof (persona as CareerPersona).name === "string" &&
+      isStringList((persona as CareerPersona).target_roles) &&
+      isStringList((persona as CareerPersona).core_skills) &&
+      isStringList((persona as CareerPersona).preferred_cities) &&
+      ((persona as CareerPersona).status === "active" || (persona as CareerPersona).status === "archived"),
+  );
+
+  return normalizedPersonas.length ? normalizedPersonas : undefined;
+}
+
+function isStringList(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function normalizeActivePersonaIdByList(personaId: unknown, personas: CareerPersona[]) {
+  return typeof personaId === "string" && personas.some((persona) => persona.id === personaId)
+    ? personaId
+    : demoData.careerPersonas.active_persona_id;
+}
+
 export const usePersonaStore = create<PersonaState>()(
   persist(
     (set, get) => ({
@@ -85,14 +121,44 @@ export const usePersonaStore = create<PersonaState>()(
           personaSwitchTimerId = undefined;
         }, 160);
       },
+      updatePersona: (personaId, personaInput) => {
+        const normalizedName = personaInput.name.trim();
+        if (!normalizedName) {
+          set({ personaError: "身份名称不能为空" });
+          return;
+        }
+
+        set((state) => ({
+          personaError: "",
+          personas: state.personas.map((persona) =>
+            persona.id === personaId
+              ? {
+                  ...persona,
+                  core_skills: personaInput.core_skills,
+                  name: normalizedName,
+                  preferred_cities: personaInput.preferred_cities,
+                  target_roles: personaInput.target_roles,
+                }
+              : persona,
+          ),
+        }));
+      },
     }),
     {
-      merge: (persistedState, currentState) => ({
-        ...currentState,
-        activePersonaId: normalizeActivePersonaId((persistedState as Partial<PersonaState> | undefined)?.activePersonaId),
-      }),
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<PersonaState> | undefined;
+        const personas = normalizePersistedPersonas(persisted?.personas) ?? currentState.personas;
+        return {
+          ...currentState,
+          activePersonaId: normalizeActivePersonaIdByList(persisted?.activePersonaId, personas),
+          personas,
+        };
+      },
       name: storageKeys.persona,
-      partialize: (state) => ({ activePersonaId: state.activePersonaId }),
+      partialize: (state) => ({
+        activePersonaId: state.activePersonaId,
+        personas: state.personas,
+      }),
       storage: createJSONStorage(() => localStorage),
     },
   ),

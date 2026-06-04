@@ -1,4 +1,5 @@
 export const storageKeys = {
+  app: "jobhunter-app",
   auth: "jobhunter-auth",
   demoMode: "jobhunter-demo-mode",
   persona: "jobhunter-persona",
