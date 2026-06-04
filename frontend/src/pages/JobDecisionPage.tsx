@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
 import { getCareerVaultPath } from "@/services/careerVaultService";
+import { getInterviewGuidePath } from "@/services/interviewGuideService";
 import {
   getDecisionCard,
   getJobById,
@@ -58,7 +59,7 @@ export function JobDecisionPage() {
                 <Link to={getResumeStudioPath(job.id)}>生成定制简历</Link>
               </Button>
               <Button asChild variant="secondary">
-                <Link to="/interview">生成面试作战卡</Link>
+                <Link to={getInterviewGuidePath(job.id)}>生成面试作战卡</Link>
               </Button>
             </div>
           </div>
@@ -125,7 +126,9 @@ export function JobDecisionPage() {
                 </Button>
               ) : (
                 <Button key={action.label} asChild className="w-full" variant="secondary">
-                  <Link to={action.target_path}>{action.label}</Link>
+                  <Link to={action.target_path === "/interview" ? getInterviewGuidePath(job.id) : action.target_path}>
+                    {action.label}
+                  </Link>
                 </Button>
               ),
             )}

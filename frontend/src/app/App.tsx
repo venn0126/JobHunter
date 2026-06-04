@@ -6,6 +6,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { AuthPage } from "@/pages/AuthPage";
 import { CareerVaultPage } from "@/pages/CareerVaultPage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import { InterviewGuidePage } from "@/pages/InterviewGuidePage";
 import { JobDecisionPage } from "@/pages/JobDecisionPage";
 import { JobsPage } from "@/pages/JobsPage";
 import { OpportunityPage } from "@/pages/OpportunityPage";
@@ -35,11 +36,14 @@ export function App() {
           <Route path="pipeline" element={<PipelinePage />} />
           <Route path="resume" element={<CareerVaultPage />} />
           <Route path="resume-lab" element={<ResumeLabPage />} />
+          <Route path="interview" element={<InterviewGuidePage />} />
           <Route path="update" element={<UpdatePage />} />
           <Route path="settings" element={<ValidationPage />} />
           <Route path="debug" element={<ValidationPage />} />
           {primaryNavItems
-            .filter((item) => !["/", "/opportunity", "/jobs", "/pipeline", "/resume", "/update", "/settings"].includes(item.path))
+            .filter((item) =>
+              !["/", "/opportunity", "/jobs", "/pipeline", "/resume", "/interview", "/update", "/settings"].includes(item.path),
+            )
             .map((item) => (
               <Route
                 key={item.path}

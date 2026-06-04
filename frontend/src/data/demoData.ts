@@ -2,6 +2,7 @@ import careerPersonas from "@/mocks/career-personas.json";
 import careerVault from "@/mocks/career-vault.json";
 import dashboard from "@/mocks/dashboard.json";
 import decisionCards from "@/mocks/job-decision-cards.json";
+import interviewGuide from "@/mocks/interview-guide.json";
 import jobs from "@/mocks/jobs.json";
 import market from "@/mocks/opportunity-market.json";
 import recruiterLens from "@/mocks/recruiter-lens.json";
@@ -13,6 +14,7 @@ import type {
   DashboardRadarItem,
   CareerVaultItem,
   DemoJob,
+  InterviewGuide,
   JobDecisionCard,
   OpportunityMarket,
   PipelineSummary,
@@ -31,6 +33,7 @@ export const demoData = {
     radar: DashboardRadarItem[];
   },
   decisionCards: decisionCards as { items: JobDecisionCard[] },
+  interviewGuide: interviewGuide as { items: InterviewGuide[] },
   jobs: jobs as { items: DemoJob[] },
   market: market as OpportunityMarket,
   recruiterLens: recruiterLens as { items: RecruiterLens[] },

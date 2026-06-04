@@ -1,4 +1,5 @@
 import { demoData } from "@/data/demoData";
+import { getInterviewGuidePath } from "@/services/interviewGuideService";
 import type { DemoJob, JobDecisionCard, RecruiterLens } from "@/types/demo";
 
 export function getJobById(jobId: string) {
@@ -38,7 +39,7 @@ export function getDecisionCard(job: DemoJob): JobDecisionCard {
       next_actions: [
         { label: "加入求职管线", target_path: "/pipeline" },
         { label: "补充职业素材", target_path: "/resume" },
-        { label: "准备面试作战卡", target_path: "/interview" },
+        { label: "准备面试作战卡", target_path: getInterviewGuidePath(job.id) },
       ],
     }
   );

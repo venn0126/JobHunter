@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Panel } from "@/components/ui/Panel";
+import { getInterviewGuidePath } from "@/services/interviewGuideService";
 import { getResumeStudioDraft } from "@/services/resumeStudioService";
 import { createBlankVaultItem, useCareerVaultStore } from "@/stores/careerVaultStore";
 
@@ -138,7 +139,7 @@ export function CareerVaultPage() {
             <Link to="/jobs">查看岗位雷达</Link>
           </Button>
           <Button asChild variant="secondary">
-            <Link to="/interview">准备面试作战卡</Link>
+            <Link to={getInterviewGuidePath(draft.job_id)}>准备面试作战卡</Link>
           </Button>
         </div>
       </Panel>

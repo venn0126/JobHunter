@@ -134,6 +134,34 @@ export interface RecruiterLens {
   improve_tips: string[];
 }
 
+export interface InterviewGuideQuestion {
+  id: string;
+  question: string;
+  intent: string;
+  framework: string[];
+  evidence_ids: string[];
+  risk_tip: string;
+}
+
+export interface InterviewGuidePlanItem {
+  day: number;
+  title: string;
+  focus: string;
+}
+
+export interface InterviewGuide {
+  job_id: string;
+  company_brief: {
+    business: string;
+    interview_style: string;
+    role_focus: string;
+  };
+  interview_focus: string[];
+  questions: InterviewGuideQuestion[];
+  reverse_questions: string[];
+  seven_day_plan: InterviewGuidePlanItem[];
+}
+
 export interface CareerVaultItem {
   id: string;
   type: "project" | "skill" | "story" | "certificate";
