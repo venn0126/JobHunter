@@ -1,7 +1,7 @@
 # JobHunter 黑马大赛开发清单
 
 > **项目方向**：AI 求职作战中枢  
-> **清单版本**：v1.1  
+> **清单版本**：v1.2
 > **更新日期**：2026-06-04
 > **依据文档**：`doc/黑马大赛-JobHunter架构设计文档.md`、`doc/黑马大赛-JobHunter-UX设计文档.md`  
 > **使用目的**：作为开发执行清单、进度把控清单、演示前验收清单
@@ -525,7 +525,284 @@ P1-J 完成记录：
 
 ---
 
-## 七、模块依赖关系
+## 七、P3 后台接口开发清单
+
+> P3 = 后台接口最小闭环，让当前前端可从 Mock 平滑切到 API / hybrid，并支持本地极速部署。
+
+### 7.1 后台服务完整架构
+
+P3 后台以当前前端最新代码为接口落点，优先满足：**性能佳、易扩展、调用简单、极速部署**。
+
+技术栈：
+
+| 能力 | 选型 | 说明 |
+|---|---|---|
+| Web 框架 | FastAPI | 延续当前 `backend/` 骨架 |
+| 数据库 | PostgreSQL | P3 起不再新增 SQLite 业务表 |
+| 缓存 / 任务状态 | Redis | 用于缓存、任务状态、更新进度和轻量锁 |
+| ORM / Migration | SQLAlchemy 2.x + Alembic | 所有表结构变更必须走 migration |
+| DTO | Pydantic | 请求 / 响应结构统一约束 |
+| 鉴权 | JWT access token + refresh token | 支持本地 Demo 和后续真实账号 |
+| 文件存储 | 本地 `data/uploads` | P3 只支持简历文件本地上传和 Demo 样例简历 |
+| 本地开发 | Vite + FastAPI 独立启动 | 前端保留热更新 |
+| 完整部署 | FastAPI 托管 `frontend/dist` | 一条命令可启动完整演示环境 |
+
+后台分层：
+
+```text
+backend/
+  api/              # Router：路由、参数、依赖注入
+  schemas/          # 请求 / 响应 DTO
+  services/         # 业务编排、缓存策略、权限判断
+  repositories/     # PostgreSQL 数据访问
+  models/           # SQLAlchemy ORM
+  core/             # 配置、响应、异常、中间件、安全、Redis、DB
+  tasks/            # 任务状态、进度事件、轻量异步任务
+  integrations/     # 后续 LLM / 外部数据源 / 更新脚本适配
+```
+
+运行链路：
+
+```text
+Frontend Service / Store
+  ↓
+API Client
+  ↓
+FastAPI Router
+  ↓
+Service
+  ↓
+Repository
+  ↓
+PostgreSQL
+
+Redis：
+- 接口短缓存
+- 决策卡 / 招聘官视角 / 简历定制 / 面试作战卡生成结果缓存
+- 更新任务 / AI 生成任务状态
+- 短 TTL 幂等键和轻量锁
+```
+
+架构边界：
+
+- Router 不写业务逻辑；
+- Service 不散写 SQL；
+- Repository 不处理页面展示逻辑；
+- 配置集中在 `core/config.py`；
+- `user_id` 由后端从 Token / Demo Session 注入，禁止信任前端传入；
+- 求职方向相关数据必须贯穿 `persona_id`；
+- Redis 本阶段只做缓存和任务状态，不引入 Celery / RQ；
+- 前端页面只调用业务 service / store，不直接处理底层请求、缓存和错误。
+
+### 7.2 API 响应结构
+
+P3 后端统一响应以当前前端 `frontend/src/services/apiClient.ts` 为准：
+
+```ts
+interface ApiResponse<T> {
+  success: boolean;
+  code: string;
+  message: string;
+  data: T;
+  request_id: string;
+}
+```
+
+约定：
+
+- 成功：`success = true`，`code = "OK"`；
+- 失败：`success = false`，`data = null`；
+- `request_id` 必须贯穿日志和响应；
+- 架构文档中的数字错误码作为历史设计参考，P3 不强行切换，避免当前前端 API client 断裂。
+
+建议错误码：
+
+| code | 说明 |
+|---|---|
+| `OK` | 成功 |
+| `AUTH_EXPIRED` | 未登录或 Token 过期 |
+| `FORBIDDEN` | 无权限访问该用户数据 |
+| `VALIDATION_ERROR` | 参数错误 |
+| `RESOURCE_NOT_FOUND` | 资源不存在 |
+| `CONFLICT` | 状态冲突或重复操作 |
+| `SERVICE_ERROR` | 服务内部错误 |
+| `MOCK_DATA_ERROR` | Mock / Seed 数据加载失败 |
+| `TASK_FAILED` | 任务执行失败 |
+
+### 7.3 API 契约补充
+
+P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯：
+
+- 前端可见 ID 统一使用字符串，后端如使用自增主键，需要额外提供稳定 `public_id`；
+- 时间字段统一 ISO 8601 字符串；
+- 列表响应统一包含 `items` 和 `pagination`；
+- 列表接口必须声明 `page`、`page_size`、筛选、排序默认值，`page_size` 必须有上限；
+- 写接口必须支持重复点击兜底，必要时使用唯一约束或 `Idempotency-Key`；
+- 生成类接口和更新任务接口必须返回 `task_id` 或可复用的缓存结果；
+- `Authorization`、`X-Request-ID`、`Idempotency-Key` 作为通用请求头预留；
+- `persona_id` 优先从当前激活身份解析，允许查询参数覆盖时必须校验归属；
+- 文件上传仅允许简历相关格式，并限制大小、类型和错误提示；
+- 前端 `apiClient` 在 P3-J 需要补齐 `GET / POST / PATCH / DELETE`、Auth Header 和统一错误处理。
+
+### 7.4 P3 总任务清单
+
+| ID | 任务 | 优先级 | 状态 | 验收标准 |
+|---|---|---|---|---|
+| P3-01 | 后端工程分层与配置 | P3 | 未开始 | Router / Service / Repository / Model / Schema 分层清晰，配置集中 |
+| P3-02 | PostgreSQL 接入与 Alembic 迁移 | P3 | 未开始 | 可执行 migration，核心表可创建，可重复迁移 |
+| P3-03 | Redis 接入与缓存 / 任务状态抽象 | P3 | 未开始 | 有统一 Redis client、key 规范、TTL 和降级策略 |
+| P3-04 | 统一响应、异常、request_id、中间件 | P3 | 未开始 | 所有接口返回统一 `ApiResponse<T>`，异常不裸露堆栈 |
+| P3-05 | Auth / 用户资料 API | P3 | 未开始 | 登录、注册、刷新、退出、个人资料读写可用 |
+| P3-06 | Persona API | P3 | 未开始 | 身份列表、新增、编辑、激活可用，`persona_id` 可贯穿 |
+| P3-07 | Mock Bootstrap / Demo Reset API | P3 | 未开始 | 后端可输出当前前端 Demo 所需完整数据并支持重置 |
+| P3-08 | Market / Jobs API | P3 | 未开始 | 机会广场、岗位列表、岗位详情可被前端读取 |
+| P3-09 | Vault / Resume API | P3 | 未开始 | 职业素材、简历版本、简历工作室基础接口可用 |
+| P3-10 | Decision / Recruiter Lens / Tailor API | P3 | 未开始 | 生成类接口有 Mock 生成、缓存和任务状态 |
+| P3-11 | Pipeline API | P3 | 未开始 | 加入管线、状态推进、备注更新、重复加入兜底可用 |
+| P3-12 | Resume Lab / Feedback API | P3 | 未开始 | 简历实验数据、反馈录入、反馈趋势可用 |
+| P3-13 | Interview / Sprint / Task Progress API | P3 | 未开始 | 面试作战卡、冲刺任务、任务进度查询可用 |
+| P3-14 | System Health / Version / Update API | P3 | 未开始 | 健康检查、版本、更新任务状态可用 |
+| P3-15 | 前端 API / hybrid 联调 | P3 | 未开始 | `mock / api / hybrid` 可切换，核心页面不缺接口 |
+| P3-16 | 后端测试、脚本、文档收口 | P3 | 未开始 | smoke test、health、部署命令和清单状态完成 |
+
+### 7.5 当前前端接口覆盖矩阵
+
+> 以下接口按当前前端路由、Store 写操作、Mock 数据结构和设置页调试能力整理，P3 开发时不得遗漏。
+
+| 前端模块 | 后端接口 | 说明 |
+|---|---|---|
+| 登录 / 注册 | `POST /api/auth/login`、`POST /api/auth/register`、`POST /api/auth/logout`、`POST /api/auth/refresh`、`GET /api/auth/me`、`PATCH /api/auth/me` | 覆盖 `AuthPage`、个人设置和退出登录 |
+| 首页驾驶舱 | `GET /api/dashboard`、`GET /api/sprint`、`GET /api/pipeline`、`GET /api/jobs` | 覆盖首页指标、冲刺任务、推荐岗位和管线概览 |
+| Persona / 顶部切换 | `GET /api/personas`、`POST /api/personas`、`PATCH /api/personas/{id}`、`POST /api/personas/{id}/activate` | 覆盖身份切换和设置页身份编辑 |
+| 机会热度广场 | `GET /api/market`、`GET /api/market/directions/{id}/jobs`、`POST /api/market/directions/{id}/favorite`、`POST /api/market/directions/{id}/apply-preference` | 覆盖全局 / 个性化热度和方向跳转 |
+| 岗位雷达 | `GET /api/jobs`、`GET /api/jobs/{id}` | 支持筛选、排序、详情入口和来源标识 |
+| 岗位决策卡 | `GET /api/jobs/{id}/decision`、`GET /api/jobs/{id}/recruiter-lens`、`GET /api/decisions` | 支持决策卡、招聘官视角和决策卡列表 |
+| 职业素材库 | `GET /api/vault`、`POST /api/vault/items`、`PATCH /api/vault/items/{id}`、`DELETE /api/vault/items/{id}` | 支持素材列表、新增、编辑、删除和证据跳转 |
+| 简历 / 简历工作室 | `POST /api/resumes/upload`、`POST /api/resumes/demo`、`GET /api/resumes/versions`、`POST /api/resumes/versions`、`GET /api/resumes/{id}/profile`、`GET /api/resume-studio?job_id=`、`POST /api/tailor/run` | 支持上传简历、加载样例、画像、岗位定制简历和保存版本 |
+| 简历版本实验 | `GET /api/resume-lab`、`GET /api/resume-lab/compare` | 支持版本列表、最佳版本和版本对比 |
+| 面试作战卡 | `POST /api/interview/start`、`GET /api/interview/cards?job_id=` | 支持按岗位生成和读取面试卡 |
+| 反馈复盘 | `GET /api/feedback`、`POST /api/feedback`、`PATCH /api/feedback/{id}` | 支持反馈统计、录入和更新 |
+| 求职管线 | `GET /api/pipeline`、`POST /api/pipeline/cards`、`PATCH /api/pipeline/cards/{id}` | 支持加入、状态推进、备注和提醒 |
+| Demo / 设置 | `GET /api/mock/bootstrap`、`POST /api/demo/reset`、`GET /api/demo/summary` | 支持 Demo 初始化、重置和控制台摘要 |
+| 系统能力 | `GET /api/health`、`GET /api/version`、`GET /api/system/health`、`GET /api/system/version`、`GET /api/system/update/check`、`POST /api/system/update/apply`、`GET /api/system/update/status/{id}`、`GET /api/tasks/{id}/events` | 支持健康检查、版本更新、任务状态和 SSE 可选进度；保留当前短路径别名 |
+| 调试验证 | `GET /api/debug/failure` | 支持设置页 API 失败验证 |
+
+### 7.6 P3 子小节拆分
+
+> P3 按以下小节逐步开发；每个小节完成后先 Review / 重构，再更新本文档并进入下一小节。
+
+| 小节 | 覆盖任务 | 状态 | 主要交付 | 验收标准 |
+|---|---|---|---|---|
+| P3-A 后端基础架构与一键启动 | P3-01、P3-04、P3-16 | 未开始 | 分层目录、配置、依赖、Docker Compose、`make dev`、`make deploy-local` | 一条命令可启动开发环境和完整部署环境，端口占用和 Docker 缺失有明确提示 |
+| P3-B PostgreSQL 数据模型与迁移 | P3-02 | 未开始 | SQLAlchemy、Alembic、核心表、索引、迁移脚本 | migration 可重复执行，核心表和索引符合前端数据需要 |
+| P3-C Redis 缓存与任务状态 | P3-03、P3-13 | 未开始 | Redis client、key 规范、TTL、任务状态抽象 | 缓存可读写，Redis 不可用时有明确降级，写入后能失效相关缓存 |
+| P3-D Auth / User / Persona | P3-05、P3-06 | 未开始 | 认证、个人设置、身份列表、身份切换 | 登录注册、刷新、退出、资料编辑和 Persona 切换可用 |
+| P3-E Demo Seed / Bootstrap / Reset | P3-07 | 未开始 | Demo 数据入库、Bootstrap、Reset | API 返回结构覆盖当前 `frontend/src/mocks` 全量数据 |
+| P3-F 核心业务读接口 | P3-08、P3-09 | 未开始 | Dashboard、Market、Jobs、Vault、Resume Lab 读接口 | 前端核心读页面可切到 API 模式，列表分页 / 筛选 / 空状态稳定 |
+| P3-G 生成类接口 | P3-10、P3-13 | 未开始 | Decision、Recruiter Lens、Tailor、Interview Mock 生成和缓存 | 重复请求命中缓存，任务状态可查询，超时可回退最近缓存 |
+| P3-H 写入类接口 | P3-11、P3-12 | 未开始 | Pipeline、Feedback、Vault、Resume Version 写接口 | 写入后刷新可保留状态，重复/非法操作有兜底 |
+| P3-I 系统健康、版本、更新任务 | P3-14 | 未开始 | Health、Version、Update、Task Events | 设置页健康检查和更新任务状态可用 |
+| P3-J 前端 hybrid 联调与回归验收 | P3-15、P3-16 | 未开始 | 前端 adapter、smoke test、文档收口 | `mock / api / hybrid` 切换稳定，核心链路无缺口，API 失败不会白屏 |
+
+P3 推荐开发顺序：
+
+```text
+P3-A 后端基础架构与一键启动
+  ↓
+P3-B PostgreSQL 数据模型与迁移
+  ↓
+P3-C Redis 缓存与任务状态
+  ↓
+P3-D Auth / User / Persona
+  ↓
+P3-E Demo Seed / Bootstrap / Reset
+  ↓
+P3-F 核心业务读接口
+  ↓
+P3-G 生成类接口
+  ↓
+P3-H 写入类接口
+  ↓
+P3-I 系统健康、版本、更新任务
+  ↓
+P3-J 前端 hybrid 联调与回归验收
+```
+
+### 7.7 P3 一键启动 / 极速部署目标
+
+P3-A 必须先完成以下命令目标，后续接口开发才能继续：
+
+```bash
+make init          # 首次安装依赖、生成 .env、检查环境
+make dev           # 本地开发：Vite 前端 + FastAPI 后端 + PostgreSQL + Redis
+make migrate       # 执行 PostgreSQL Alembic migration
+make seed-demo     # 初始化 / 恢复 Demo 数据
+make health        # 检查前端、后端、PostgreSQL、Redis
+make deploy-local  # 本地完整部署：构建前端后由 FastAPI 托管静态产物
+```
+
+`make dev` 默认行为：
+
+- 启动 PostgreSQL；
+- 启动 Redis；
+- 执行迁移；
+- 启动 FastAPI；
+- 启动 Vite；
+- 保留前端热更新。
+
+`make deploy-local` 默认行为：
+
+- 构建前端；
+- 启动 PostgreSQL 和 Redis；
+- 执行迁移和 Demo seed；
+- 启动 FastAPI；
+- FastAPI 托管 `frontend/dist`；
+- 适合演示、快速交付和另一台机器拉代码后直接运行。
+
+### 7.8 P3 每小节固定完成门槛
+
+- [ ] 新增代码完成 Review，确认无明显重复逻辑和散落配置；
+- [ ] Router 只做入参 / 出参 / 依赖注入，业务逻辑进入 Service；
+- [ ] 数据访问统一进入 Repository，不在 Router / Service 中散写 SQL；
+- [ ] 配置统一进入 `core/config.py`，禁止业务代码硬编码连接串、TTL、密钥；
+- [ ] 所有接口统一 `ApiResponse<T>`，并携带 `request_id`；
+- [ ] 涉及用户数据的接口必须由后端注入 `user_id`，不能信任前端传入；
+- [ ] 涉及求职方向的数据必须贯穿 `persona_id`；
+- [ ] Redis key 命名、TTL、缓存降级策略在对应小节声明，用户 / 身份相关缓存必须隔离；
+- [ ] 写接口必须有事务、幂等或唯一约束，重复点击不产生脏数据；
+- [ ] 写接口完成后必须清理或刷新相关 Redis 缓存；
+- [ ] 列表接口必须有分页、筛选、排序默认值和最大 `page_size`；
+- [ ] 文件上传必须校验大小、类型和失败兜底；
+- [ ] CORS、前端独立启动端口、完整部署静态托管路径已验证；
+- [ ] PostgreSQL 结构变更必须通过 Alembic migration 管理；
+- [ ] 至少通过 `python -m compileall backend`、`git diff --check`、`make health`；
+- [ ] 有后端 smoke test / 单测覆盖本小节关键接口；
+- [ ] 完成后更新本清单状态和模块进度总表。
+
+### 7.9 P3 Review 监督
+
+- [ ] 接口覆盖当前前端路由、Store 写操作、Mock 数据模块和设置页调试能力；
+- [ ] 架构文档核心接口均已被 P3 覆盖：上传简历、加载样例简历、简历画像、简历版本列表、决策卡列表不能遗漏；
+- [ ] 后端响应结构与当前 `apiClient.ts` 保持兼容；
+- [ ] PostgreSQL migration 替换当前 SQLite 迁移思路；
+- [ ] Redis 只用于缓存和任务状态，不提前引入复杂队列；
+- [ ] 生成类接口有超时、失败、最近一次成功缓存和任务状态兜底；
+- [ ] SSE 不可用时必须允许轮询任务状态；
+- [ ] 一键启动脚本能重复执行，不破坏本地数据；
+- [ ] 端口占用、Docker 未启动、`.env` 缺失、数据库未启动、Redis 未启动都有明确错误；
+- [ ] 前端页面不直接拼底层 API，调用统一收敛到 service / store；
+- [ ] 完成 P3-J 后，`mock / api / hybrid` 三种模式均可走完整核心链路。
+
+P3 Review 补充结论：
+
+- 已补齐架构文档中容易遗漏的 `/api/resumes/upload`、`/api/resumes/demo`、`/api/resumes/versions`、`/api/resumes/{id}/profile`、`/api/decisions`；
+- 已明确 `/api/health`、`/api/version` 与 `/api/system/health`、`/api/system/version` 的兼容关系；
+- 已把分页、幂等、缓存失效、文件上传、CORS、端口占用和 Redis 降级列为固定门槛；
+- 已确认 P3 仍保持最小闭环，不把 Celery / RQ、真实爬虫、生产级监控纳入当前阶段。
+
+---
+
+## 八、模块依赖关系
 
 建议按以下依赖顺序推进：
 
@@ -551,6 +828,12 @@ P1-J 完成记录：
 更新提示 / 一键运维
   ↓
 P1 增强模块
+  ↓
+P3 后台基础架构 / PostgreSQL / Redis
+  ↓
+P3 后台业务接口
+  ↓
+前端 API / hybrid 联调
 ```
 
 强依赖说明：
@@ -561,18 +844,22 @@ P1 增强模块
 - 决策卡依赖：岗位雷达、决策卡 Mock；
 - 管线依赖：岗位卡加入动作、状态枚举；
 - 更新提示依赖：版本信息接口或 `version.json`。
+- P3 后台基建依赖：现有 `backend/` 骨架、一键脚本、当前前端 API client；
+- P3 数据层依赖：PostgreSQL、Alembic、Demo seed、`user_id` / `persona_id` 贯穿原则；
+- P3 缓存层依赖：Redis key 规范、TTL、生成结果缓存和任务状态抽象；
+- P3 联调依赖：前端 service / store 统一适配，禁止页面散落请求逻辑。
 
 ---
 
-## 八、每周 / 每日进度把控模板
+## 九、每周 / 每日进度把控模板
 
-### 8.1 每日站会记录模板
+### 9.1 每日站会记录模板
 
 | 日期 | 今日目标 | 完成情况 | 阻塞项 | 明日计划 |
 |---|---|---|---|---|
 | YYYY-MM-DD |  |  |  |  |
 
-### 8.2 模块进度总表
+### 9.2 模块进度总表
 
 | 模块 | 负责人 | 优先级 | 状态 | 预计完成时间 | 实际完成时间 | 备注 |
 |---|---|---|---|---|---|---|
@@ -591,12 +878,19 @@ P1 增强模块
 | 简历版本实验 |  | P1 | 已完成 |  | 2026-06-04 | 已完成 Resume A/B Lab 基础页、最佳版本推荐、版本列表、核心指标卡、版本详情、版本对比和证据联动 |
 | 面试作战卡 |  | P1 | 已完成 |  | 2026-06-04 | 已完成公司简报、面试重点、高频问题、回答框架、关联证据、7 天计划、复习状态、复制回答要点和补素材跳转 |
 | 反馈复盘 |  | P1 | 已完成 |  | 2026-06-04 | 已完成反馈统计、结果分布、复盘趋势、版本表现、反馈录入、管线联动和下一轮策略建议 |
+| 后端基础架构与一键启动 |  | P3 | 未开始 |  |  | 规划 FastAPI 分层、PostgreSQL、Redis、`make dev` 和 `make deploy-local` |
+| PostgreSQL 数据层 |  | P3 | 未开始 |  |  | 规划 SQLAlchemy、Alembic、核心业务表和 Demo seed |
+| Redis 缓存与任务状态 |  | P3 | 未开始 |  |  | 规划缓存 key、TTL、生成结果缓存和任务状态 |
+| 后台认证与用户身份 |  | P3 | 未开始 |  |  | 规划 Auth、User、Persona 和 `persona_id` 贯穿 |
+| 后台业务接口 |  | P3 | 未开始 |  |  | 规划 Dashboard、Market、Jobs、Vault、Pipeline、Feedback 等接口 |
+| 生成类后台接口 |  | P3 | 未开始 |  |  | 规划 Decision、Recruiter Lens、Tailor、Interview 的 Mock 生成、缓存和任务状态 |
+| 前后端 API 联调 |  | P3 | 未开始 |  |  | 规划 `mock / api / hybrid` 三模式联调和 smoke test |
 
 ---
 
-## 九、阶段验收门槛
+## 十、阶段验收门槛
 
-### 9.1 可开发门槛
+### 10.1 可开发门槛
 
 - [x] `make init` 可执行；
 - [x] `make dev` 可启动本地环境；
@@ -604,14 +898,14 @@ P1 增强模块
 - [x] 左侧导航和顶部栏可见；
 - [x] 登录 / 演示账号可进入系统。
 
-### 9.2 可联调门槛
+### 10.2 可联调门槛
 
 - [x] `mock / api / hybrid` 模式可切换；
 - [x] 核心页面都有假数据兜底；
 - [x] 决策卡和招聘官视角数据结构稳定；
 - [x] `persona_id` 已贯穿请求与状态。
 
-### 9.3 可演示门槛
+### 10.3 可演示门槛
 
 - [x] 首页驾驶舱可完整展示；
 - [x] 热度广场 → 岗位雷达 → 决策卡 → 管线链路可走通；
@@ -620,7 +914,7 @@ P1 增强模块
 - [x] 页面可显示更新提示；
 - [x] 升级失败有兜底，不会直接白屏。
 
-### 9.4 比赛前门槛
+### 10.4 比赛前门槛
 
 - [x] `make start` 可一键启动；
 - [x] `make upgrade` 可一键升级；
@@ -630,7 +924,20 @@ P1 增强模块
 - [ ] 录屏备份已准备；
 - [ ] 最近一个稳定 tag 已打好。
 
-### 9.5 边界 Case 验证门槛
+### 10.5 P3 后端可联调门槛
+
+- [ ] `make dev` 可一键启动 Vite、FastAPI、PostgreSQL、Redis；
+- [ ] `make deploy-local` 可构建前端并由 FastAPI 托管完整演示环境；
+- [ ] `make migrate` 使用 Alembic 管理 PostgreSQL 结构；
+- [ ] `make seed-demo` 可恢复标准 Demo 数据；
+- [ ] `make health` 可检查前端、后端、PostgreSQL、Redis；
+- [ ] 所有 API 返回统一 `success / code / message / data / request_id`；
+- [ ] Auth、Persona、Dashboard、Market、Jobs、Vault、Pipeline、Feedback、System 接口 smoke test 通过；
+- [ ] 生成类接口有 Redis 缓存和任务状态兜底；
+- [ ] 前端切到 `api` 模式时核心页面不缺接口；
+- [ ] 前端切到 `hybrid` 模式时接口失败可回退 Mock 或显示明确兜底。
+
+### 10.6 边界 Case 验证门槛
 
 - [ ] 认证与用户边界已验证；
 - [ ] Persona 与冷启动边界已验证；
@@ -643,7 +950,7 @@ P1 增强模块
 - [ ] 一键启动 / 一键升级 / 一键迁移边界已验证；
 - [ ] 移动端 / 大屏 / 低性能设备边界已验证。
 
-### 9.6 高风险边界 Case 验证清单
+### 10.7 高风险边界 Case 验证清单
 
 > 以下清单优先级最高，比赛前必须逐项验证。
 
@@ -667,10 +974,26 @@ P1 增强模块
 | 运维 | `make migrate` 失败 | 高 | 构造失败迁移 | 日志明确，返回非 0，可回滚 | 未开始 |
 | 运维 | `make upgrade` 后健康检查失败 | 高 | 模拟后端启动失败 | 升级流程中止并给出回滚路径 | 未开始 |
 | Demo | Demo 数据污染后重置 | 高 | 手动修改核心 Demo 数据 | 能恢复标准演示态 | 未开始 |
+| P3 后端 | PostgreSQL 未启动 | 高 | 停止数据库后访问接口 | 健康检查失败明确，页面不白屏 | 未开始 |
+| P3 后端 | Redis 未启动 | 高 | 停止 Redis 后访问生成类接口 | 降级为无缓存执行或返回明确错误 | 未开始 |
+| P3 后端 | Redis 缓存串身份 | 高 | 切换 Persona 后访问生成类接口 | 不返回上一个身份的缓存结果 | 未开始 |
+| P3 后端 | 生成类接口超时 | 高 | 模拟生成超时 | 返回任务状态或最近成功缓存，不阻塞页面 | 未开始 |
+| P3 后端 | SSE 不可用 | 中 | 禁用事件流后查询任务 | 可降级轮询 `/api/system/update/status/{id}` 或任务状态接口 | 未开始 |
+| P3 后端 | Migration 重复执行 | 高 | 连续执行 `make migrate` | 不重复建表，不破坏数据 | 未开始 |
+| P3 后端 | Demo seed 重复执行 | 高 | 连续执行 `make seed-demo` | 标准 Demo 数据稳定，不产生无限重复数据 | 未开始 |
+| P3 后端 | API 模式接口缺失 | 高 | 前端切 `api` 模式巡检 | 核心页面均有数据或明确兜底 | 未开始 |
+| P3 后端 | 写接口重复点击 | 高 | 连续提交新增素材 / 加入管线 / 反馈录入 | 不产生重复脏数据，返回明确状态 | 未开始 |
+| P3 后端 | 列表分页越界 | 中 | 请求超大 `page_size` 或不存在页码 | 自动限制 page size，空页返回空列表 | 未开始 |
+| P3 后端 | 简历上传异常 | 高 | 上传超大文件 / 非简历文件 | 拒绝并返回明确错误，不写入坏数据 | 未开始 |
+| P3 后端 | 跨用户访问资源 | 高 | 用 A 用户访问 B 用户资源 ID | 返回无权限或不存在，不泄露数据 | 未开始 |
+| P3 后端 | Persona 数据串台 | 高 | 切换身份后读取岗位决策 / 管线 / 简历 | 只返回当前身份数据 | 未开始 |
+| P3 部署 | `make deploy-local` 重复执行 | 高 | 连续执行两次 | 服务可用，端口和进程不冲突 | 未开始 |
+| P3 部署 | 前端独立服务跨域 | 中 | Vite 访问 FastAPI | CORS 正常，Auth Header 和请求头可通过 | 未开始 |
+| P3 部署 | Docker 未启动或端口占用 | 高 | 停止 Docker 或占用 8000 / 5173 / PG / Redis 端口 | 脚本给出明确提示并退出 | 未开始 |
 | 适配 | 大屏模式 | 中 | `?mode=demo` 验证 | 字号、布局、主链路可讲 | 未开始 |
 | 适配 | 低性能设备 | 中 | 降级动效验证 | 页面可用，不明显卡顿 | 未开始 |
 
-### 9.7 建议验证顺序
+### 10.8 建议验证顺序
 
 建议按以下顺序执行边界验证：
 
@@ -684,6 +1007,8 @@ P1 增强模块
 → 更新机制
 → 一键运维
 → Demo 重置
+→ P3 后台接口
+→ P3 极速部署
 → 全平台适配
 ```
 
@@ -695,7 +1020,7 @@ P1 增强模块
 
 ---
 
-## 十、当前建议执行顺序
+## 十一、当前建议执行顺序
 
 建议实际按以下顺序开工：
 
@@ -710,13 +1035,18 @@ P1 增强模块
 9. 职业素材库基础能力；
 10. 更新提示；
 11. 响应式适配与大屏模式；
-12. P1 增强模块。
+12. P1 增强模块；
+13. P3 后端基础架构与一键启动；
+14. P3 PostgreSQL / Redis 数据底座；
+15. P3 后台业务接口；
+16. P3 前端 API / hybrid 联调。
 
 ---
 
-## 十一、备注
+## 十二、备注
 
 1. 当前清单默认前端为主线，算法真实能力暂不阻塞开发；
 2. 后续如果算法同学开始交付真实数据，应在本清单中追加“联调清单”；
 3. 本文档建议作为后续每次同步进度时的唯一执行清单；
-4. 后续可以直接在本文档中维护状态，不需要另起新的待办文件。
+4. 后续可以直接在本文档中维护状态，不需要另起新的待办文件；
+5. P3 后台接口优先完成最小闭环，暂不引入复杂队列、生产级监控和真实岗位爬虫。

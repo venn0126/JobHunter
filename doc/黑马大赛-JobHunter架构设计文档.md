@@ -759,6 +759,513 @@ SourceBadge 视觉建议：
 }
 ```
 
+### 5.15 算法服务数据接入规范
+
+> 本节给算法同学作为真实算法接入说明。算法实现可以独立演进，但对后端 / 前端暴露的数据必须保持稳定、可缓存、可降级。
+
+#### 5.15.1 接入目标
+
+算法接入只负责输出结构化结果，不直接控制页面逻辑。
+
+目标：
+
+- 算法同学按本章 Schema 返回数据；
+- 后端负责鉴权、任务状态、缓存、降级和持久化；
+- 前端只消费后端统一接口，不直接调用算法服务；
+- Mock 数据、缓存结果、真实算法结果必须能被同一套 adapter 消费；
+- 算法未就绪、超时或失败时，页面仍能展示最近成功缓存或 Mock 兜底。
+
+#### 5.15.2 接入边界
+
+```text
+Frontend
+  ↓
+Backend API
+  ↓
+Algorithm Gateway / Service Adapter
+  ↓
+Algorithm Service
+  ↓
+Structured JSON Result
+```
+
+边界要求：
+
+- 算法服务不处理登录态；
+- 算法服务不信任前端传入的 `user_id`；
+- 算法服务接收后端已校验的 `user_context`、`persona_context`、`resume_context`、`job_context`、`vault_context`；
+- 算法服务返回纯 JSON，不返回 HTML、Markdown 页面结构或前端组件配置；
+- 算法服务可以返回解释和证据引用，但证据 ID 必须来自后端提供的素材库或简历上下文。
+
+#### 5.15.3 三类算法能力拆分
+
+| 算法方向 | 主要能力 | 输入 | 输出 | 前端消费模块 |
+|---|---|---|---|---|
+| 简历画像算法 | 简历解析、技能抽取、经历结构化、优势 / 短板识别 | 简历文本、职业素材、目标身份 | `resume_profile`、技能雷达、证据索引 | 首页、职业素材库、简历工作室 |
+| 岗位决策算法 | JD 解析、匹配度、风险、优先级、解释生成 | 岗位 JD、简历画像、职业素材、Persona | `job_decision_card`、`recruiter_lens` | 岗位详情、招聘官视角 |
+| 行动建议算法 | 简历定制、面试作战卡、求职 Sprint、反馈复盘建议 | 决策卡、管线、反馈、简历版本 | `tailor_output`、`interview_card`、`sprint_tasks`、反馈建议 | 简历工作室、面试作战卡、首页、反馈复盘 |
+
+说明：
+
+- 三类算法可以分开交付；
+- 任一算法未交付时，对应模块必须可回退 Mock；
+- 后端不得因为某个算法失败阻塞全站；
+- 算法输出字段允许扩展，但不得删除已被前端使用的字段。
+
+#### 5.15.4 统一算法请求结构
+
+后端调用算法服务时建议统一使用以下请求壳：
+
+```json
+{
+  "request_id": "req_20260604_xxx",
+  "task_id": "task_decision_001",
+  "algorithm": "job_decision",
+  "version": "algo_decision_v1",
+  "mode": "demo",
+  "user_context": {
+    "user_id": "user_demo",
+    "locale": "zh-CN"
+  },
+  "persona_context": {
+    "persona_id": "persona_ai_app",
+    "name": "AI 应用工程师",
+    "target_roles": ["AI 应用工程师", "LLM 工程师"],
+    "core_skills": ["Python", "LLM", "RAG"]
+  },
+  "resume_context": {
+    "resume_id": "resume_demo_001",
+    "raw_text": "简历文本或已清洗文本",
+    "profile": {}
+  },
+  "job_context": {
+    "job_id": "job_1001",
+    "title": "AI 应用工程师",
+    "company": "某科技公司",
+    "jd": "岗位 JD 文本",
+    "tags": ["Python", "RAG", "LLM"]
+  },
+  "vault_context": {
+    "items": [
+      {
+        "id": "ev_rag_project",
+        "type": "project",
+        "title": "企业知识库 RAG 项目",
+        "summary": "负责检索增强问答链路"
+      }
+    ]
+  },
+  "runtime_options": {
+    "timeout_ms": 15000,
+    "max_items": 8,
+    "enable_explanation": true,
+    "enable_cache": true
+  }
+}
+```
+
+字段说明：
+
+| 字段 | 要求 |
+|---|---|
+| `request_id` | 必填，由后端生成，用于日志追踪 |
+| `task_id` | 生成类任务必填，用于查询状态和缓存结果 |
+| `algorithm` | 必填，建议取值：`resume_profile`、`job_decision`、`recruiter_lens`、`tailor_resume`、`interview_card`、`sprint_plan`、`feedback_review` |
+| `version` | 必填，算法版本号，便于缓存失效和回滚 |
+| `mode` | 必填，`demo` / `mock` / `real` / `hybrid` |
+| `user_context` | 由后端注入，算法不自行解析 Token |
+| `persona_context` | 求职方向相关任务必填 |
+| `runtime_options` | 后端控制超时、数量和缓存策略 |
+
+#### 5.15.5 统一算法响应结构
+
+算法服务返回建议统一为：
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "request_id": "req_20260604_xxx",
+  "task_id": "task_decision_001",
+  "algorithm": "job_decision",
+  "version": "algo_decision_v1",
+  "source": "real",
+  "cache_policy": {
+    "cacheable": true,
+    "ttl_seconds": 86400,
+    "cache_key_hint": "job_decision:user_demo:persona_ai_app:job_1001:algo_decision_v1"
+  },
+  "data": {},
+  "warnings": [],
+  "metrics": {
+    "latency_ms": 1230,
+    "token_input": 0,
+    "token_output": 0
+  }
+}
+```
+
+失败响应：
+
+```json
+{
+  "success": false,
+  "code": "ALGO_TIMEOUT",
+  "message": "算法服务超时",
+  "request_id": "req_20260604_xxx",
+  "task_id": "task_decision_001",
+  "algorithm": "job_decision",
+  "version": "algo_decision_v1",
+  "source": "real",
+  "data": null,
+  "warnings": [
+    "backend_should_fallback_to_cache_or_mock"
+  ],
+  "metrics": {
+    "latency_ms": 15000
+  }
+}
+```
+
+算法错误码建议：
+
+| code | 说明 | 后端处理 |
+|---|---|---|
+| `OK` | 成功 | 写缓存并返回 |
+| `ALGO_TIMEOUT` | 算法超时 | 返回最近成功缓存或 Mock |
+| `ALGO_INVALID_INPUT` | 输入缺失或格式错误 | 记录日志，返回参数错误或 Mock |
+| `ALGO_EMPTY_RESULT` | 算法成功但无有效结果 | 使用兜底文案或 Mock |
+| `ALGO_MODEL_ERROR` | 模型调用失败 | 返回缓存 / Mock，并展示可重试 |
+| `ALGO_RATE_LIMITED` | 模型限流 | 返回缓存 / Mock，稍后重试 |
+| `ALGO_UNSUPPORTED_VERSION` | 算法版本不兼容 | 回退上一版本缓存 |
+
+#### 5.15.6 各算法输出数据要求
+
+##### 简历画像 `resume_profile`
+
+输出必须可映射到 `5.5 简历画像数据 Schema`。
+
+必填：
+
+- `resume_id`;
+- `summary`;
+- `skills`;
+- `strengths`;
+- `gaps`;
+- `evidence_index`。
+
+约束：
+
+- `skills.level` 使用 `0-1` 小数；
+- `evidence_index` 中的证据 ID 必须能在简历文本或职业素材库中追溯；
+- 不确定的内容必须放入 `warnings`，不能伪造成事实。
+
+##### 岗位决策 `job_decision`
+
+输出必须可映射到 `5.6 岗位决策卡数据 Schema`。
+
+必填：
+
+- `job_id`;
+- `decision`;
+- `priority`;
+- `overall_grade`;
+- `scores`;
+- `hit_reasons`;
+- `gaps`;
+- `risks`;
+- `next_actions`。
+
+约束：
+
+- `scores` 使用 `0-100`；
+- `decision` 必须来自固定枚举；
+- `gaps.evidence_id` 如果不存在，必须给出可补充素材的建议；
+- 每条解释必须尽量绑定技能、项目、经历或 JD 原文。
+
+##### 招聘官视角 `recruiter_lens`
+
+输出必须可映射到 `5.8 招聘官视角数据 Schema`。
+
+必填：
+
+- `job_id`;
+- `first_impression`;
+- `highlights`;
+- `concerns`;
+- `likely_questions`;
+- `improve_tips`。
+
+约束：
+
+- 不输出攻击性、歧视性或与岗位无关评价；
+- `concerns` 必须是可改进问题，不做不可操作判断；
+- `likely_questions` 至少 3 条，便于面试作战卡复用。
+
+##### 简历定制 `tailor_resume`
+
+输出必须可映射到 `5.10 简历工作室数据 Schema`。
+
+必填：
+
+- `job_id`;
+- `job_title`;
+- `company`;
+- `keywords`;
+- `sections`;
+- `summary`。
+
+约束：
+
+- 每个 `sections.evidence` 必须引用真实素材或简历片段；
+- 无证据时只能给“建议补充”，不能编造项目经历；
+- `before` / `after` 必须可用于前端 diff 展示。
+
+##### 面试作战卡 `interview_card`
+
+输出必须可映射到 `5.13 面试作战卡数据 Schema`。
+
+必填：
+
+- `job_id`;
+- `company_brief`;
+- `interview_focus`;
+- `questions`;
+- `reverse_questions`;
+- `seven_day_plan`。
+
+约束：
+
+- 高频问题需要覆盖岗位技能、项目复盘、系统设计或业务理解；
+- 回答框架必须短、可复制、适合面试前复习；
+- 计划天数默认 7 天，时间不足时后端可裁剪。
+
+##### 求职行动 `sprint_plan`
+
+输出必须可映射到 `5.12 求职冲刺计划数据 Schema`。
+
+必填：
+
+- `today`;
+- `task.id`;
+- `task.title`;
+- `task.priority`;
+- `task.status`;
+- `task.target_path`。
+
+约束：
+
+- 任务必须能跳转到当前 Web 已存在页面；
+- 优先级必须来自固定枚举；
+- 不生成无法在系统内完成的任务。
+
+##### 反馈复盘 `feedback_review`
+
+输出用于驱动反馈复盘页和下一轮策略建议。
+
+必填：
+
+- `summary`;
+- `strategy_suggestions`;
+- `records` 或可关联的反馈记录 ID。
+
+约束：
+
+- 不基于单条失败反馈得出过度结论；
+- 建议必须能落到简历版本、岗位筛选、素材补充或面试准备动作；
+- 输出必须能被后端按 `user_id`、`persona_id` 隔离缓存。
+
+#### 5.15.7 缓存、任务状态与降级
+
+算法结果缓存 key 必须包含：
+
+```text
+algorithm
+user_id
+persona_id
+target_id
+algorithm_version
+input_hash
+```
+
+示例：
+
+```text
+job_decision:user_demo:persona_ai_app:job_1001:algo_decision_v1:hash_xxx
+```
+
+缓存策略：
+
+| 数据 | 建议 TTL | 失效条件 |
+|---|---:|---|
+| 简历画像 | 7 天 | 简历重新上传、职业素材重大变更、算法版本变化 |
+| 岗位决策卡 | 1 天 | 岗位 JD 变化、简历画像变化、Persona 切换、算法版本变化 |
+| 招聘官视角 | 1 天 | 岗位 JD 变化、简历画像变化、算法版本变化 |
+| 简历定制结果 | 7 天 | 简历、素材、岗位或算法版本变化 |
+| 面试作战卡 | 7 天 | 岗位、简历画像或算法版本变化 |
+| Sprint 任务 | 12 小时 | 管线、反馈、Persona 或日期变化 |
+| 反馈复盘建议 | 12 小时 | 新增反馈、修改反馈、算法版本变化 |
+
+降级顺序：
+
+```text
+真实算法结果
+  ↓
+最近一次成功缓存
+  ↓
+当前 Mock Seed 结果
+  ↓
+空状态 + 明确行动入口
+```
+
+任务状态建议：
+
+```json
+{
+  "task_id": "task_decision_001",
+  "status": "running",
+  "progress": 60,
+  "message": "正在分析岗位 JD 与职业素材",
+  "result_cache_key": null,
+  "error_code": null,
+  "updated_at": "2026-06-04T10:00:00+08:00"
+}
+```
+
+状态枚举：
+
+| status | 说明 |
+|---|---|
+| `pending` | 已创建，等待执行 |
+| `running` | 执行中 |
+| `succeeded` | 成功 |
+| `failed` | 失败 |
+| `fallback_cache` | 使用最近缓存 |
+| `fallback_mock` | 使用 Mock 结果 |
+| `cancelled` | 已取消 |
+
+SSE 可选；如果 SSE 不可用，前端必须可以轮询任务状态接口。
+
+#### 5.15.8 数据质量要求
+
+算法输出必须满足：
+
+- JSON 可解析；
+- 字段名稳定；
+- 枚举值稳定；
+- 必填字段不缺失；
+- 数组字段为空时返回 `[]`，不要返回 `null`；
+- 分数字段有明确范围；
+- 文案长度适合页面展示；
+- 证据 ID 可追溯；
+- 不输出无法验证的经历；
+- 不把提示词、系统内部日志、模型原始错误暴露给前端。
+
+推荐输出 `warnings`，用于提示后端和前端降级：
+
+```json
+{
+  "warnings": [
+    {
+      "code": "MISSING_EVIDENCE",
+      "message": "缺少可证明 RAG 项目的职业素材",
+      "target_path": "/resume?evidence=ev_rag_project"
+    }
+  ]
+}
+```
+
+#### 5.15.9 本地联调流程
+
+算法同学交付前，应先提供以下任一形式：
+
+1. 静态 JSON 文件；
+2. 本地 HTTP 服务；
+3. Python 函数封装；
+4. 后端可调用的 CLI 脚本。
+
+推荐本地服务约定：
+
+```text
+POST /algorithm/resume-profile
+POST /algorithm/job-decision
+POST /algorithm/recruiter-lens
+POST /algorithm/tailor-resume
+POST /algorithm/interview-card
+POST /algorithm/sprint-plan
+POST /algorithm/feedback-review
+GET  /algorithm/health
+```
+
+联调步骤：
+
+```text
+1. 算法同学提交样例输入和样例输出
+2. 后端用样例输出写 adapter
+3. 后端接入本地算法服务
+4. 后端增加缓存和任务状态
+5. 前端切 hybrid 模式验证
+6. 失败场景验证：超时、空结果、字段缺失、服务不可用
+7. 固化 Demo 缓存结果
+```
+
+#### 5.15.10 交付清单
+
+每个算法能力交付时至少提供：
+
+- 算法名称；
+- 算法版本；
+- 输入 JSON 示例；
+- 成功输出 JSON 示例；
+- 失败输出 JSON 示例；
+- 必填字段说明；
+- 枚举值说明；
+- 运行命令；
+- 健康检查方式；
+- 预期耗时；
+- 是否依赖模型 API Key；
+- 是否可离线运行；
+- 降级建议；
+- 3 条以上 Demo 样例结果。
+
+验收门槛：
+
+- [ ] 输出能通过 JSON 解析；
+- [ ] 输出能映射到本章对应 Schema；
+- [ ] 缺少输入时返回明确错误；
+- [ ] 超时时后端能回退缓存或 Mock；
+- [ ] 结果中证据 ID 可追溯；
+- [ ] 同一输入多次运行结果结构稳定；
+- [ ] 算法版本变化后缓存可正确失效；
+- [ ] 不泄露提示词、Token、API Key、内部路径。
+
+#### 5.15.11 三名算法同学建议分工
+
+| 同学 | 建议负责 | 第一交付物 | 第二交付物 |
+|---|---|---|---|
+| 算法同学 1 | 简历画像与素材抽取 | `resume_profile` | `evidence_index`、技能雷达 |
+| 算法同学 2 | 岗位决策与招聘官视角 | `job_decision` | `recruiter_lens` |
+| 算法同学 3 | 行动建议与生成类能力 | `tailor_resume` | `interview_card`、`sprint_plan`、`feedback_review` |
+
+协作原则：
+
+- 先交静态 JSON，再接真实服务；
+- 先保证字段稳定，再优化模型效果；
+- 先覆盖 Demo 岗位，再扩展更多场景；
+- 每个算法能力独立降级，不能互相阻塞。
+
+#### 5.15.12 禁止事项
+
+- 禁止算法服务直接返回前端组件结构；
+- 禁止在算法输出中编造不存在的项目、证书、指标；
+- 禁止把用户 A 的缓存结果返回给用户 B；
+- 禁止把 Persona A 的算法结果返回给 Persona B；
+- 禁止在响应中输出 API Key、系统提示词、内部文件路径；
+- 禁止删除已被前端使用的字段；
+- 禁止让真实算法失败阻塞 Demo 主链路；
+- 禁止绕过后端直接让前端调用算法服务。
+
 ---
 
 ## 六、Web 页面设计
