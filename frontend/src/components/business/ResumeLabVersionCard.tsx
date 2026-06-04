@@ -6,11 +6,13 @@ import type { ResumeLabVersion } from "@/types/demo";
 
 export function ResumeLabVersionCard({
   active,
+  comparePath,
   editPath,
   versionPath,
   version,
 }: {
   active: boolean;
+  comparePath: string;
   editPath: string;
   versionPath: string;
   version: ResumeLabVersion;
@@ -52,7 +54,10 @@ export function ResumeLabVersionCard({
 
       <div className="mt-4 flex flex-wrap gap-3">
         <Button asChild size="sm" variant="secondary">
-          <Link to={versionPath}>查看版本</Link>
+          <Link to={versionPath}>查看详情</Link>
+        </Button>
+        <Button asChild size="sm" variant="secondary">
+          <Link to={comparePath}>加入对比</Link>
         </Button>
         <Button asChild size="sm" variant="secondary">
           <Link to={editPath}>回到简历工作室修改</Link>

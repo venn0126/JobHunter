@@ -1,5 +1,7 @@
 import { Link, useSearchParams } from "react-router-dom";
+import { ResumeLabComparePanel } from "@/components/business/ResumeLabComparePanel";
 import { ResumeLabVersionCard } from "@/components/business/ResumeLabVersionCard";
+import { ResumeLabVersionDetail } from "@/components/business/ResumeLabVersionDetail";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -10,21 +12,36 @@ import { getResumeStudioPath } from "@/services/resumeStudioService";
 import {
   getActiveResumeVersionId,
   getBestResumeVersion,
+  getResumeLabComparePathForVersion,
   getResumeLab,
   getResumeLabPath,
   getResumeLabMetrics,
+  getResumeVersionById,
+  getResumeVersionEvidence,
+  getResumeVersionJobs,
+  getResumeVersionsByIds,
+  resolveCompareVersionIds,
   sortResumeVersions,
 } from "@/services/resumeLabService";
+import { useCareerVaultStore } from "@/stores/careerVaultStore";
 
 export function ResumeLabPage() {
   const [searchParams] = useSearchParams();
   const selectedVersionId = searchParams.get("version") ?? "";
+  const requestedCompareVersionIds = searchParams.getAll("compare");
+  const shouldShowCompare = requestedCompareVersionIds.length > 0;
+  const vaultItems = useCareerVaultStore((state) => state.items);
   const lab = getResumeLab();
   const versions = sortResumeVersions(lab.versions);
   const bestVersion = getBestResumeVersion(lab);
   const activeVersionId = getActiveResumeVersionId(lab, selectedVersionId);
+  const activeVersion = getResumeVersionById(lab, activeVersionId);
+  const compareVersionIds = resolveCompareVersionIds(lab, activeVersionId, requestedCompareVersionIds);
+  const compareVersions = getResumeVersionsByIds(lab, compareVersionIds);
   const metrics = getResumeLabMetrics(lab.versions);
   const editPath = getResumeStudioPath(lab.summary.primary_job_id);
+  const activeVersionEvidence = activeVersion ? getResumeVersionEvidence(activeVersion, vaultItems) : [];
+  const activeVersionJobs = activeVersion ? getResumeVersionJobs(activeVersion) : [];
 
   return (
     <div className="space-y-6">
@@ -32,7 +49,7 @@ export function ResumeLabPage() {
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Badge tone="cyan" className="mb-4">
-              P1-B 简历版本实验
+              P1-B/C 简历版本实验
             </Badge>
             <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
               用投递结果反向优化简历版本。
@@ -85,6 +102,7 @@ export function ResumeLabPage() {
             {versions.map((version) => (
               <ResumeLabVersionCard
                 active={version.id === activeVersionId}
+                comparePath={getResumeLabComparePathForVersion(lab, activeVersionId, version.id)}
                 editPath={editPath}
                 key={version.id}
                 versionPath={getResumeLabPath(version.id)}
@@ -104,6 +122,23 @@ export function ResumeLabPage() {
           />
         )}
       </Panel>
+
+      {activeVersion ? (
+        <Panel title="版本详情">
+          <ResumeLabVersionDetail
+            evidenceLinks={activeVersionEvidence}
+            jobs={activeVersionJobs}
+            primaryJobId={lab.summary.primary_job_id}
+            version={activeVersion}
+          />
+        </Panel>
+      ) : null}
+
+      {shouldShowCompare ? (
+        <Panel title="版本对比">
+          <ResumeLabComparePanel compareVersions={compareVersions} lab={lab} selectedVersionId={activeVersionId} />
+        </Panel>
+      ) : null}
     </div>
   );
 }

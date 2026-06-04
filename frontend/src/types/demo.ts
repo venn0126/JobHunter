@@ -189,8 +189,18 @@ export interface ResumeLabVersion {
   best_for: string[];
   interview_count: number;
   interview_rate: number;
+  key_changes: Array<{
+    after: string;
+    before: string;
+    evidence_id?: string;
+    reason: string;
+    section: string;
+  }>;
   no_response_count: number;
   recommendation: string;
+  strengths: string[];
+  target_job_ids: string[];
+  improvement_tips: string[];
   updated_at: string;
 }
 

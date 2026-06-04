@@ -15,6 +15,25 @@
       "interview_rate": 10,
       "best_for": ["Java 后端", "平台工程"],
       "recommendation": "保留系统设计和高并发经历，但需要补充 AI 应用关键词，否则在 LLM 岗位中辨识度不足。",
+      "strengths": ["后端工程稳定性表达清晰", "高并发和缓存优化证据完整"],
+      "improvement_tips": ["补充 RAG / LLM 应用关键词", "把后端能力连接到 AI 应用交付场景"],
+      "target_job_ids": ["job_1004", "job_1005"],
+      "key_changes": [
+        {
+          "section": "后端能力",
+          "before": "熟悉后端服务开发，了解缓存和异步任务。",
+          "after": "具备高并发后端服务优化经验，曾通过 Redis 缓存预热、异步削峰和降级策略，将核心接口 P95 延迟降低 35%，错误率降低 22%。",
+          "reason": "强调稳定性和性能优化，适合平台工程和通用后端岗位。",
+          "evidence_id": "ev_backend_platform"
+        },
+        {
+          "section": "项目方向",
+          "before": "负责企业知识库问答项目开发。",
+          "after": "参与企业知识库问答项目后端接口与检索功能建设。",
+          "reason": "AI 关键词存在但不突出，作为后端通用版保留轻量表达。",
+          "evidence_id": "ev_rag_project"
+        }
+      ],
       "updated_at": "2026-06-01"
     },
     {
@@ -27,6 +46,31 @@
       "interview_rate": 50,
       "best_for": ["AI 应用工程师", "LLM 工程师", "RAG 平台工程师"],
       "recommendation": "当前最佳版本，RAG 项目和后端服务证据更贴合目标岗位，建议继续用于 P0 / P1 AI 应用岗位。",
+      "strengths": ["RAG 项目量化结果突出", "后端服务能力能支撑 AI 应用落地", "关键词覆盖 LLM / 向量检索 / 评估看板"],
+      "improvement_tips": ["继续补充 Kubernetes 或服务治理证据", "增加模型评估和线上监控表述"],
+      "target_job_ids": ["job_1001", "job_1002", "job_1003"],
+      "key_changes": [
+        {
+          "section": "项目经历",
+          "before": "负责企业知识库问答项目开发，参与后端接口和检索功能建设。",
+          "after": "负责企业知识库 RAG 服务的检索链路与后端接口建设，接入向量检索、重排和评估看板，使问答命中率提升 18%，平均响应延迟降低 32%。",
+          "reason": "JD 强调 LLM 应用、RAG 和后端服务经验，因此突出检索链路、接口建设和量化结果。",
+          "evidence_id": "ev_rag_project"
+        },
+        {
+          "section": "后端能力",
+          "before": "熟悉后端服务开发，了解缓存和异步任务。",
+          "after": "具备高并发后端服务优化经验，曾通过 Redis 缓存预热、异步削峰和降级策略，将核心接口 P95 延迟降低 35%，错误率降低 22%。",
+          "reason": "岗位需要 AI 应用工程落地能力，后端稳定性证据可以增强交付可信度。",
+          "evidence_id": "ev_backend_platform"
+        },
+        {
+          "section": "技能补充",
+          "before": "",
+          "after": "建议补充 Kubernetes 部署、灰度发布或服务治理经历；若暂无直接经验，可弱化为“了解容器化部署流程”。",
+          "reason": "JD 提到 Kubernetes，但当前职业素材库没有直接证据，不能编造为可直接使用内容。"
+        }
+      ],
       "updated_at": "2026-06-03"
     },
     {
@@ -39,6 +83,25 @@
       "interview_rate": 25,
       "best_for": ["RAG 应用开发", "远程 AI 工程"],
       "recommendation": "远程岗位方向样本量还少，可继续投递 3-5 个岗位后再判断是否替代 AI 应用强化版。",
+      "strengths": ["聚焦远程协作和 RAG 应用开发", "保留检索链路和评估指标"],
+      "improvement_tips": ["样本量不足，暂不替代最佳版本", "补充跨团队远程协作或异步沟通案例"],
+      "target_job_ids": ["job_1003", "job_1006"],
+      "key_changes": [
+        {
+          "section": "项目经历",
+          "before": "负责企业知识库问答项目开发，参与后端接口和检索功能建设。",
+          "after": "独立推进企业知识库 RAG 应用的检索链路、后端接口和效果评估，支持业务团队远程协作场景下快速获取知识。",
+          "reason": "远程岗位更关注独立交付、异步协作和可量化业务价值。",
+          "evidence_id": "ev_rag_project"
+        },
+        {
+          "section": "协作故事",
+          "before": "",
+          "after": "可补充跨团队推进模型服务上线经历，突出接口契约、灰度节奏和回滚方案。",
+          "reason": "远程团队会关注协作可靠性，建议补充 STAR 故事作为面试证据。",
+          "evidence_id": "ev_interview_story"
+        }
+      ],
       "updated_at": "2026-06-02"
     }
   ]
