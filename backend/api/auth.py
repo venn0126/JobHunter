@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Header, Request
 from sqlalchemy.orm import Session
 
 from core.auth_headers import bearer_token
-from core.dependencies import get_db
+from core.dependencies import get_current_user_result, get_db
 from core.responses import fail_from_status, ok
 from schemas.auth import (
     AuthSessionResponse,
@@ -18,6 +18,7 @@ from schemas.auth import (
 )
 from schemas.common import ApiResponse
 from services.auth_service import AuthService, serialize_user
+from services.result import ServiceResult
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -66,26 +67,23 @@ def logout(
 
 
 @router.get("/me", response_model=ApiResponse[AuthUserResponse])
-def me(request: Request, authorization: str | None = Header(default=None), db: Session = Depends(get_db)):
-    result = AuthService(db).get_user_by_token(bearer_token(authorization))
-    if result.status != "ok":
-        return fail_from_status(status=result.status, message=result.message, request=request)
-    return ok(data=serialize_user(result.data), request=request)
+def me(request: Request, current_user: ServiceResult = Depends(get_current_user_result)):
+    if current_user.status != "ok":
+        return fail_from_status(status=current_user.status, message=current_user.message, request=request)
+    return ok(data=serialize_user(current_user.data), request=request)
 
 
 @router.patch("/me", response_model=ApiResponse[AuthUserResponse])
 def update_me(
     payload: UpdateMeRequest,
     request: Request,
-    authorization: str | None = Header(default=None),
+    current_user: ServiceResult = Depends(get_current_user_result),
     db: Session = Depends(get_db),
 ):
-    service = AuthService(db)
-    current_user = service.get_user_by_token(bearer_token(authorization))
     if current_user.status != "ok":
         return fail_from_status(status=current_user.status, message=current_user.message, request=request)
 
-    result = service.update_me(
+    result = AuthService(db).update_me(
         current_user.data,
         name=payload.name,
         email=payload.email,

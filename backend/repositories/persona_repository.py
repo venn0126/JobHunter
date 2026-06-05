@@ -22,7 +22,6 @@ class PersonaRepository:
 
     def add(self, persona: Persona) -> Persona:
         self.db.add(persona)
-        self.db.flush()
         return persona
 
     def clear_active(self, user_id: int) -> None:

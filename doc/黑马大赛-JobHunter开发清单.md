@@ -867,6 +867,10 @@ P3-D 完成记录：
 - [x] 已增强 `make seed-demo`：可重复导入标准 Demo 用户和 Demo Persona，不产生重复身份；
 - [x] 已新增 `make verify-auth-persona`，覆盖注册、登录、获取当前用户、更新资料、新建身份、编辑身份、激活身份、刷新和退出；
 - [x] 已完成 Review 重构：Bearer Token 解析抽到 `core/auth_headers.py`，错误状态映射收敛到 `fail_from_status()`；
+- [x] 已完成 Review 重构：Auth Token 的 Redis 读写、签发、撤销抽到 `services/auth_token_service.py`，避免 Auth Service 混入底层 Token 存储细节；
+- [x] 已完成 Review 重构：当前用户解析抽到 `core/dependencies.py:get_current_user_result`，后续业务接口可复用同一鉴权入口；
+- [x] 已完成 Review 重构：数据库提交 / 回滚错误处理抽到 `services/db_tx.py`，Auth、Persona、Demo Seed 复用统一事务结果；
+- [x] 已修复注册事务边界：注册时如果 Token 签发失败会回滚用户；如果数据库提交失败会撤销已签发 Token；
 - [ ] 待远程服务器验证：执行 `make verify-auth-persona && make health`。
 
 ---

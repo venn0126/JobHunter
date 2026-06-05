@@ -2,29 +2,27 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, Path, Request
+from fastapi import APIRouter, Depends, Path, Request
 from sqlalchemy.orm import Session
 
-from core.auth_headers import bearer_token
-from core.dependencies import get_db
+from core.dependencies import get_current_user_result, get_db
 from core.responses import fail_from_status, ok
 from schemas.common import ApiResponse
 from schemas.persona import PersonaCreateRequest, PersonaListResponse, PersonaResponse, PersonaUpdateRequest
-from services.auth_service import AuthService
 from services.persona_service import PersonaService
+from services.result import ServiceResult
 
 router = APIRouter(prefix="/personas", tags=["personas"])
 
 PersonaIdPath = Annotated[str, Path(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9_.:-]+$")]
 
 
-def get_current_user_from_header(db: Session, authorization: str | None):
-    return AuthService(db).get_user_by_token(bearer_token(authorization))
-
-
 @router.get("", response_model=ApiResponse[PersonaListResponse])
-def list_personas(request: Request, authorization: str | None = Header(default=None), db: Session = Depends(get_db)):
-    current_user = get_current_user_from_header(db, authorization)
+def list_personas(
+    request: Request,
+    current_user: ServiceResult = Depends(get_current_user_result),
+    db: Session = Depends(get_db),
+):
     if current_user.status != "ok":
         return fail_from_status(status=current_user.status, message=current_user.message, request=request)
 
@@ -36,10 +34,9 @@ def list_personas(request: Request, authorization: str | None = Header(default=N
 def create_persona(
     payload: PersonaCreateRequest,
     request: Request,
-    authorization: str | None = Header(default=None),
+    current_user: ServiceResult = Depends(get_current_user_result),
     db: Session = Depends(get_db),
 ):
-    current_user = get_current_user_from_header(db, authorization)
     if current_user.status != "ok":
         return fail_from_status(status=current_user.status, message=current_user.message, request=request)
 
@@ -61,10 +58,9 @@ def update_persona(
     persona_id: PersonaIdPath,
     payload: PersonaUpdateRequest,
     request: Request,
-    authorization: str | None = Header(default=None),
+    current_user: ServiceResult = Depends(get_current_user_result),
     db: Session = Depends(get_db),
 ):
-    current_user = get_current_user_from_header(db, authorization)
     if current_user.status != "ok":
         return fail_from_status(status=current_user.status, message=current_user.message, request=request)
 
@@ -87,10 +83,9 @@ def update_persona(
 def activate_persona(
     persona_id: PersonaIdPath,
     request: Request,
-    authorization: str | None = Header(default=None),
+    current_user: ServiceResult = Depends(get_current_user_result),
     db: Session = Depends(get_db),
 ):
-    current_user = get_current_user_from_header(db, authorization)
     if current_user.status != "ok":
         return fail_from_status(status=current_user.status, message=current_user.message, request=request)
 

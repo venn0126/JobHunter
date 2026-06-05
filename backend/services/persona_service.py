@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core.ids import new_public_id
 from models.persona import Persona
 from models.user import User
 from repositories.persona_repository import PersonaRepository
+from services.db_tx import commit_or_result
 from services.result import ServiceResult
 
 
@@ -82,12 +82,10 @@ class PersonaService:
             sort_order=len(existing_personas),
         )
 
-        try:
-            self.personas.add(persona)
-            self.db.commit()
-        except IntegrityError:
-            self.db.rollback()
-            return ServiceResult(status="conflict", message="persona name already exists")
+        self.personas.add(persona)
+        commit_result = commit_or_result(self.db, conflict_message="persona name already exists")
+        if commit_result.status != "ok":
+            return commit_result
 
         return ServiceResult(status="created", data=serialize_persona(persona))
 
@@ -123,11 +121,9 @@ class PersonaService:
         if status is not None and status != "active":
             return ServiceResult(status="invalid", message="archive persona is not supported yet")
 
-        try:
-            self.db.commit()
-        except IntegrityError:
-            self.db.rollback()
-            return ServiceResult(status="conflict", message="persona name already exists")
+        commit_result = commit_or_result(self.db, conflict_message="persona name already exists")
+        if commit_result.status != "ok":
+            return commit_result
 
         return ServiceResult(status="ok", data=serialize_persona(persona))
 
@@ -138,5 +134,7 @@ class PersonaService:
 
         self.personas.clear_active(user.id)
         persona.is_active = True
-        self.db.commit()
+        commit_result = commit_or_result(self.db, conflict_message="persona activation conflict")
+        if commit_result.status != "ok":
+            return commit_result
         return ServiceResult(status="ok", data=serialize_persona_list(self.personas.list_by_user_id(user.id)))

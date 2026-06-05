@@ -11,6 +11,7 @@ from models.persona import Persona
 from models.user import User
 from repositories.persona_repository import PersonaRepository
 from repositories.user_repository import UserRepository
+from services.db_tx import commit_or_result
 from services.persona_service import normalize_text_list
 
 
@@ -74,7 +75,9 @@ def seed_demo_identity(db: Session) -> dict:
             persona.is_active = public_id == active_persona_id
             persona.sort_order = sort_order
 
-    db.commit()
+    commit_result = commit_or_result(db, conflict_message="demo seed conflict")
+    if commit_result.status != "ok":
+        raise RuntimeError(commit_result.message or "demo seed failed")
     return {
         "user_created": created_user,
         "personas_created": created_personas,

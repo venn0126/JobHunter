@@ -1,18 +1,13 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
-from redis.exceptions import RedisError
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from core.config import get_settings
 from core.ids import avatar_text, new_public_id
-from core.redis_keys import redis_key
-from core.security import generate_token, hash_password, verify_password
+from core.security import hash_password, verify_password
 from models.user import User
 from repositories.user_repository import UserRepository
-from services.redis_service import run_with_redis
+from services.auth_token_service import AuthTokenService
+from services.db_tx import commit_or_result
 from services.result import ServiceResult
 
 
@@ -36,19 +31,11 @@ def serialize_user(user: User) -> dict:
     }
 
 
-def token_key(token: str) -> str:
-    return redis_key("auth", "access", token)
-
-
-def refresh_token_key(token: str) -> str:
-    return redis_key("auth", "refresh", token)
-
-
 class AuthService:
     def __init__(self, db: Session) -> None:
         self.db = db
         self.users = UserRepository(db)
-        self.settings = get_settings()
+        self.tokens = AuthTokenService()
 
     def register(self, *, name: str, email: str, password: str) -> ServiceResult:
         normalized_email = normalize_email(email)
@@ -67,16 +54,20 @@ class AuthService:
             nickname=normalized_name,
             is_demo=False,
         )
-        try:
-            self.users.add(user)
-            session_result = self.issue_session(user)
-            if session_result.status != "ok":
-                self.db.rollback()
-                return session_result
-            self.db.commit()
-        except IntegrityError:
+        session_result: ServiceResult | None = None
+        self.users.add(user)
+        session_result = self.issue_session(user)
+        if session_result.status != "ok":
             self.db.rollback()
-            return ServiceResult(status="conflict", message="email already registered")
+            return session_result
+
+        commit_result = commit_or_result(self.db, conflict_message="email already registered")
+        if commit_result.status != "ok":
+            self.tokens.revoke(
+                access_token=session_result.data.get("accessToken"),
+                refresh_token=session_result.data.get("refreshToken"),
+            )
+            return commit_result
 
         return session_result
 
@@ -90,52 +81,24 @@ class AuthService:
         if not refresh_token:
             return ServiceResult(status="unauthorized", message="missing refresh token")
 
-        try:
-            user_public_id = run_with_redis(lambda client: client.get(refresh_token_key(refresh_token)))
-        except RedisError as exc:
-            return ServiceResult(status="degraded", message=str(exc))
+        token_result = self.tokens.read_refresh_user_id(refresh_token)
+        if token_result.status != "ok":
+            return token_result
 
-        if not user_public_id:
-            return ServiceResult(status="unauthorized", message="invalid refresh token")
-
-        user = self.users.get_by_public_id(user_public_id)
+        user = self.users.get_by_public_id(token_result.data)
         if not user:
             return ServiceResult(status="unauthorized", message="user not found")
         return self.issue_session(user)
 
     def logout(self, access_token: str | None, refresh_token: str | None = None) -> ServiceResult:
-        tokens = [token for token in (access_token, refresh_token) if token]
-        if not tokens:
-            return ServiceResult(status="ok")
-
-        try:
-            def delete_tokens(client) -> None:
-                keys = []
-                if access_token:
-                    keys.append(token_key(access_token))
-                if refresh_token:
-                    keys.append(refresh_token_key(refresh_token))
-                if keys:
-                    client.delete(*keys)
-
-            run_with_redis(delete_tokens)
-            return ServiceResult(status="ok")
-        except RedisError as exc:
-            return ServiceResult(status="degraded", message=str(exc))
+        return self.tokens.revoke(access_token=access_token, refresh_token=refresh_token)
 
     def get_user_by_token(self, token: str | None) -> ServiceResult:
-        if not token:
-            return ServiceResult(status="unauthorized", message="missing access token")
+        token_result = self.tokens.read_access_user_id(token)
+        if token_result.status != "ok":
+            return token_result
 
-        try:
-            user_public_id = run_with_redis(lambda client: client.get(token_key(token)))
-        except RedisError as exc:
-            return ServiceResult(status="degraded", message=str(exc))
-
-        if not user_public_id:
-            return ServiceResult(status="unauthorized", message="invalid access token")
-
-        user = self.users.get_by_public_id(user_public_id)
+        user = self.users.get_by_public_id(token_result.data)
         if not user:
             return ServiceResult(status="unauthorized", message="user not found")
         return ServiceResult(status="ok", data=user)
@@ -169,36 +132,14 @@ class AuthService:
         if target_city is not None:
             user.target_city = target_city.strip() or None
 
-        try:
-            self.db.commit()
-        except IntegrityError:
-            self.db.rollback()
-            return ServiceResult(status="conflict", message="email already registered")
+        commit_result = commit_or_result(self.db, conflict_message="email already registered")
+        if commit_result.status != "ok":
+            return commit_result
 
         return ServiceResult(status="ok", data=serialize_user(user))
 
     def issue_session(self, user: User) -> ServiceResult:
-        access_token = generate_token("jh_access")
-        refresh_token = generate_token("jh_refresh")
-        try:
-            def store_tokens(client) -> None:
-                issued_at = datetime.now(timezone.utc).isoformat()
-                client.setex(token_key(access_token), self.settings.auth_token_ttl_seconds, user.public_id)
-                client.setex(refresh_token_key(refresh_token), self.settings.auth_refresh_token_ttl_seconds, user.public_id)
-                client.hset(redis_key("auth", "meta", access_token), mapping={"issued_at": issued_at})
-                client.expire(redis_key("auth", "meta", access_token), self.settings.auth_token_ttl_seconds)
-
-            run_with_redis(store_tokens)
-        except RedisError as exc:
-            return ServiceResult(status="degraded", message=str(exc))
-
-        return ServiceResult(
-            status="ok",
-            data={
-                "accessToken": access_token,
-                "refreshToken": refresh_token,
-                "tokenType": "bearer",
-                "expiresIn": self.settings.auth_token_ttl_seconds,
-                "user": serialize_user(user),
-            },
-        )
+        token_result = self.tokens.issue(user.public_id)
+        if token_result.status != "ok":
+            return token_result
+        return ServiceResult(status="ok", data={**token_result.data, "user": serialize_user(user)})

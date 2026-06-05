@@ -18,5 +18,4 @@ class UserRepository:
 
     def add(self, user: User) -> User:
         self.db.add(user)
-        self.db.flush()
         return user
