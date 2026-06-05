@@ -959,7 +959,10 @@ P3-J 进行中记录：
 - [x] 已新增运行时同步 Hook：应用启动和数据模式切换时自动同步 runtime data，hybrid API 失败时回退本地 Mock，页面不白屏；
 - [x] 已新增设置页“运行时数据源”面板，展示当前数据源、同步状态和 fallback 错误；
 - [x] 已新增 `make verify-frontend-api-adapter`，覆盖前端 apiClient、runtime data mock/api 同步和 `apiPost` 更新任务调用；
-- [x] 已完成本地静态验证：`npm --prefix frontend run typecheck`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`；
+- [x] 已修复 API 模式黑屏兜底：`api / hybrid` 同步失败统一回退 Mock、记录错误并结束 loading，不再抛未捕获异步异常；
+- [x] 已补齐运行时同步防竞态：快速切换 `mock / api / hybrid` 时，过期请求不会覆盖最新数据源状态；
+- [x] 已补充 `make verify-frontend-api-adapter` 的 API 失败回退断言，覆盖网络失败时 `mode=mock`、`loading=false`、错误可见；
+- [x] 已完成本地静态验证：`npm --prefix frontend run typecheck`、`npm --prefix frontend run build`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`；
 - [ ] 待远程服务器验证：本地 Docker 未运行，`make verify-frontend-api-adapter` 已在 `infra-up` 前置检查处停止；远程执行 `make verify-frontend-api-adapter && make health`。
 
 ---

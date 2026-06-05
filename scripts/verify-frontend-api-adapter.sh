@@ -79,6 +79,26 @@ try {
     throw new Error("api runtime sync failed");
   }
 
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = () => Promise.reject(new Error("simulated network failure"));
+  try {
+    const fallbackResult = await syncRuntimeData("api");
+    const fallbackState = useRuntimeDataStore.getState();
+    if (fallbackResult.mode !== "mock" || fallbackState.mode !== "mock" || fallbackState.loading) {
+      throw new Error(`api fallback state mismatch: ${JSON.stringify({
+        error: fallbackState.error,
+        loading: fallbackState.loading,
+        mode: fallbackState.mode,
+        resultMode: fallbackResult.mode,
+      })}`);
+    }
+    if (!fallbackState.error.includes("api fallback")) {
+      throw new Error(`api fallback error missing: ${fallbackState.error}`);
+    }
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
   const updateTask = await apiPost("/system/update/apply", { channel: "demo", dry_run: true });
   if (!updateTask.task_id || updateTask.status !== "succeeded") {
     throw new Error(`apiPost failed: ${JSON.stringify(updateTask)}`);
