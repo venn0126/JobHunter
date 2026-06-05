@@ -1,0 +1,14 @@
+{
+  "careerPersonas": "career-personas.json",
+  "careerVault": "career-vault.json",
+  "dashboard": "dashboard.json",
+  "decisionCards": "job-decision-cards.json",
+  "feedbackReview": "feedback-review.json",
+  "interviewGuide": "interview-guide.json",
+  "jobs": "jobs.json",
+  "market": "opportunity-market.json",
+  "recruiterLens": "recruiter-lens.json",
+  "resumeLab": "resume-lab.json",
+  "resumeStudio": "resume-studio.json",
+  "sprint": "sprint-plan.json"
+}

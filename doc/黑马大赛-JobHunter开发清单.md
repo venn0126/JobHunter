@@ -876,10 +876,13 @@ P3-D 完成记录：
 P3-E 完成记录：
 
 - [x] 已新增 `GET /api/mock/bootstrap`，按当前 `frontend/src/data/demoData.ts` key 输出全部 12 份前端 Mock 数据；
-- [x] 已新增 `POST /api/demo/reset`，复用标准 Demo seed，恢复 Demo 用户与 Demo Persona；
-- [x] 已增强 `GET /api/demo/summary`，返回 dataset 列表和数量；
+- [x] 已新增 `POST /api/demo/reset`，复用标准 Demo seed，恢复 Demo 用户与 Demo Persona，并清理 Demo 用户下非标准 Persona；
+- [x] 已增强 `GET /api/demo/summary`，返回 dataset 列表、数量和缺失文件列表；
 - [x] 已补齐 `data/demo/seed-manifest.json`，覆盖 `feedback-review`、`interview-guide`、`resume-lab`、`resume-studio` 等当前前端 Mock 文件；
 - [x] 已新增 `make verify-demo-bootstrap`，覆盖 summary、bootstrap key 完整性和 reset；
+- [x] 已完成 Review 重构：新增 `data/demo/mock-datasets.json` 作为 Mock dataset key / 文件名单一来源，后端服务和验证脚本复用同一映射，避免重复硬编码；
+- [x] 已完成 Review 优化：Mock 文件名增加 JSON 单文件校验，summary 暴露 `missing_files`，验证脚本校验 `frontend/src/mocks`、`seed-manifest`、`mock-datasets` 三方一致；
+- [x] 已完成 Review 修复：Demo seed 首次创建用户后立即 flush，避免新库中 Persona 绑定空 `user_id`；reset 返回 `personas_deleted` 便于确认标准态清理；
 - [x] 已完成本地静态验证：`python3 -m compileall backend/core backend/api backend/services backend/schemas backend/repositories`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`、`npm --prefix frontend run typecheck`；
 - [x] 已完成本地接口 smoke：`/api/demo/summary`、`/api/mock/bootstrap` 返回统一 JSON，bootstrap 覆盖 12 个 dataset；
 - [ ] 待远程服务器验证：执行 `make verify-demo-bootstrap && make health`。

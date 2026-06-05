@@ -42,6 +42,7 @@ with SessionLocal() as db:
 print(f"[seed-demo] demo user: {result['demo_user_id']}")
 print(f"[seed-demo] active persona: {result['active_persona_id']}")
 print(f"[seed-demo] personas created: {result['personas_created']}")
+print(f"[seed-demo] personas deleted: {result['personas_deleted']}")
 PY
 )
 

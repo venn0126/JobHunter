@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from models.persona import Persona
@@ -27,3 +27,9 @@ class PersonaRepository:
     def clear_active(self, user_id: int) -> None:
         for persona in self.db.scalars(select(Persona).where(Persona.user_id == user_id, Persona.is_active.is_(True))):
             persona.is_active = False
+
+    def delete_by_user_except_public_ids(self, user_id: int, public_ids: set[str]) -> int:
+        result = self.db.execute(
+            delete(Persona).where(Persona.user_id == user_id, Persona.public_id.not_in(public_ids))
+        )
+        return result.rowcount or 0

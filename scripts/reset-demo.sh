@@ -42,6 +42,7 @@ if [[ -f "$DB_PATH" ]]; then
 fi
 
 ./scripts/migrate.sh
+./scripts/seed-demo.sh
 ./scripts/sync-version.sh
 
 echo "[reset-demo] seed manifest: $SEED_MANIFEST"
