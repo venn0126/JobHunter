@@ -236,26 +236,20 @@ class GeneratedContentService:
         return ServiceResult(status="ok", data=response)
 
     def decision_card(self, job_id: str, *, force_refresh: bool = False) -> ServiceResult:
-        job = get_demo_job(job_id)
-        if not job:
-            return ServiceResult(status="miss", message="job not found")
-        return self.get_or_generate(
+        return self.generate_for_job(
             scope="job_decision",
-            target_id=job_id,
-            payload={"job": job, "operation": "decision"},
-            factory=lambda: build_decision_card(job),
+            job_id=job_id,
+            operation="decision",
+            factory=build_decision_card,
             force_refresh=force_refresh,
         )
 
     def recruiter_lens(self, job_id: str, *, force_refresh: bool = False) -> ServiceResult:
-        job = get_demo_job(job_id)
-        if not job:
-            return ServiceResult(status="miss", message="job not found")
-        return self.get_or_generate(
+        return self.generate_for_job(
             scope="recruiter_lens",
-            target_id=job_id,
-            payload={"job": job, "operation": "recruiter_lens"},
-            factory=lambda: build_recruiter_lens(job),
+            job_id=job_id,
+            operation="recruiter_lens",
+            factory=build_recruiter_lens,
             force_refresh=force_refresh,
         )
 
@@ -275,26 +269,40 @@ class GeneratedContentService:
         )
 
     def tailored_resume(self, job_id: str, *, force_refresh: bool = False) -> ServiceResult:
-        job = get_demo_job(job_id)
-        if not job:
-            return ServiceResult(status="miss", message="job not found")
-        return self.get_or_generate(
+        return self.generate_for_job(
             scope="tailored_resume",
-            target_id=job_id,
-            payload={"job": job, "operation": "tailor"},
-            factory=lambda: build_tailored_resume(job),
+            job_id=job_id,
+            operation="tailor",
+            factory=build_tailored_resume,
             force_refresh=force_refresh,
         )
 
     def interview_guide(self, job_id: str, *, force_refresh: bool = False) -> ServiceResult:
+        return self.generate_for_job(
+            scope="interview_guide",
+            job_id=job_id,
+            operation="interview",
+            factory=build_interview_guide,
+            force_refresh=force_refresh,
+        )
+
+    def generate_for_job(
+        self,
+        *,
+        scope: str,
+        job_id: str,
+        operation: str,
+        factory: Callable[[dict[str, Any]], GeneratedPayload],
+        force_refresh: bool = False,
+    ) -> ServiceResult:
         job = get_demo_job(job_id)
         if not job:
             return ServiceResult(status="miss", message="job not found")
         return self.get_or_generate(
-            scope="interview_guide",
+            scope=scope,
             target_id=job_id,
-            payload={"job": job, "operation": "interview"},
-            factory=lambda: build_interview_guide(job),
+            payload={"job": job, "operation": operation},
+            factory=lambda: factory(job),
             force_refresh=force_refresh,
         )
 

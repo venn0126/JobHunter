@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from api import auth, dashboard, debug, demo, generated, health, jobs, market, mock, personas, pipeline, resume, sprint, system, tasks, vault, version
+from api import auth, dashboard, debug, demo, feedback, generated, health, jobs, market, mock, personas, pipeline, resume, sprint, system, tasks, vault, version
 
 api_router = APIRouter()
 api_router.include_router(health.router)
@@ -20,3 +20,4 @@ api_router.include_router(resume.router)
 api_router.include_router(sprint.router)
 api_router.include_router(pipeline.router)
 api_router.include_router(generated.router)
+api_router.include_router(feedback.router)

@@ -13,6 +13,7 @@ from models.user import User
 from repositories.persona_repository import PersonaRepository
 from repositories.user_repository import UserRepository
 from services.db_tx import commit_or_result
+from services.demo_write_state_service import clear_demo_write_state
 from services.persona_service import normalize_text_list
 
 
@@ -116,10 +117,12 @@ def seed_demo_identity(db: Session) -> dict:
     commit_result = commit_or_result(db, conflict_message="demo seed conflict")
     if commit_result.status != "ok":
         raise RuntimeError(commit_result.message or "demo seed failed")
+    clear_result = clear_demo_write_state()
     return {
         "user_created": created_user,
         "personas_created": created_personas,
         "personas_deleted": deleted_personas,
+        "write_state_cleared": clear_result.data.get("count", 0) if isinstance(clear_result.data, dict) else 0,
         "demo_user_id": user.public_id,
         "active_persona_id": active_persona_id,
     }

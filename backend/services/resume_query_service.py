@@ -2,12 +2,19 @@ from __future__ import annotations
 
 from typing import Any
 
-from services.demo_dataset_service import read_demo_dataset, read_demo_items
+from services.demo_dataset_service import read_demo_items
+from services.demo_write_state_service import read_resume_lab_state
 from services.pagination_service import paginate_items
 
 
 def get_resume_lab() -> dict[str, Any]:
-    return read_demo_dataset("resumeLab")
+    result = read_resume_lab_state()
+    payload = result.data if isinstance(result.data, dict) else {}
+    versions = payload.get("versions", [])
+    return {
+        "summary": payload.get("summary", {}),
+        "versions": versions if isinstance(versions, list) else [],
+    }
 
 
 def list_resume_versions(*, page: int = 1, page_size: int = 20) -> dict[str, Any]:
