@@ -662,8 +662,8 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | P3-12 | Resume Lab / Feedback API | P3 | 已完成 | 简历实验数据、反馈录入、反馈趋势可用 |
 | P3-13 | Interview / Sprint / Task Progress API | P3 | 已完成 | 面试作战卡、冲刺任务、任务进度查询可用 |
 | P3-14 | System Health / Version / Update API | P3 | 已完成 | 健康检查、版本、更新任务状态可用 |
-| P3-15 | 前端 API / hybrid 联调 | P3 | 待验收 | `mock / api / hybrid` 可切换，核心页面不缺接口 |
-| P3-16 | 后端测试、脚本、文档收口 | P3 | 待验收 | smoke test、health、部署命令和清单状态完成 |
+| P3-15 | 前端 API / hybrid 联调 | P3 | 已完成 | `mock / api / hybrid` 可切换，核心页面不缺接口 |
+| P3-16 | 后端测试、脚本、文档收口 | P3 | 已完成 | smoke test、health、部署命令和清单状态完成 |
 
 ### 7.5 当前前端接口覆盖矩阵
 
@@ -702,7 +702,7 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | P3-G 生成类接口 | P3-10、P3-13 | 已完成 | Decision、Recruiter Lens、Tailor、Interview Mock 生成和缓存 | 重复请求命中缓存，任务状态可查询，超时可回退最近缓存 |
 | P3-H 写入类接口 | P3-11、P3-12 | 已完成 | Pipeline、Feedback、Vault、Resume Version 写接口 | 写入后刷新可保留状态，重复/非法操作有兜底 |
 | P3-I 系统健康、版本、更新任务 | P3-14 | 已完成 | Health、Version、Update、Task Events | 设置页健康检查和更新任务状态可用 |
-| P3-J 前端 hybrid 联调与回归验收 | P3-15、P3-16 | 进行中 | 前端 adapter、smoke test、文档收口 | `mock / api / hybrid` 切换稳定，核心链路无缺口，API 失败不会白屏 |
+| P3-J 前端 hybrid 联调与回归验收 | P3-15、P3-16 | 已完成 | 前端 adapter、smoke test、文档收口 | `mock / api / hybrid` 切换稳定，核心链路无缺口，API 失败不会白屏 |
 
 P3 推荐开发顺序：
 
@@ -951,7 +951,7 @@ P3-I 完成记录：
 - [x] 已完成本地静态验证：`python3 -m compileall backend/core backend/api backend/services backend/schemas backend/repositories`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`、`npm --prefix frontend run typecheck`；
 - [x] 已完成远程服务器验证：执行 `make verify-system-api && make health`，确认 Redis 任务状态和系统接口链路通过。
 
-P3-J 进行中记录：
+P3-J 完成记录：
 
 - [x] 已补齐前端统一 `apiClient`：支持 `GET / POST / PATCH / DELETE`、`Authorization`、`X-Request-ID`、统一 `ApiClientError` 和非 JSON 错误兜底；
 - [x] 已新增前端运行时数据源：`stores/runtimeDataStore.ts` 统一承载 Mock / API bootstrap 数据，避免页面直接散落请求；
@@ -974,7 +974,7 @@ P3-J 进行中记录：
 - [x] 已修复远程 `verify-p3` 中 `/vault/items/ev_rag_project` 404：职业素材详情命中标准 Demo 数据时不再沿用写入态 `miss` 状态，并合并标准 Demo 素材与 Redis 写入态、保留删除 tombstone；
 - [x] 已完成本地静态验证：`npm --prefix frontend run typecheck`、`npm --prefix frontend run build`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`；
 - [x] 已完成浏览器手动验证：API / 实际数据模式下核心页面可用，未复现黑屏不可点击；
-- [ ] 待远程服务器验证：本地 Docker 未运行，远程执行 `make verify-p3 && make health`。
+- [x] 已完成远程服务器验证：执行 `make verify-p3 && make health`，确认 P3 聚合 smoke、核心读写、生成类、系统接口和前端 API Adapter 通过。
 
 ---
 
@@ -1063,7 +1063,7 @@ P3 后台业务接口
 | 生成类后台接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Decision、Recruiter Lens、Tailor、Interview 的 Mock 生成、Redis 缓存、任务状态和远程验证 |
 | 写入类后台接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Pipeline、Feedback、Vault、Resume Version 写接口和远程验证；Review 后已抽取文本归一化 |
 | 系统健康与更新任务接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Health、Version、Update Check / Apply / Status、Task Events、`make verify-system-api` 和远程验证 |
-| 前后端 API 联调 |  | P3 | 待验收 |  |  | 已完成前端 apiClient、runtime data、API / hybrid 切换和接口矩阵补漏；待远程执行 `make verify-p3` |
+| 前后端 API 联调 |  | P3 | 已完成 |  | 2026-06-05 | 已完成前端 apiClient、runtime data、API / hybrid 切换、接口矩阵补漏和远程 `make verify-p3` 聚合验收 |
 
 ---
 
