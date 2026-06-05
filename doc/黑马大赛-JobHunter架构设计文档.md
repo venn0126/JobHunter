@@ -812,6 +812,86 @@ Structured JSON Result
 - 后端不得因为某个算法失败阻塞全站；
 - 算法输出字段允许扩展，但不得删除已被前端使用的字段。
 
+#### 5.15.3.1 岗位原始数据样本
+
+以下样本来自算法 / 采集侧提供的岗位原始记录。该结构可以作为后端 `job_source_records` 的输入，不要求算法侧直接提供前端岗位卡或岗位决策卡字段。
+
+后端接入原则：
+
+- 算法侧保证 `job_id`、`external_job_id`、`source_id`、`dedupe_key` 稳定；
+- 算法侧保证 `origin_url`、`apply_url`、`fetch_url` 可追溯；
+- 算法侧尽量保留完整 `description`、`responsibilities`、`requirements`；
+- 算法侧时间字段统一 ISO 8601；
+- 算法侧 `status` 使用稳定枚举：`active` / `expired` / `closed` / `unknown`；
+- 后端负责城市、方向、薪资、经验、学历、技能、关键词、embedding 文本、匹配分和决策结果的清洗与生成；
+- `raw_payload`、`raw_html`、`raw_markdown` 后续至少保留一类，方便字段回溯和重新清洗。
+
+```json
+{
+  "job_id": "35746c9cc9693a6e5b3f98a35db1ac0efaa536d3",
+  "external_job_id": "34253",
+  "title": "渠道销售专员",
+  "normalized_title": "渠道销售专员",
+  "company": "华为",
+  "department": "辽宁政企数字政府系统部",
+  "business_group": null,
+  "source_id": "company:huawei:career",
+  "source_name": "Huawei Careers",
+  "source_type": "company_career",
+  "fetch_method": "api_capture",
+  "fetch_url": "https://career.huawei.com/reccampportal/services/portal/portalpub/getJob/newHr/page/100/1?orderBy=P_COUNT_DESC&jobType=1",
+  "origin_url": "https://career.huawei.com/reccampportal/portal5/social-recruitment-detail.html?jobId=34253",
+  "apply_url": "https://career.huawei.com/reccampportal/portal5/social-recruitment-detail.html?jobId=34253",
+  "city": "中国/沈阳",
+  "locations": [
+    "中国/沈阳"
+  ],
+  "country": "CN",
+  "workplace_type": "unknown",
+  "job_type": "社会招聘",
+  "employment_type": null,
+  "job_category": "销售族",
+  "seniority": null,
+  "education": "本科",
+  "experience": "1年以上工作经验",
+  "salary": null,
+  "description": "在指导下完成所负责伙伴的销售策略执行落地，拓展、维护好伙伴，实现与伙伴持续合作。 1、对所负责伙伴的合作空间、营业规模、主营行业、组织架构等信息进行洞察，制定伙伴拓展策略与合作目标； 2、通过日常拜访、培训赋能、业务对标等，提升所负责伙伴的合作意愿； 3、通过维护和拓展所负责的伙伴、开展营销活动等，与伙伴建立合作关系，获取机会点，扩充Pipeline； 4、对于获取的机会点，支持和使能所负责的伙伴，通过方案交流、样板点参观、招投标支持等，实现机会点到订单，订单到收入，支撑伙伴口径收入和商业市场收入目标达成。",
+  "responsibilities": [
+    "在指导下完成所负责伙伴的销售策略执行落地，拓展、维护好伙伴，实现与伙伴持续合作",
+    "1、对所负责伙伴的合作空间、营业规模、主营行业、组织架构等信息进行洞察，制定伙伴拓展策略与合作目标",
+    "2、通过日常拜访、培训赋能、业务对标等，提升所负责伙伴的合作意愿",
+    "3、通过维护和拓展所负责的伙伴、开展营销活动等，与伙伴建立合作关系，获取机会点，扩充Pipeline",
+    "4、对于获取的机会点，支持和使能所负责的伙伴，通过方案交流、样板点参观、招投标支持等，实现机会点到订单，订单到收入，支撑伙伴口径收入和商业市场收入目标达成"
+  ],
+  "requirements": [
+    "语言要求：简体中文 教育背景要求：本科 优先的经验：有政企市场工作经验，有渠道拓展/销售成功经验",
+    "项目运营经验等 知识要求：具备在指导下能够使用SCT辅助工具，独立完成简单产品的配置工作"
+  ],
+  "skills": [],
+  "keywords": [],
+  "language": "zh-cn",
+  "headcount": null,
+  "publish_time": "2026-06-02T17:52:24.000+0800",
+  "expire_time": "2026-12-31T00:00:00.000+0800",
+  "status": "active",
+  "confidence": 0.9,
+  "dedupe_key": "696cb2c233b816b0e0d57534cb15659fe490ec9e",
+  "embedding_text": null,
+  "raw_payload": null,
+  "raw_html": null,
+  "raw_markdown": null,
+  "batch_id": "d0de2f27db344ef79d4a0d16ad403039:company:huawei:career",
+  "crawled_at": "2026-06-04T03:49:46.781632+00:00",
+  "updated_at": "2026-06-04T03:49:46.781640+00:00"
+}
+```
+
+该样本满足当前“先让算法侧交原始岗位数据，后端后续清洗”的接入要求。后端数据层需要同时保留：
+
+- 原始记录表：保存算法 / 采集侧字段、去重键和 raw 快照；
+- 归一化岗位表：保存前端可筛选、可分页、可展示的岗位字段；
+- 用户态决策表：按 `user_id`、`persona_id`、`resume_id`、`job_id` 保存匹配分、优先级、解释、风险和行动建议。
+
 #### 5.15.4 统一算法请求结构
 
 后端调用算法服务时建议统一使用以下请求壳：

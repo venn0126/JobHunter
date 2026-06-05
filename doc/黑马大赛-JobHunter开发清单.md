@@ -694,7 +694,7 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | 小节 | 覆盖任务 | 状态 | 主要交付 | 验收标准 |
 |---|---|---|---|---|
 | P3-A 后端基础架构与一键启动 | P3-01、P3-04、P3-16 | 待验收 | 分层目录、配置、依赖、Docker Compose、`make dev`、`make deploy-local` | 一条命令可启动开发环境和完整部署环境，端口占用和 Docker 缺失有明确提示 |
-| P3-B PostgreSQL 数据模型与迁移 | P3-02 | 未开始 | SQLAlchemy、Alembic、核心表、索引、迁移脚本 | migration 可重复执行，核心表和索引符合前端数据需要 |
+| P3-B PostgreSQL 数据模型与迁移 | P3-02 | 待验收 | SQLAlchemy、Alembic、核心表、索引、迁移脚本 | migration 可重复执行，核心表和索引符合前端数据需要 |
 | P3-C Redis 缓存与任务状态 | P3-03、P3-13 | 未开始 | Redis client、key 规范、TTL、任务状态抽象 | 缓存可读写，Redis 不可用时有明确降级，写入后能失效相关缓存 |
 | P3-D Auth / User / Persona | P3-05、P3-06 | 未开始 | 认证、个人设置、身份列表、身份切换 | 登录注册、刷新、退出、资料编辑和 Persona 切换可用 |
 | P3-E Demo Seed / Bootstrap / Reset | P3-07 | 未开始 | Demo 数据入库、Bootstrap、Reset | API 返回结构覆盖当前 `frontend/src/mocks` 全量数据 |
@@ -829,6 +829,19 @@ P3-A 完成记录：
 - [x] 已完成本地静态验证：`python3 -m compileall backend`、`npm run typecheck`、`npm run build`、`bash -n scripts/*.sh`、`git diff --check`；
 - [x] 已完成远程服务器验证：Docker 启动后执行 `make init && make infra-up && make migrate`，PostgreSQL / Redis 容器健康；
 - [x] 已完成远程服务器验证：执行 `make deploy-local`，确认 FastAPI 可托管前端静态产物，`0.0.0.0:8000` 可公网访问。
+
+P3-B 完成记录：
+
+- [x] 已将算法侧岗位原始 JSON 样本记录到架构文档 `5.15.3.1 岗位原始数据样本`；
+- [x] 已确认算法侧当前字段可作为 `job_source_records` 输入，后端后续负责清洗、归一化和用户态决策生成；
+- [x] 已新增 SQLAlchemy ORM 基础层：`models/base.py`、`models/__init__.py`；
+- [x] 已新增核心业务模型：User、Persona、JobSourceRecord、Job、Market、Vault、Resume、Decision、Pipeline、Feedback、Task、System；
+- [x] 已新增 `0002_p3b_core_tables` Alembic migration，覆盖 22 张核心表、外键、唯一约束和查询索引；
+- [x] 已补齐 `source_site`、`source_url` 等前端岗位卡展示字段，避免 Jobs API 后续临时拼接；
+- [x] 已强制用户态 / 求职方向态核心表携带 `persona_id`，降低身份数据串台风险；
+- [x] 已新增 `core/dependencies.py` 和 SQLAlchemy Session 工厂，为后续 Repository / Router 注入做准备；
+- [x] 已完成本地静态验证：`python3 -m compileall backend/core backend/api backend/models backend/services backend/migrations`、Alembic 离线 SQL 生成、`git diff --check`；
+- [ ] 待远程服务器验证：执行 `make migrate`，确认业务表可创建且重复执行不破坏数据。
 
 ---
 
