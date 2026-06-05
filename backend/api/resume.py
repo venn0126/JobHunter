@@ -4,8 +4,10 @@ from fastapi import APIRouter, Query, Request
 
 from api.demo_helpers import ok_or_demo_data_error, ok_or_demo_not_found
 from api.write_helpers import ok_or_write_result
+from core.config import get_settings
 from schemas.common import ApiResponse
 from schemas.write import ResumeVersionCreateRequest
+from services.resume_ingest_service import create_demo_resume_version, parse_resume_upload_body
 from services.resume_version_write_service import create_resume_version
 from services.resume_query_service import (
     compare_resume_versions,
@@ -43,6 +45,34 @@ def create_version(payload: ResumeVersionCreateRequest, request: Request):
             content=payload.content,
         ),
     )
+
+
+@router.post("/resumes/upload", response_model=ApiResponse[dict[str, Any]])
+async def upload_resume(request: Request):
+    content = await read_limited_body(request, get_settings().resume_upload_max_bytes + 1)
+    return ok_or_write_result(
+        request,
+        parse_resume_upload_body(
+            content_type=request.headers.get("content-type", ""),
+            body=content,
+        ),
+    )
+
+
+@router.post("/resumes/demo", response_model=ApiResponse[dict[str, Any]])
+def load_demo_resume(request: Request):
+    return ok_or_write_result(request, create_demo_resume_version())
+
+
+async def read_limited_body(request: Request, limit_bytes: int) -> bytes:
+    chunks: list[bytes] = []
+    total = 0
+    async for chunk in request.stream():
+        total += len(chunk)
+        chunks.append(chunk)
+        if total > limit_bytes:
+            break
+    return b"".join(chunks)
 
 
 @router.get("/resumes/{resume_id}/profile", response_model=ApiResponse[dict[str, Any]])

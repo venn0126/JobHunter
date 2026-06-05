@@ -25,7 +25,8 @@ export function RuntimeRecoveryPanel() {
     return () => window.clearTimeout(timerId);
   }, [runtimeLoading]);
 
-  const shouldShow = dataMode !== "mock" || Boolean(runtimeError) || showLoadingRecovery;
+  const hasModeMismatch = dataMode === "api" && runtimeMode !== "api";
+  const shouldShow = Boolean(runtimeError) || showLoadingRecovery || hasModeMismatch;
   if (!shouldShow) {
     return null;
   }

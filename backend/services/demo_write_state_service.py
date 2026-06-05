@@ -103,6 +103,14 @@ def write_resume_lab_state(payload: dict[str, Any]) -> ServiceResult:
     return DemoWriteStateStore().write("resume_lab", payload)
 
 
+def read_market_state() -> ServiceResult:
+    return DemoWriteStateStore().read("market", lambda: read_demo_dataset("market"))
+
+
+def write_market_state(payload: dict[str, Any]) -> ServiceResult:
+    return DemoWriteStateStore().write("market", payload)
+
+
 def write_blocked_by_degraded_state(result: ServiceResult) -> ServiceResult | None:
     if result.status != "degraded":
         return None

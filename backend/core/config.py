@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     demo_user_email: str = "demo@jobhunter.local"
     demo_user_password: str = "jobhunter-demo"
     demo_user_nickname: str = "Demo User"
+    resume_upload_max_bytes: int = 5 * 1024 * 1024
+    resume_upload_allowed_extensions: list[str] = Field(default_factory=lambda: [".pdf", ".doc", ".docx", ".md", ".txt"])
+    resume_upload_dir: Path = PROJECT_ROOT / "data" / "uploads" / "resumes"
     project_root: Path = PROJECT_ROOT
     frontend_dist: Path = PROJECT_ROOT / "frontend" / "dist"
     cors_origins: list[str] = Field(

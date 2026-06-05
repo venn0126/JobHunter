@@ -30,6 +30,7 @@ import json
 import os
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 
 port = sys.argv[1]
@@ -38,12 +39,16 @@ os.environ["no_proxy"] = "127.0.0.1,localhost,*"
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
-def request(method, path, body=None):
+def request(method, path, body=None, raw_body=None, extra_headers=None):
     data = None
     headers = {"Accept": "application/json"}
-    if body is not None:
+    if raw_body is not None:
+        data = raw_body
+    elif body is not None:
         data = json.dumps(body, ensure_ascii=False).encode("utf-8")
         headers["Content-Type"] = "application/json"
+    if extra_headers:
+        headers.update(extra_headers)
     req = urllib.request.Request(base_url + path, data=data, headers=headers, method=method)
     try:
         with opener.open(req, timeout=8) as response:
@@ -58,6 +63,35 @@ def must_ok(method, path, body=None):
         raise SystemExit(f"request failed: {method} {path} {status} {payload}")
     return payload["data"], payload
 
+
+def multipart_upload(path, filename, content):
+    boundary = "----JobHunterVerifyBoundary"
+    body = (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'
+        "Content-Type: text/markdown\r\n\r\n"
+    ).encode("utf-8") + content + f"\r\n--{boundary}--\r\n".encode("utf-8")
+    return request(
+        "POST",
+        path,
+        raw_body=body,
+        extra_headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+    )
+
+
+favorite_direction, _ = must_ok(
+    "POST",
+    "/market/directions/" + urllib.parse.quote("LLM 工程师") + "/favorite",
+)
+if not favorite_direction["favorited"] or "LLM 工程师" not in favorite_direction["favorites"]:
+    raise SystemExit(f"market favorite failed: {favorite_direction}")
+preference_direction, _ = must_ok(
+    "POST",
+    "/market/directions/" + urllib.parse.quote("LLM 工程师") + "/apply-preference",
+)
+if preference_direction["active_direction_id"] != "LLM 工程师":
+    raise SystemExit(f"market preference failed: {preference_direction}")
+print("[verify-write-api] ok market preference lifecycle")
 
 pipeline_before, _ = must_ok("GET", "/pipeline")
 initial_count = len(pipeline_before["entries"])
@@ -159,6 +193,21 @@ lab, _ = must_ok("GET", "/resume-lab")
 if not any(item["id"] == resume_id for item in lab["versions"]):
     raise SystemExit(f"resume lab read after write failed: {lab}")
 print("[verify-write-api] ok resume version create")
+
+demo_resume, _ = must_ok("POST", "/resumes/demo")
+if demo_resume["resume_id"] != "resume_demo_001" or not demo_resume["version"]["id"]:
+    raise SystemExit(f"demo resume failed: {demo_resume}")
+status, upload_payload = multipart_upload(
+    "/resumes/upload",
+    "verify-resume.md",
+    "# Verify Resume\n\n- FastAPI\n- Redis\n".encode("utf-8"),
+)
+if status != 200 or not upload_payload.get("success") or upload_payload["data"]["filename"] != "verify-resume.md":
+    raise SystemExit(f"resume upload failed: {status} {upload_payload}")
+status, invalid_upload_payload = multipart_upload("/resumes/upload", "verify.exe", b"bad")
+if status != 400 or invalid_upload_payload["code"] != "VALIDATION_ERROR":
+    raise SystemExit(f"resume upload invalid type failed: {status} {invalid_upload_payload}")
+print("[verify-write-api] ok resume demo/upload lifecycle")
 
 pipeline_after, _ = must_ok("GET", "/pipeline")
 if not any(entry["job"]["id"] == "job_1006" and entry["status"] == "tailored" for entry in pipeline_after["entries"]):

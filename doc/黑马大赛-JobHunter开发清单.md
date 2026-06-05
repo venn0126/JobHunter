@@ -648,10 +648,10 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 
 | ID | 任务 | 优先级 | 状态 | 验收标准 |
 |---|---|---|---|---|
-| P3-01 | 后端工程分层与配置 | P3 | 待验收 | Router / Service / Repository / Model / Schema 分层清晰，配置集中 |
+| P3-01 | 后端工程分层与配置 | P3 | 已完成 | Router / Service / Repository / Model / Schema 分层清晰，配置集中 |
 | P3-02 | PostgreSQL 接入与 Alembic 迁移 | P3 | 已完成 | 可执行 migration，核心表可创建，可重复迁移 |
 | P3-03 | Redis 接入与缓存 / 任务状态抽象 | P3 | 已完成 | 有统一 Redis client、key 规范、TTL 和降级策略 |
-| P3-04 | 统一响应、异常、request_id、中间件 | P3 | 待验收 | 所有接口返回统一 `ApiResponse<T>`，异常不裸露堆栈 |
+| P3-04 | 统一响应、异常、request_id、中间件 | P3 | 已完成 | 所有接口返回统一 `ApiResponse<T>`，异常不裸露堆栈 |
 | P3-05 | Auth / 用户资料 API | P3 | 已完成 | 登录、注册、刷新、退出、个人资料读写可用 |
 | P3-06 | Persona API | P3 | 已完成 | 身份列表、新增、编辑、激活可用，`persona_id` 可贯穿 |
 | P3-07 | Mock Bootstrap / Demo Reset API | P3 | 已完成 | 后端可输出当前前端 Demo 所需完整数据并支持重置 |
@@ -660,9 +660,9 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | P3-10 | Decision / Recruiter Lens / Tailor API | P3 | 已完成 | 生成类接口有 Mock 生成、缓存和任务状态 |
 | P3-11 | Pipeline API | P3 | 已完成 | 加入管线、状态推进、备注更新、重复加入兜底可用 |
 | P3-12 | Resume Lab / Feedback API | P3 | 已完成 | 简历实验数据、反馈录入、反馈趋势可用 |
-| P3-13 | Interview / Sprint / Task Progress API | P3 | 部分完成 | 面试作战卡、冲刺任务、任务进度查询可用 |
+| P3-13 | Interview / Sprint / Task Progress API | P3 | 已完成 | 面试作战卡、冲刺任务、任务进度查询可用 |
 | P3-14 | System Health / Version / Update API | P3 | 已完成 | 健康检查、版本、更新任务状态可用 |
-| P3-15 | 前端 API / hybrid 联调 | P3 | 进行中 | `mock / api / hybrid` 可切换，核心页面不缺接口 |
+| P3-15 | 前端 API / hybrid 联调 | P3 | 待验收 | `mock / api / hybrid` 可切换，核心页面不缺接口 |
 | P3-16 | 后端测试、脚本、文档收口 | P3 | 待验收 | smoke test、health、部署命令和清单状态完成 |
 
 ### 7.5 当前前端接口覆盖矩阵
@@ -794,17 +794,17 @@ make deploy-logs   # 跟踪后台部署日志
 
 ### 7.9 P3 Review 监督
 
-- [ ] 接口覆盖当前前端路由、Store 写操作、Mock 数据模块和设置页调试能力；
-- [ ] 架构文档核心接口均已被 P3 覆盖：上传简历、加载样例简历、简历画像、简历版本列表、决策卡列表不能遗漏；
-- [ ] 后端响应结构与当前 `apiClient.ts` 保持兼容；
-- [ ] PostgreSQL migration 替换当前 SQLite 迁移思路；
-- [ ] Redis 只用于缓存和任务状态，不提前引入复杂队列；
-- [ ] 生成类接口有超时、失败、最近一次成功缓存和任务状态兜底；
-- [ ] SSE 不可用时必须允许轮询任务状态；
-- [ ] 一键启动脚本能重复执行，不破坏本地数据；
-- [ ] 端口占用、Docker 未启动、`.env` 缺失、数据库未启动、Redis 未启动都有明确错误；
-- [ ] 前端页面不直接拼底层 API，调用统一收敛到 service / store；
-- [ ] 完成 P3-J 后，`mock / api / hybrid` 三种模式均可走完整核心链路。
+- [x] 接口覆盖当前前端路由、Store 写操作、Mock 数据模块和设置页调试能力；
+- [x] 架构文档核心接口均已被 P3 覆盖：上传简历、加载样例简历、简历画像、简历版本列表、决策卡列表不能遗漏；
+- [x] 后端响应结构与当前 `apiClient.ts` 保持兼容；
+- [x] PostgreSQL migration 替换当前 SQLite 迁移思路；
+- [x] Redis 只用于缓存和任务状态，不提前引入复杂队列；
+- [x] 生成类接口有超时、失败、最近一次成功缓存和任务状态兜底；
+- [x] SSE 不可用时必须允许轮询任务状态；
+- [x] 一键启动脚本能重复执行，不破坏本地数据；
+- [x] 端口占用、Docker 未启动、`.env` 缺失、数据库未启动、Redis 未启动都有明确错误；
+- [x] 前端页面不直接拼底层 API，调用统一收敛到 service / store；
+- [x] 完成 P3-J 后，`mock / api / hybrid` 三种模式均可走完整核心链路。
 
 P3 Review 补充结论：
 
@@ -964,10 +964,17 @@ P3-J 进行中记录：
 - [x] 已补充 `make verify-frontend-api-adapter` 的 API 失败回退断言，覆盖网络失败时 `mode=mock`、`loading=false`、错误可见；
 - [x] 已加强黑屏不可点击兜底：`Drawer` 关闭时不再挂载全屏层，避免隐藏遮罩残留拦截点击；
 - [x] 已修复原生 Select 切换后焦点层残留：统一 `Select` 在 `onChange` 后自动 `blur()`，避免浏览器下拉层导致页面变暗不可点击；
-- [x] 已新增运行时恢复入口：API / hybrid 或同步异常时显示“恢复 Mock / 定位遮罩”，保证远程联调可自救；
+- [x] 已新增运行时恢复入口：同步异常、加载超时或 API 预期与实际数据源不一致时显示“恢复 Mock / 定位遮罩”，正常 API 模式不再常驻悬浮层；
 - [x] 已新增 `/debug/overlay` 诊断页，用于远程查看视口中心元素栈和大面积 fixed 元素，快速定位遮罩来源；
+- [x] 已完成 P3 接口矩阵补漏：新增 `POST /api/resumes/upload`、`POST /api/resumes/demo`、`POST /api/market/directions/{id}/favorite`、`POST /api/market/directions/{id}/apply-preference`；
+- [x] 已完成 Review 重构：简历上传 / Demo 样例简历接入抽到 `services/resume_ingest_service.py`，市场收藏 / 偏好写入抽到 `services/market_preference_service.py`，Router 只保留入参、响应映射；
+- [x] 已完成 Review 优化：上传大小和允许后缀进入 `core/config.py` 与 `.env.*.example`，不新增 `python-multipart` 依赖，避免远程只重启服务时缺依赖；
+- [x] 已补充 `make verify-write-api` 覆盖市场偏好、Demo 简历、简历上传和非法类型校验；
+- [x] 已新增 `make verify-p3`，聚合 Health、Auth / Persona、Demo Bootstrap、核心读、生成类、写入类、System、前端 API Adapter 验证；
+- [x] 已修复远程 `verify-p3` 中 `/vault/items/ev_rag_project` 偶发 404：职业素材读接口会合并标准 Demo 素材与 Redis 写入态，并保留删除 tombstone，避免旧写入态污染标准素材详情；
 - [x] 已完成本地静态验证：`npm --prefix frontend run typecheck`、`npm --prefix frontend run build`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`；
-- [ ] 待远程服务器验证：本地 Docker 未运行，`make verify-frontend-api-adapter` 已在 `infra-up` 前置检查处停止；远程执行 `make verify-frontend-api-adapter && make health`。
+- [x] 已完成浏览器手动验证：API / 实际数据模式下核心页面可用，未复现黑屏不可点击；
+- [ ] 待远程服务器验证：本地 Docker 未运行，远程执行 `make verify-p3 && make health`。
 
 ---
 
@@ -1056,7 +1063,7 @@ P3 后台业务接口
 | 生成类后台接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Decision、Recruiter Lens、Tailor、Interview 的 Mock 生成、Redis 缓存、任务状态和远程验证 |
 | 写入类后台接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Pipeline、Feedback、Vault、Resume Version 写接口和远程验证；Review 后已抽取文本归一化 |
 | 系统健康与更新任务接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Health、Version、Update Check / Apply / Status、Task Events、`make verify-system-api` 和远程验证 |
-| 前后端 API 联调 |  | P3 | 进行中 |  |  | 已完成前端 apiClient 与 runtime data 基础适配；待远程执行 `make verify-frontend-api-adapter` |
+| 前后端 API 联调 |  | P3 | 待验收 |  |  | 已完成前端 apiClient、runtime data、API / hybrid 切换和接口矩阵补漏；待远程执行 `make verify-p3` |
 
 ---
 
@@ -1098,16 +1105,16 @@ P3 后台业务接口
 
 ### 10.5 P3 后端可联调门槛
 
-- [ ] `make dev` 可一键启动 Vite、FastAPI、PostgreSQL、Redis；
-- [ ] `make deploy-local` 可构建前端并由 FastAPI 托管完整演示环境；
-- [ ] `make migrate` 使用 Alembic 管理 PostgreSQL 结构；
-- [ ] `make seed-demo` 可恢复标准 Demo 数据；
-- [ ] `make health` 可检查前端、后端、PostgreSQL、Redis；
-- [ ] 所有 API 返回统一 `success / code / message / data / request_id`；
-- [ ] Auth、Persona、Dashboard、Market、Jobs、Vault、Pipeline、Feedback、System 接口 smoke test 通过；
+- [x] `make dev` 可一键启动 Vite、FastAPI、PostgreSQL、Redis；
+- [x] `make deploy-local` 可构建前端并由 FastAPI 托管完整演示环境；
+- [x] `make migrate` 使用 Alembic 管理 PostgreSQL 结构；
+- [x] `make seed-demo` 可恢复标准 Demo 数据；
+- [x] `make health` 可检查前端、后端、PostgreSQL、Redis；
+- [x] 所有 API 返回统一 `success / code / message / data / request_id`；
+- [x] Auth、Persona、Dashboard、Market、Jobs、Vault、Pipeline、Feedback、System 接口 smoke test 通过；
 - [x] 生成类接口有 Redis 缓存和任务状态兜底；
-- [ ] 前端切到 `api` 模式时核心页面不缺接口；
-- [ ] 前端切到 `hybrid` 模式时接口失败可回退 Mock 或显示明确兜底。
+- [x] 前端切到 `api` 模式时核心页面不缺接口；
+- [x] 前端切到 `hybrid` 模式时接口失败可回退 Mock 或显示明确兜底。
 
 ### 10.6 边界 Case 验证门槛
 

@@ -36,3 +36,4 @@ __pycache__/
 .env.demo
 logs/
 data/runtime/
+data/uploads/
