@@ -654,9 +654,9 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | P3-04 | 统一响应、异常、request_id、中间件 | P3 | 待验收 | 所有接口返回统一 `ApiResponse<T>`，异常不裸露堆栈 |
 | P3-05 | Auth / 用户资料 API | P3 | 已完成 | 登录、注册、刷新、退出、个人资料读写可用 |
 | P3-06 | Persona API | P3 | 已完成 | 身份列表、新增、编辑、激活可用，`persona_id` 可贯穿 |
-| P3-07 | Mock Bootstrap / Demo Reset API | P3 | 待验收 | 后端可输出当前前端 Demo 所需完整数据并支持重置 |
-| P3-08 | Market / Jobs API | P3 | 未开始 | 机会广场、岗位列表、岗位详情可被前端读取 |
-| P3-09 | Vault / Resume API | P3 | 未开始 | 职业素材、简历版本、简历工作室基础接口可用 |
+| P3-07 | Mock Bootstrap / Demo Reset API | P3 | 已完成 | 后端可输出当前前端 Demo 所需完整数据并支持重置 |
+| P3-08 | Market / Jobs API | P3 | 待验收 | 机会广场、岗位列表、岗位详情可被前端读取 |
+| P3-09 | Vault / Resume API | P3 | 待验收 | 职业素材、简历版本、简历工作室基础接口可用 |
 | P3-10 | Decision / Recruiter Lens / Tailor API | P3 | 未开始 | 生成类接口有 Mock 生成、缓存和任务状态 |
 | P3-11 | Pipeline API | P3 | 未开始 | 加入管线、状态推进、备注更新、重复加入兜底可用 |
 | P3-12 | Resume Lab / Feedback API | P3 | 未开始 | 简历实验数据、反馈录入、反馈趋势可用 |
@@ -697,8 +697,8 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | P3-B PostgreSQL 数据模型与迁移 | P3-02 | 已完成 | SQLAlchemy、Alembic、核心表、索引、迁移脚本 | migration 可重复执行，核心表和索引符合前端数据需要 |
 | P3-C Redis 缓存与任务状态 | P3-03、P3-13 | 已完成 | Redis client、key 规范、TTL、任务状态抽象 | 缓存可读写，Redis 不可用时有明确降级，写入后能失效相关缓存 |
 | P3-D Auth / User / Persona | P3-05、P3-06 | 已完成 | 认证、个人设置、身份列表、身份切换 | 登录注册、刷新、退出、资料编辑和 Persona 切换可用 |
-| P3-E Demo Seed / Bootstrap / Reset | P3-07 | 待验收 | Demo 数据入库、Bootstrap、Reset | API 返回结构覆盖当前 `frontend/src/mocks` 全量数据 |
-| P3-F 核心业务读接口 | P3-08、P3-09 | 未开始 | Dashboard、Market、Jobs、Vault、Resume Lab 读接口 | 前端核心读页面可切到 API 模式，列表分页 / 筛选 / 空状态稳定 |
+| P3-E Demo Seed / Bootstrap / Reset | P3-07 | 已完成 | Demo 数据入库、Bootstrap、Reset | API 返回结构覆盖当前 `frontend/src/mocks` 全量数据 |
+| P3-F 核心业务读接口 | P3-08、P3-09 | 待验收 | Dashboard、Market、Jobs、Vault、Resume Lab 读接口 | 前端核心读页面可切到 API 模式，列表分页 / 筛选 / 空状态稳定 |
 | P3-G 生成类接口 | P3-10、P3-13 | 未开始 | Decision、Recruiter Lens、Tailor、Interview Mock 生成和缓存 | 重复请求命中缓存，任务状态可查询，超时可回退最近缓存 |
 | P3-H 写入类接口 | P3-11、P3-12 | 未开始 | Pipeline、Feedback、Vault、Resume Version 写接口 | 写入后刷新可保留状态，重复/非法操作有兜底 |
 | P3-I 系统健康、版本、更新任务 | P3-14 | 未开始 | Health、Version、Update、Task Events | 设置页健康检查和更新任务状态可用 |
@@ -885,7 +885,21 @@ P3-E 完成记录：
 - [x] 已完成 Review 修复：Demo seed 首次创建用户后立即 flush，避免新库中 Persona 绑定空 `user_id`；reset 返回 `personas_deleted` 便于确认标准态清理；
 - [x] 已完成本地静态验证：`python3 -m compileall backend/core backend/api backend/services backend/schemas backend/repositories`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`、`npm --prefix frontend run typecheck`；
 - [x] 已完成本地接口 smoke：`/api/demo/summary`、`/api/mock/bootstrap` 返回统一 JSON，bootstrap 覆盖 12 个 dataset；
-- [ ] 待远程服务器验证：执行 `make verify-demo-bootstrap && make health`。
+- [x] 已完成远程服务器验证：执行 `make verify-demo-bootstrap && make health`，确认 Bootstrap、Reset 标准态恢复和健康检查通过。
+
+P3-F 完成记录：
+
+- [x] 已新增核心读接口：`GET /api/dashboard`、`GET /api/market`、`GET /api/sprint`、`GET /api/pipeline`；
+- [x] 已新增岗位读接口：`GET /api/jobs` 支持 `city / direction / priority / source_site / sort / page / page_size`，`GET /api/jobs/{id}` 支持详情和 404；
+- [x] 已新增机会方向岗位接口：`GET /api/market/directions/{id}/jobs`，支持方向进入岗位雷达；
+- [x] 已新增职业素材读接口：`GET /api/vault`、`GET /api/vault/items/{id}`；
+- [x] 已新增简历读接口：`GET /api/resume-lab`、`GET /api/resume-lab/compare`、`GET /api/resume-studio?job_id=`、`GET /api/resumes/versions`、`GET /api/resumes/{id}/profile`；
+- [x] 已新增 `make verify-core-read-api`，覆盖核心读接口、分页 / 筛选 / 详情和 404 边界；
+- [x] 已完成 Review 重构：核心读接口统一复用 `services/demo_dataset_service.py` 和 `services/job_query_service.py`，Router 只保留入参、响应和错误映射；
+- [x] 已完成 Review 优化：Demo dataset 读取继续复用 `data/demo/mock-datasets.json`，避免新增一份 Mock 文件映射；
+- [x] 已完成本地静态验证：`python3 -m compileall backend/core backend/api backend/services backend/schemas backend/repositories`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`、`npm --prefix frontend run typecheck`；
+- [x] 已完成本地接口 smoke：核心读接口均返回统一 JSON，`/api/jobs/not_exists` 和 `/api/resumes/not_exists/profile` 返回 JSON 404；
+- [ ] 待远程服务器验证：执行 `make verify-core-read-api && make health`。
 
 ---
 
@@ -969,8 +983,8 @@ P3 后台业务接口
 | PostgreSQL 数据层 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 22 张业务表、索引、约束、ORM 模型和远程迁移验证 |
 | Redis 缓存与任务状态 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Redis key 规范、JSON 缓存、任务状态封装、`make verify-redis-cache` 和远程验证 |
 | 后台认证与用户身份 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Auth、User、Persona 后端最小闭环、`make verify-auth-persona` 和浏览器手动验证 |
-| Demo Bootstrap / Reset |  | P3 | 待验收 |  |  | 已完成 `/api/mock/bootstrap`、`/api/demo/reset` 和 `make verify-demo-bootstrap`；待远程验证 |
-| 后台业务接口 |  | P3 | 未开始 |  |  | 规划 Dashboard、Market、Jobs、Vault、Pipeline、Feedback 等接口 |
+| Demo Bootstrap / Reset |  | P3 | 已完成 |  | 2026-06-05 | 已完成 `/api/mock/bootstrap`、`/api/demo/reset`、`make verify-demo-bootstrap` 和远程验证 |
+| 后台业务接口 |  | P3 | 待验收 |  |  | 已完成 Dashboard、Market、Jobs、Vault、Pipeline、Sprint、Resume Lab / Studio 核心读接口；待远程验证 |
 | 生成类后台接口 |  | P3 | 未开始 |  |  | 规划 Decision、Recruiter Lens、Tailor、Interview 的 Mock 生成、缓存和任务状态 |
 | 前后端 API 联调 |  | P3 | 未开始 |  |  | 规划 `mock / api / hybrid` 三模式联调和 smoke test |
 
