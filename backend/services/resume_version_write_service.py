@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from core.ids import new_public_id
-from services.demo_write_state_service import read_resume_lab_state, write_resume_lab_state
+from services.demo_write_state_service import read_resume_lab_state, write_blocked_by_degraded_state, write_resume_lab_state
 from services.job_query_service import get_demo_job
 from services.result import ServiceResult
 from services.task_state_service import utc_now
@@ -36,6 +36,9 @@ def create_resume_version(
         return ServiceResult(status="miss", message="job not found")
 
     state_result = read_resume_lab()
+    blocked_result = write_blocked_by_degraded_state(state_result)
+    if blocked_result:
+        return blocked_result
     payload = normalize_resume_lab_payload(state_result.data)
     version = {
         "id": new_public_id("resume"),

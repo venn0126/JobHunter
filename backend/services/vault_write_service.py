@@ -3,26 +3,13 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from core.ids import new_public_id
-from services.demo_write_state_service import read_vault_state, write_vault_state
+from services.demo_write_state_service import read_vault_state, write_blocked_by_degraded_state, write_vault_state
 from services.pagination_service import paginate_items
 from services.result import ServiceResult
 from services.task_state_service import utc_now
+from services.text_normalization_service import normalize_text_list
 
 VaultItemType = Literal["project", "skill", "story", "certificate"]
-
-
-def normalize_text_list(items: list[str] | None, *, limit: int = 50) -> list[str]:
-    normalized: list[str] = []
-    seen: set[str] = set()
-    for item in items or []:
-        text = item.strip()
-        if not text or text in seen:
-            continue
-        normalized.append(text)
-        seen.add(text)
-        if len(normalized) >= limit:
-            break
-    return normalized
 
 
 def normalize_vault_payload(payload: dict[str, Any]) -> dict[str, Any]:
@@ -91,6 +78,9 @@ def create_vault_item(
         return ServiceResult(status="invalid", message="vault item title is required")
 
     state_result = read_vault_state()
+    blocked_result = write_blocked_by_degraded_state(state_result)
+    if blocked_result:
+        return blocked_result
     payload = normalize_vault_payload(state_result.data)
     item = build_vault_item(
         item_type=item_type,
@@ -118,6 +108,9 @@ def update_vault_item(
     star: dict[str, str] | None = None,
 ) -> ServiceResult:
     state_result = read_vault_state()
+    blocked_result = write_blocked_by_degraded_state(state_result)
+    if blocked_result:
+        return blocked_result
     payload = normalize_vault_payload(state_result.data)
     item = next((entry for entry in payload["items"] if entry.get("id") == item_id), None)
     if not item:
@@ -153,6 +146,9 @@ def update_vault_item(
 
 def delete_vault_item(item_id: str) -> ServiceResult:
     state_result = read_vault_state()
+    blocked_result = write_blocked_by_degraded_state(state_result)
+    if blocked_result:
+        return blocked_result
     payload = normalize_vault_payload(state_result.data)
     next_items = [entry for entry in payload["items"] if entry.get("id") != item_id]
     if len(next_items) == len(payload["items"]):

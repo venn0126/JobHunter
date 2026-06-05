@@ -4,9 +4,10 @@ from datetime import date, timedelta
 from typing import Any, Literal
 
 from core.ids import new_public_id
-from services.demo_write_state_service import read_feedback_state, write_feedback_state
+from services.demo_write_state_service import read_feedback_state, write_blocked_by_degraded_state, write_feedback_state
 from services.job_query_service import get_demo_job
 from services.result import ServiceResult
+from services.text_normalization_service import normalize_text_list
 
 FeedbackOutcome = Literal["applied", "interview", "no_response", "offer", "rejected", "withdrawn"]
 
@@ -27,20 +28,6 @@ def today_text() -> str:
 
 def follow_up_date(today: str) -> str:
     return (date.fromisoformat(today) + timedelta(days=2)).isoformat()
-
-
-def normalize_tags(tags: list[str] | None) -> list[str]:
-    normalized: list[str] = []
-    seen: set[str] = set()
-    for tag in tags or []:
-        text = tag.strip()
-        if not text or text in seen:
-            continue
-        normalized.append(text)
-        seen.add(text)
-        if len(normalized) >= 20:
-            break
-    return normalized
 
 
 def normalize_feedback_payload(payload: dict[str, Any]) -> dict[str, Any]:
@@ -77,7 +64,7 @@ def build_feedback_record(
         "channel": existing_record.get("channel", "手动记录") if existing_record else "手动记录",
         "applied_at": existing_record.get("applied_at", today) if existing_record else today,
         "updated_at": today,
-        "feedback_tags": normalize_tags(feedback_tags),
+        "feedback_tags": normalize_text_list(feedback_tags, limit=20),
         "notes": notes.strip(),
         "next_action": next_action.strip(),
     }
@@ -103,6 +90,9 @@ def upsert_feedback_record(
         return ServiceResult(status="invalid", message="resume version id is required")
 
     state_result = read_feedback_state()
+    blocked_result = write_blocked_by_degraded_state(state_result)
+    if blocked_result:
+        return blocked_result
     payload = normalize_feedback_payload(state_result.data)
     existing = next((record for record in payload["records"] if record.get("job_id") == job_id), None)
     record = build_feedback_record(
@@ -132,6 +122,9 @@ def patch_feedback_record(
     feedback_tags: list[str] | None = None,
 ) -> ServiceResult:
     state_result = read_feedback_state()
+    blocked_result = write_blocked_by_degraded_state(state_result)
+    if blocked_result:
+        return blocked_result
     payload = normalize_feedback_payload(state_result.data)
     record = next((item for item in payload["records"] if item.get("id") == record_id), None)
     if not record:
@@ -150,7 +143,7 @@ def patch_feedback_record(
     if next_action is not None:
         record["next_action"] = next_action.strip()
     if feedback_tags is not None:
-        record["feedback_tags"] = normalize_tags(feedback_tags)
+        record["feedback_tags"] = normalize_text_list(feedback_tags, limit=20)
     record["updated_at"] = today_text()
 
     write_result = write_feedback_state(payload)

@@ -661,7 +661,7 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | P3-11 | Pipeline API | P3 | 已完成 | 加入管线、状态推进、备注更新、重复加入兜底可用 |
 | P3-12 | Resume Lab / Feedback API | P3 | 已完成 | 简历实验数据、反馈录入、反馈趋势可用 |
 | P3-13 | Interview / Sprint / Task Progress API | P3 | 部分完成 | 面试作战卡、冲刺任务、任务进度查询可用 |
-| P3-14 | System Health / Version / Update API | P3 | 未开始 | 健康检查、版本、更新任务状态可用 |
+| P3-14 | System Health / Version / Update API | P3 | 已完成 | 健康检查、版本、更新任务状态可用 |
 | P3-15 | 前端 API / hybrid 联调 | P3 | 未开始 | `mock / api / hybrid` 可切换，核心页面不缺接口 |
 | P3-16 | 后端测试、脚本、文档收口 | P3 | 待验收 | smoke test、health、部署命令和清单状态完成 |
 
@@ -701,7 +701,7 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | P3-F 核心业务读接口 | P3-08、P3-09 | 已完成 | Dashboard、Market、Jobs、Vault、Resume Lab 读接口 | 前端核心读页面可切到 API 模式，列表分页 / 筛选 / 空状态稳定 |
 | P3-G 生成类接口 | P3-10、P3-13 | 已完成 | Decision、Recruiter Lens、Tailor、Interview Mock 生成和缓存 | 重复请求命中缓存，任务状态可查询，超时可回退最近缓存 |
 | P3-H 写入类接口 | P3-11、P3-12 | 已完成 | Pipeline、Feedback、Vault、Resume Version 写接口 | 写入后刷新可保留状态，重复/非法操作有兜底 |
-| P3-I 系统健康、版本、更新任务 | P3-14 | 未开始 | Health、Version、Update、Task Events | 设置页健康检查和更新任务状态可用 |
+| P3-I 系统健康、版本、更新任务 | P3-14 | 已完成 | Health、Version、Update、Task Events | 设置页健康检查和更新任务状态可用 |
 | P3-J 前端 hybrid 联调与回归验收 | P3-15、P3-16 | 未开始 | 前端 adapter、smoke test、文档收口 | `mock / api / hybrid` 切换稳定，核心链路无缺口，API 失败不会白屏 |
 
 P3 推荐开发顺序：
@@ -934,9 +934,22 @@ P3-H 完成记录：
 - [x] 已新增 `make verify-write-api`，覆盖管线重复加入、非法状态流转、素材写入生命周期、反馈更新、简历版本保存和写后读；
 - [x] 已完成 Review 修复：避免对 frozen `ServiceResult` 直接赋值，读接口统一返回新的 `ServiceResult`；
 - [x] 已完成 Review 重构：写接口错误映射收敛到 `api/write_helpers.py`，Router 只处理入参和响应映射；
+- [x] 已完成 Review 重构：文本列表归一化抽到 `services/text_normalization_service.py`，Persona、Vault、Feedback 不再重复实现去重 / 截断逻辑；
 - [x] 已完成本地静态验证：`python3 -m compileall backend/core backend/api backend/services backend/schemas backend/repositories`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`、`npm --prefix frontend run typecheck`；
 - [x] 已完成本地接口 smoke：Redis 未启动时读接口不崩，写接口返回明确 `SERVICE_ERROR`，不误报保存成功；
-- [ ] 待远程服务器验证：执行 `make verify-write-api && make health`，确认 Redis 写入态、刷新保留和重复操作兜底通过。
+- [x] 已完成远程服务器验证：执行 `make verify-write-api && make health`，确认 Redis 写入态、刷新保留和重复操作兜底通过。
+
+P3-I 完成记录：
+
+- [x] 已保留系统健康与版本别名：`GET /api/health`、`GET /api/system/health`、`GET /api/version`、`GET /api/system/version`；
+- [x] 已新增更新检查接口：`GET /api/system/update/check`，返回当前版本、检测版本、更新通道和检测时间；
+- [x] 已新增演示更新任务接口：`POST /api/system/update/apply`，当前阶段不执行破坏性升级，仅创建可轮询的模拟更新任务；
+- [x] 已新增更新任务状态接口：`GET /api/system/update/status/{task_id}`，并复用现有 `/api/tasks/{task_id}`、`/api/tasks/{task_id}/events` 查询链路；
+- [x] 已完成 Redis 任务状态写入：更新任务写入 `succeeded` 状态和 `system.update.completed` 事件，Redis 不可用时返回明确 `SERVICE_ERROR`；
+- [x] 已新增 `make verify-system-api`，覆盖 Health / Version 别名、Update Check、Update Apply、Update Status、Task State / Events 和 404；
+- [x] 已完成 Review 重构：任务状态和事件响应映射抽到 `api/task_helpers.py`，`tasks` 与 `system update` 不重复写 404 / 503 逻辑；
+- [x] 已完成本地静态验证：`python3 -m compileall backend/core backend/api backend/services backend/schemas backend/repositories`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`、`npm --prefix frontend run typecheck`；
+- [ ] 待远程服务器验证：本地 Docker 未运行，`make verify-system-api` 已在 `infra-up` 前置检查处停止；远程执行 `make verify-system-api && make health` 确认 Redis 任务状态和系统接口链路通过。
 
 ---
 
@@ -1023,7 +1036,8 @@ P3 后台业务接口
 | Demo Bootstrap / Reset |  | P3 | 已完成 |  | 2026-06-05 | 已完成 `/api/mock/bootstrap`、`/api/demo/reset`、`make verify-demo-bootstrap` 和远程验证 |
 | 后台业务接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Dashboard、Market、Jobs、Vault、Pipeline、Sprint、Resume Lab / Studio 核心读接口和远程验证 |
 | 生成类后台接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Decision、Recruiter Lens、Tailor、Interview 的 Mock 生成、Redis 缓存、任务状态和远程验证 |
-| 写入类后台接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Pipeline、Feedback、Vault、Resume Version 写接口；待远程执行 `make verify-write-api` |
+| 写入类后台接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Pipeline、Feedback、Vault、Resume Version 写接口和远程验证；Review 后已抽取文本归一化 |
+| 系统健康与更新任务接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Health、Version、Update Check / Apply / Status、Task Events 和 `make verify-system-api`；待远程验证 |
 | 前后端 API 联调 |  | P3 | 未开始 |  |  | 规划 `mock / api / hybrid` 三模式联调和 smoke test |
 
 ---

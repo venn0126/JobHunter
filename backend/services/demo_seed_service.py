@@ -14,7 +14,7 @@ from repositories.persona_repository import PersonaRepository
 from repositories.user_repository import UserRepository
 from services.db_tx import commit_or_result
 from services.demo_write_state_service import clear_demo_write_state
-from services.persona_service import normalize_text_list
+from services.text_normalization_service import normalize_text_list
 
 
 def load_demo_personas() -> dict:

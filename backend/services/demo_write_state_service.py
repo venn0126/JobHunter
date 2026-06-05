@@ -101,3 +101,9 @@ def read_resume_lab_state() -> ServiceResult:
 
 def write_resume_lab_state(payload: dict[str, Any]) -> ServiceResult:
     return DemoWriteStateStore().write("resume_lab", payload)
+
+
+def write_blocked_by_degraded_state(result: ServiceResult) -> ServiceResult | None:
+    if result.status != "degraded":
+        return None
+    return ServiceResult(status="degraded", data={"degraded": True}, message=result.message)

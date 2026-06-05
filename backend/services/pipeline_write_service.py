@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Any, Literal
 
 from services.demo_dataset_service import PIPELINE_COLUMNS
-from services.demo_write_state_service import read_pipeline_state, write_pipeline_state
+from services.demo_write_state_service import read_pipeline_state, write_blocked_by_degraded_state, write_pipeline_state
 from services.job_query_service import get_demo_job
 from services.result import ServiceResult
 
@@ -73,6 +73,9 @@ def add_pipeline_card(job_id: str, *, status: str = "interested", next_action: s
         return ServiceResult(status="miss", message="job not found")
 
     state_result = read_pipeline()
+    blocked_result = write_blocked_by_degraded_state(state_result)
+    if blocked_result:
+        return blocked_result
     payload = normalize_pipeline_payload(state_result.data)
     entries = payload["entries"]
     existing = find_entry(entries, job_id)
@@ -94,6 +97,9 @@ def add_pipeline_card(job_id: str, *, status: str = "interested", next_action: s
 
 def update_pipeline_card(job_id: str, *, status: str | None = None, next_action: str | None = None, notes: str | None = None) -> ServiceResult:
     state_result = read_pipeline()
+    blocked_result = write_blocked_by_degraded_state(state_result)
+    if blocked_result:
+        return blocked_result
     payload = normalize_pipeline_payload(state_result.data)
     entries = payload["entries"]
     entry = find_entry(entries, job_id)

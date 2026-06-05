@@ -8,23 +8,7 @@ from models.user import User
 from repositories.persona_repository import PersonaRepository
 from services.db_tx import commit_or_result
 from services.result import ServiceResult
-
-
-def normalize_text_list(items: list[str] | None, *, limit: int = 50) -> list[str]:
-    if not items:
-        return []
-
-    normalized: list[str] = []
-    seen: set[str] = set()
-    for item in items:
-        text = item.strip()
-        if not text or text in seen:
-            continue
-        normalized.append(text)
-        seen.add(text)
-        if len(normalized) >= limit:
-            break
-    return normalized
+from services.text_normalization_service import normalize_text_list
 
 
 def serialize_persona(persona: Persona) -> dict:
