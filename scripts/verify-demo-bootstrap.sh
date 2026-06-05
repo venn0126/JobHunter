@@ -86,6 +86,7 @@ if manifest_files != expected_files:
 
 demo_email = os.environ.get("DEMO_USER_EMAIL", "demo@jobhunter.local")
 demo_password = os.environ.get("DEMO_USER_PASSWORD", "jobhunter-demo")
+demo_user_public_id = os.environ.get("DEMO_USER_PUBLIC_ID", "demo_user")
 login_status, login_payload = request("POST", "/auth/login", {"email": demo_email, "password": demo_password})
 if login_status != 200 or not login_payload["success"]:
     raise SystemExit(f"demo login failed: {login_status} {login_payload}")
@@ -110,7 +111,7 @@ extra_persona_id = create_payload["data"]["id"]
 reset_status, reset_payload = request("POST", "/demo/reset")
 if reset_status != 200 or not reset_payload["data"]["reset"]:
     raise SystemExit(f"reset failed: {reset_status} {reset_payload}")
-if reset_payload["data"]["demo_user_id"] != "demo_user":
+if reset_payload["data"]["demo_user_id"] != demo_user_public_id:
     raise SystemExit(f"unexpected demo user: {reset_payload}")
 if reset_payload["data"].get("personas_deleted", 0) < 1:
     raise SystemExit(f"reset did not clean temporary persona: {reset_payload}")

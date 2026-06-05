@@ -51,13 +51,14 @@ def seed_demo_identity(db: Session) -> dict:
     settings = get_settings()
     users = UserRepository(db)
     personas = PersonaRepository(db)
+    public_id = settings.demo_user_public_id
     email = settings.demo_user_email.strip().lower()
 
-    user = users.get_by_public_id("demo_user") or users.get_by_email(email)
+    user = users.get_by_public_id(public_id) or users.get_by_email(email)
     created_user = False
     if not user:
         user = User(
-            public_id="demo_user",
+            public_id=public_id,
             email=email,
             password_hash=hash_password(settings.demo_user_password),
             nickname=settings.demo_user_nickname,
@@ -66,7 +67,7 @@ def seed_demo_identity(db: Session) -> dict:
         users.add(user)
         created_user = True
     else:
-        user.public_id = "demo_user"
+        user.public_id = public_id
         user.email = email
         user.nickname = settings.demo_user_nickname
         user.password_hash = hash_password(settings.demo_user_password)

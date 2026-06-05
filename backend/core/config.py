@@ -21,10 +21,12 @@ class Settings(BaseSettings):
     redis_key_prefix: str = "jobhunter"
     cache_default_ttl_seconds: int = 300
     generated_cache_ttl_seconds: int = 86400
+    generated_timeout_seconds: float = 8.0
     task_state_ttl_seconds: int = 86400
     idempotency_ttl_seconds: int = 300
     auth_token_ttl_seconds: int = 86400
     auth_refresh_token_ttl_seconds: int = 604800
+    demo_user_public_id: str = "demo_user"
     demo_user_email: str = "demo@jobhunter.local"
     demo_user_password: str = "jobhunter-demo"
     demo_user_nickname: str = "Demo User"

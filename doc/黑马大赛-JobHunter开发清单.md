@@ -657,10 +657,10 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | P3-07 | Mock Bootstrap / Demo Reset API | P3 | 已完成 | 后端可输出当前前端 Demo 所需完整数据并支持重置 |
 | P3-08 | Market / Jobs API | P3 | 已完成 | 机会广场、岗位列表、岗位详情可被前端读取 |
 | P3-09 | Vault / Resume API | P3 | 已完成 | 职业素材、简历版本、简历工作室基础接口可用 |
-| P3-10 | Decision / Recruiter Lens / Tailor API | P3 | 未开始 | 生成类接口有 Mock 生成、缓存和任务状态 |
+| P3-10 | Decision / Recruiter Lens / Tailor API | P3 | 已完成 | 生成类接口有 Mock 生成、缓存和任务状态 |
 | P3-11 | Pipeline API | P3 | 未开始 | 加入管线、状态推进、备注更新、重复加入兜底可用 |
 | P3-12 | Resume Lab / Feedback API | P3 | 未开始 | 简历实验数据、反馈录入、反馈趋势可用 |
-| P3-13 | Interview / Sprint / Task Progress API | P3 | 未开始 | 面试作战卡、冲刺任务、任务进度查询可用 |
+| P3-13 | Interview / Sprint / Task Progress API | P3 | 部分完成 | 面试作战卡、冲刺任务、任务进度查询可用 |
 | P3-14 | System Health / Version / Update API | P3 | 未开始 | 健康检查、版本、更新任务状态可用 |
 | P3-15 | 前端 API / hybrid 联调 | P3 | 未开始 | `mock / api / hybrid` 可切换，核心页面不缺接口 |
 | P3-16 | 后端测试、脚本、文档收口 | P3 | 待验收 | smoke test、health、部署命令和清单状态完成 |
@@ -699,7 +699,7 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | P3-D Auth / User / Persona | P3-05、P3-06 | 已完成 | 认证、个人设置、身份列表、身份切换 | 登录注册、刷新、退出、资料编辑和 Persona 切换可用 |
 | P3-E Demo Seed / Bootstrap / Reset | P3-07 | 已完成 | Demo 数据入库、Bootstrap、Reset | API 返回结构覆盖当前 `frontend/src/mocks` 全量数据 |
 | P3-F 核心业务读接口 | P3-08、P3-09 | 已完成 | Dashboard、Market、Jobs、Vault、Resume Lab 读接口 | 前端核心读页面可切到 API 模式，列表分页 / 筛选 / 空状态稳定 |
-| P3-G 生成类接口 | P3-10、P3-13 | 未开始 | Decision、Recruiter Lens、Tailor、Interview Mock 生成和缓存 | 重复请求命中缓存，任务状态可查询，超时可回退最近缓存 |
+| P3-G 生成类接口 | P3-10、P3-13 | 已完成 | Decision、Recruiter Lens、Tailor、Interview Mock 生成和缓存 | 重复请求命中缓存，任务状态可查询，超时可回退最近缓存 |
 | P3-H 写入类接口 | P3-11、P3-12 | 未开始 | Pipeline、Feedback、Vault、Resume Version 写接口 | 写入后刷新可保留状态，重复/非法操作有兜底 |
 | P3-I 系统健康、版本、更新任务 | P3-14 | 未开始 | Health、Version、Update、Task Events | 设置页健康检查和更新任务状态可用 |
 | P3-J 前端 hybrid 联调与回归验收 | P3-15、P3-16 | 未开始 | 前端 adapter、smoke test、文档收口 | `mock / api / hybrid` 切换稳定，核心链路无缺口，API 失败不会白屏 |
@@ -905,6 +905,23 @@ P3-F 完成记录：
 - [x] 已完成本地接口 smoke：核心读接口均返回统一 JSON，`/api/jobs/not_exists` 和 `/api/resumes/not_exists/profile` 返回 JSON 404；
 - [x] 已完成远程服务器验证：执行 `make verify-core-read-api && make health`，确认核心读接口、分页、筛选、详情和健康检查通过。
 
+P3-G 完成记录：
+
+- [x] 已新增生成类接口：`GET /api/jobs/{id}/decision`、`GET /api/jobs/{id}/recruiter-lens`、`GET /api/decisions`；
+- [x] 已新增简历定制生成接口：`POST /api/tailor/run`，返回 `task_id`、生成结果、缓存元信息和生成元信息；
+- [x] 已新增面试作战卡生成 / 读取接口：`POST /api/interview/start`、`GET /api/interview/cards?job_id=`；
+- [x] 已完成 Mock 生成兜底：`job_1001` 命中现有 Mock，其余岗位按当前前端 fallback 逻辑生成稳定结构；
+- [x] 已完成 Redis JSON 缓存：缓存 key 按 `scope / user_id / persona_id / target_id / version / payload_hash` 隔离，重复请求可命中缓存；
+- [x] 已完成任务状态写入：生成请求会写入 `/api/tasks/{task_id}` 和 `/api/tasks/{task_id}/events`，支持轮询查看状态与事件；
+- [x] 已完成最近成功缓存兜底：生成失败或超时时优先回退 `latest` 缓存；Redis 不可用时返回 `fallback_mock`，页面可继续使用结果；
+- [x] 已新增配置项：`generated_cache_ttl_seconds`、`generated_timeout_seconds`、`demo_user_public_id`，避免 TTL、超时和 Demo 用户 ID 散落硬编码；
+- [x] 已新增 `make verify-generated-api`，覆盖生成接口、fallback、分页、重复请求缓存命中、任务状态 / 事件和 404；
+- [x] 已完成 Review 重构：生成流程统一收敛到 `services/generated_content_service.py`，Router 只处理入参、响应和错误映射；
+- [x] 已完成 Review 重构：决策卡列表分页复用 `services/pagination_service.py`，Demo 数据读取复用 `services/demo_dataset_service.py`；
+- [x] 已完成本地静态验证：`python3 -m compileall backend/core backend/api backend/services backend/schemas backend/repositories`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`、`npm --prefix frontend run typecheck`；
+- [x] 已完成本地接口 smoke：Redis 未启动时生成接口返回统一 JSON，并以 `fallback_mock` 标记降级，不影响页面继续使用结果；
+- [ ] 待远程服务器验证：执行 `make verify-generated-api && make health`，确认 Redis 缓存命中和任务状态查询通过。
+
 ---
 
 ## 八、模块依赖关系
@@ -989,7 +1006,7 @@ P3 后台业务接口
 | 后台认证与用户身份 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Auth、User、Persona 后端最小闭环、`make verify-auth-persona` 和浏览器手动验证 |
 | Demo Bootstrap / Reset |  | P3 | 已完成 |  | 2026-06-05 | 已完成 `/api/mock/bootstrap`、`/api/demo/reset`、`make verify-demo-bootstrap` 和远程验证 |
 | 后台业务接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Dashboard、Market、Jobs、Vault、Pipeline、Sprint、Resume Lab / Studio 核心读接口和远程验证 |
-| 生成类后台接口 |  | P3 | 未开始 |  |  | 规划 Decision、Recruiter Lens、Tailor、Interview 的 Mock 生成、缓存和任务状态 |
+| 生成类后台接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Decision、Recruiter Lens、Tailor、Interview 的 Mock 生成、Redis 缓存和任务状态；待远程执行 `make verify-generated-api` |
 | 前后端 API 联调 |  | P3 | 未开始 |  |  | 规划 `mock / api / hybrid` 三模式联调和 smoke test |
 
 ---
