@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     generated_cache_ttl_seconds: int = 86400
     task_state_ttl_seconds: int = 86400
     idempotency_ttl_seconds: int = 300
+    auth_token_ttl_seconds: int = 86400
+    auth_refresh_token_ttl_seconds: int = 604800
+    demo_user_email: str = "demo@jobhunter.local"
+    demo_user_password: str = "jobhunter-demo"
+    demo_user_nickname: str = "Demo User"
     project_root: Path = PROJECT_ROOT
     frontend_dist: Path = PROJECT_ROOT / "frontend" / "dist"
     cors_origins: list[str] = Field(

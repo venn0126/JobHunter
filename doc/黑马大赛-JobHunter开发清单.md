@@ -650,10 +650,10 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 |---|---|---|---|---|
 | P3-01 | 后端工程分层与配置 | P3 | 待验收 | Router / Service / Repository / Model / Schema 分层清晰，配置集中 |
 | P3-02 | PostgreSQL 接入与 Alembic 迁移 | P3 | 已完成 | 可执行 migration，核心表可创建，可重复迁移 |
-| P3-03 | Redis 接入与缓存 / 任务状态抽象 | P3 | 待验收 | 有统一 Redis client、key 规范、TTL 和降级策略 |
+| P3-03 | Redis 接入与缓存 / 任务状态抽象 | P3 | 已完成 | 有统一 Redis client、key 规范、TTL 和降级策略 |
 | P3-04 | 统一响应、异常、request_id、中间件 | P3 | 待验收 | 所有接口返回统一 `ApiResponse<T>`，异常不裸露堆栈 |
-| P3-05 | Auth / 用户资料 API | P3 | 未开始 | 登录、注册、刷新、退出、个人资料读写可用 |
-| P3-06 | Persona API | P3 | 未开始 | 身份列表、新增、编辑、激活可用，`persona_id` 可贯穿 |
+| P3-05 | Auth / 用户资料 API | P3 | 待验收 | 登录、注册、刷新、退出、个人资料读写可用 |
+| P3-06 | Persona API | P3 | 待验收 | 身份列表、新增、编辑、激活可用，`persona_id` 可贯穿 |
 | P3-07 | Mock Bootstrap / Demo Reset API | P3 | 未开始 | 后端可输出当前前端 Demo 所需完整数据并支持重置 |
 | P3-08 | Market / Jobs API | P3 | 未开始 | 机会广场、岗位列表、岗位详情可被前端读取 |
 | P3-09 | Vault / Resume API | P3 | 未开始 | 职业素材、简历版本、简历工作室基础接口可用 |
@@ -695,8 +695,8 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 |---|---|---|---|---|
 | P3-A 后端基础架构与一键启动 | P3-01、P3-04、P3-16 | 已完成 | 分层目录、配置、依赖、Docker Compose、`make dev`、`make deploy-local` | 一条命令可启动开发环境和完整部署环境，端口占用和 Docker 缺失有明确提示 |
 | P3-B PostgreSQL 数据模型与迁移 | P3-02 | 已完成 | SQLAlchemy、Alembic、核心表、索引、迁移脚本 | migration 可重复执行，核心表和索引符合前端数据需要 |
-| P3-C Redis 缓存与任务状态 | P3-03、P3-13 | 待验收 | Redis client、key 规范、TTL、任务状态抽象 | 缓存可读写，Redis 不可用时有明确降级，写入后能失效相关缓存 |
-| P3-D Auth / User / Persona | P3-05、P3-06 | 未开始 | 认证、个人设置、身份列表、身份切换 | 登录注册、刷新、退出、资料编辑和 Persona 切换可用 |
+| P3-C Redis 缓存与任务状态 | P3-03、P3-13 | 已完成 | Redis client、key 规范、TTL、任务状态抽象 | 缓存可读写，Redis 不可用时有明确降级，写入后能失效相关缓存 |
+| P3-D Auth / User / Persona | P3-05、P3-06 | 待验收 | 认证、个人设置、身份列表、身份切换 | 登录注册、刷新、退出、资料编辑和 Persona 切换可用 |
 | P3-E Demo Seed / Bootstrap / Reset | P3-07 | 未开始 | Demo 数据入库、Bootstrap、Reset | API 返回结构覆盖当前 `frontend/src/mocks` 全量数据 |
 | P3-F 核心业务读接口 | P3-08、P3-09 | 未开始 | Dashboard、Market、Jobs、Vault、Resume Lab 读接口 | 前端核心读页面可切到 API 模式，列表分页 / 筛选 / 空状态稳定 |
 | P3-G 生成类接口 | P3-10、P3-13 | 未开始 | Decision、Recruiter Lens、Tailor、Interview Mock 生成和缓存 | 重复请求命中缓存，任务状态可查询，超时可回退最近缓存 |
@@ -855,7 +855,19 @@ P3-C 完成记录：
 - [x] 已完成 Review 优化：任务 ID / event limit 增加入参约束，任务接口绑定 `ApiResponse<T>` schema，验证脚本改用统一 TTL 配置并输出 API 复验命令；
 - [x] 已完成 Review 重构：Redis 操作执行、降级返回和 ServiceResult 收敛到公共封装，避免缓存服务与任务状态服务重复写连接关闭逻辑；
 - [x] 已修复 API 路由未命中时被 SPA fallback 返回 HTML 的边界，`/api/*` 未命中统一返回 JSON 404，避免 `json.tool` 解析空值或 HTML；
-- [ ] 待远程服务器验证：执行 `make verify-redis-cache && make health`。
+- [x] 已完成远程服务器验证：执行 `make verify-redis-cache && make health`，任务状态与事件接口可返回 JSON。
+
+P3-D 完成记录：
+
+- [x] 已新增 Auth 接口：`POST /api/auth/register`、`POST /api/auth/login`、`POST /api/auth/refresh`、`POST /api/auth/logout`、`GET /api/auth/me`、`PATCH /api/auth/me`；
+- [x] 已新增 Persona 接口：`GET /api/personas`、`POST /api/personas`、`PATCH /api/personas/{id}`、`POST /api/personas/{id}/activate`；
+- [x] 已新增 Repository 分层：`repositories/user_repository.py`、`repositories/persona_repository.py`，Router 不直接写 SQL；
+- [x] 已新增 Auth / Persona Service：密码哈希、Token 签发、Redis Token TTL、用户资料更新、身份列表 / 新建 / 编辑 / 激活；
+- [x] 已将认证 TTL、Demo 用户邮箱、Demo 密码、Demo 昵称配置集中到 `core/config.py` 和 `.env.*.example`；
+- [x] 已增强 `make seed-demo`：可重复导入标准 Demo 用户和 Demo Persona，不产生重复身份；
+- [x] 已新增 `make verify-auth-persona`，覆盖注册、登录、获取当前用户、更新资料、新建身份、编辑身份、激活身份、刷新和退出；
+- [x] 已完成 Review 重构：Bearer Token 解析抽到 `core/auth_headers.py`，错误状态映射收敛到 `fail_from_status()`；
+- [ ] 待远程服务器验证：执行 `make verify-auth-persona && make health`。
 
 ---
 
@@ -937,8 +949,8 @@ P3 后台业务接口
 | 反馈复盘 |  | P1 | 已完成 |  | 2026-06-04 | 已完成反馈统计、结果分布、复盘趋势、版本表现、反馈录入、管线联动和下一轮策略建议 |
 | 后端基础架构与一键启动 |  | P3 | 已完成 |  | 2026-06-04 | 已完成 Docker Compose、PG/Redis 启动脚本、`make dev`、`make deploy-local`、后台部署脚本、health 增强和远程实跑 |
 | PostgreSQL 数据层 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 22 张业务表、索引、约束、ORM 模型和远程迁移验证 |
-| Redis 缓存与任务状态 |  | P3 | 待验收 |  |  | 已完成 Redis key 规范、JSON 缓存、任务状态封装和 `make verify-redis-cache`；待远程验证 |
-| 后台认证与用户身份 |  | P3 | 未开始 |  |  | 规划 Auth、User、Persona 和 `persona_id` 贯穿 |
+| Redis 缓存与任务状态 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Redis key 规范、JSON 缓存、任务状态封装、`make verify-redis-cache` 和远程验证 |
+| 后台认证与用户身份 |  | P3 | 待验收 |  |  | 已完成 Auth、User、Persona 后端最小闭环和 `make verify-auth-persona`；待远程验证 |
 | 后台业务接口 |  | P3 | 未开始 |  |  | 规划 Dashboard、Market、Jobs、Vault、Pipeline、Feedback 等接口 |
 | 生成类后台接口 |  | P3 | 未开始 |  |  | 规划 Decision、Recruiter Lens、Tailor、Interview 的 Mock 生成、缓存和任务状态 |
 | 前后端 API 联调 |  | P3 | 未开始 |  |  | 规划 `mock / api / hybrid` 三模式联调和 smoke test |

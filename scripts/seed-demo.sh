@@ -9,6 +9,7 @@ start_ops_log seed-demo
 load_runtime_env
 configure_runtime_env
 ensure_dependencies "seed-demo"
+./scripts/infra-up.sh
 
 echo "[seed-demo] validating demo seed manifest"
 python3 - <<'PY'
@@ -31,5 +32,17 @@ for seed in manifest.get("frontendSeeds", []):
     print(f"[seed-demo] seed ok: {seed_path} sha256={digest}")
 PY
 
-echo "[seed-demo] P3-A only validates seed files; database seed import starts in P3-B"
+(cd backend && source .venv/bin/activate && DATABASE_URL="$DATABASE_URL" python - <<'PY'
+from core.db import SessionLocal
+from services.demo_seed_service import seed_demo_identity
+
+with SessionLocal() as db:
+    result = seed_demo_identity(db)
+
+print(f"[seed-demo] demo user: {result['demo_user_id']}")
+print(f"[seed-demo] active persona: {result['active_persona_id']}")
+print(f"[seed-demo] personas created: {result['personas_created']}")
+PY
+)
+
 echo "[seed-demo] ok"
