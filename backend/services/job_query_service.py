@@ -3,19 +3,11 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from services.demo_dataset_service import read_demo_items
+from services.pagination_service import paginate_items
 
 JobSortKey = Literal["recommended", "match"]
 
 PRIORITY_WEIGHT = {"P0": 3, "P1": 2, "P2": 1}
-MAX_PAGE_SIZE = 100
-
-
-def normalize_page(page: int) -> int:
-    return max(1, page)
-
-
-def normalize_page_size(page_size: int) -> int:
-    return min(MAX_PAGE_SIZE, max(1, page_size))
 
 
 def job_matches(job: dict[str, Any], *, city: str | None, direction: str | None, priority: str | None, source_site: str | None) -> bool:
@@ -37,23 +29,6 @@ def sort_jobs(jobs: list[dict[str, Any]], sort: JobSortKey) -> list[dict[str, An
         key=lambda job: (PRIORITY_WEIGHT.get(job.get("priority"), 0), job.get("match", 0)),
         reverse=True,
     )
-
-
-def paginate_items(items: list[dict[str, Any]], *, page: int, page_size: int) -> dict[str, Any]:
-    normalized_page = normalize_page(page)
-    normalized_page_size = normalize_page_size(page_size)
-    total = len(items)
-    start = (normalized_page - 1) * normalized_page_size
-    end = start + normalized_page_size
-    return {
-        "items": items[start:end],
-        "pagination": {
-            "page": normalized_page,
-            "page_size": normalized_page_size,
-            "total": total,
-            "has_next": end < total,
-        },
-    }
 
 
 def query_demo_jobs(

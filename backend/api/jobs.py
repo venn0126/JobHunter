@@ -2,7 +2,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Query, Request
 
-from core.responses import fail, ok
+from api.demo_helpers import ok_or_demo_data_error, ok_or_demo_not_found
 from schemas.business import ItemListResponse
 from schemas.common import ApiResponse
 from services.job_query_service import get_demo_job, query_demo_jobs
@@ -24,29 +24,24 @@ def list_jobs(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
 ):
-    try:
-        return ok(
-            data=query_demo_jobs(
-                city=city,
-                direction=direction,
-                priority=priority,
-                source_site=source_site,
-                sort=sort,
-                page=page,
-                page_size=page_size,
-            ),
-            request=request,
-        )
-    except (FileNotFoundError, ValueError) as exc:
-        return fail(code="DEMO_DATA_ERROR", message=str(exc), request=request, status_code=500)
+    return ok_or_demo_data_error(
+        request=request,
+        factory=lambda: query_demo_jobs(
+            city=city,
+            direction=direction,
+            priority=priority,
+            source_site=source_site,
+            sort=sort,
+            page=page,
+            page_size=page_size,
+        ),
+    )
 
 
 @router.get("/{job_id}", response_model=ApiResponse[dict[str, Any]])
 def job_detail(job_id: str, request: Request):
-    try:
-        job = get_demo_job(job_id)
-    except (FileNotFoundError, ValueError) as exc:
-        return fail(code="DEMO_DATA_ERROR", message=str(exc), request=request, status_code=500)
-    if not job:
-        return fail(code="RESOURCE_NOT_FOUND", message="job not found", request=request, status_code=404)
-    return ok(data=job, request=request)
+    return ok_or_demo_not_found(
+        request=request,
+        factory=lambda: get_demo_job(job_id),
+        not_found_message="job not found",
+    )

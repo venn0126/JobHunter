@@ -36,10 +36,16 @@ def read_demo_dataset(dataset_key: str) -> Any:
 
 def read_demo_items(dataset_key: str) -> list[dict[str, Any]]:
     payload = read_demo_dataset(dataset_key)
-    items = payload.get("items", []) if isinstance(payload, dict) else []
+    if not isinstance(payload, dict):
+        raise ValueError(f"demo dataset must be an object: {dataset_key}")
+    items = payload.get("items", [])
     if not isinstance(items, list):
         raise ValueError(f"demo dataset items must be a list: {dataset_key}")
     return items
+
+
+def get_demo_item_by_id(dataset_key: str, item_id: str) -> dict[str, Any] | None:
+    return next((item for item in read_demo_items(dataset_key) if item.get("id") == item_id), None)
 
 
 def build_demo_pipeline() -> dict[str, Any]:
