@@ -52,7 +52,7 @@ def get_vault_item(item_id: str) -> ServiceResult:
     item = next((entry for entry in payload["items"] if entry.get("id") == item_id), None)
     if not item:
         return ServiceResult(status="miss", message="vault item not found")
-    return ServiceResult(status=result.status, data=item, message=result.message)
+    return ServiceResult(status="hit", data=item, message=result.message)
 
 
 def build_vault_item(

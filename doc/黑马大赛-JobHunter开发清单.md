@@ -971,7 +971,7 @@ P3-J 进行中记录：
 - [x] 已完成 Review 优化：上传大小和允许后缀进入 `core/config.py` 与 `.env.*.example`，不新增 `python-multipart` 依赖，避免远程只重启服务时缺依赖；
 - [x] 已补充 `make verify-write-api` 覆盖市场偏好、Demo 简历、简历上传和非法类型校验；
 - [x] 已新增 `make verify-p3`，聚合 Health、Auth / Persona、Demo Bootstrap、核心读、生成类、写入类、System、前端 API Adapter 验证；
-- [x] 已修复远程 `verify-p3` 中 `/vault/items/ev_rag_project` 偶发 404：职业素材读接口会合并标准 Demo 素材与 Redis 写入态，并保留删除 tombstone，避免旧写入态污染标准素材详情；
+- [x] 已修复远程 `verify-p3` 中 `/vault/items/ev_rag_project` 404：职业素材详情命中标准 Demo 数据时不再沿用写入态 `miss` 状态，并合并标准 Demo 素材与 Redis 写入态、保留删除 tombstone；
 - [x] 已完成本地静态验证：`npm --prefix frontend run typecheck`、`npm --prefix frontend run build`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`；
 - [x] 已完成浏览器手动验证：API / 实际数据模式下核心页面可用，未复现黑屏不可点击；
 - [ ] 待远程服务器验证：本地 Docker 未运行，远程执行 `make verify-p3 && make health`。
