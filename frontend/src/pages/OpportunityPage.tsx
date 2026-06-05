@@ -5,12 +5,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Panel } from "@/components/ui/Panel";
-import { demoData } from "@/data/demoData";
+import { useRuntimeData } from "@/stores/runtimeDataStore";
 
 type MarketMode = "global" | "personalized";
 
 export function OpportunityPage() {
-  const market = demoData.market;
+  const market = useRuntimeData().market;
   const [mode, setMode] = useState<MarketMode>(market.mode);
 
   const hotRoles = useMemo(

@@ -6,6 +6,7 @@ import {
   DataModeSettingsPanel,
   DemoDataStatusPanel,
   DemoPreferencePanel,
+  RuntimeDataStatusPanel,
   SystemConnectivityPanel,
 } from "@/components/business/SettingsPanels";
 import { Badge } from "@/components/ui/Badge";
@@ -39,6 +40,7 @@ import { useJobStore } from "@/stores/jobStore";
 import { usePipelineStore } from "@/stores/pipelineStore";
 import { getActivePersona, usePersonaStore } from "@/stores/personaStore";
 import { useResumeStudioStore } from "@/stores/resumeStudioStore";
+import { useRuntimeDataStore } from "@/stores/runtimeDataStore";
 import type { DataMode } from "@/types/common";
 
 type ScenarioId = (typeof demoScenarioCards)[number]["id"];
@@ -60,6 +62,9 @@ export function ValidationPage() {
   const pipelineCount = usePipelineStore((state) => state.entries.length);
   const feedbackCount = useFeedbackReviewStore((state) => state.records.length);
   const resumeDraftCount = useResumeStudioStore((state) => Object.keys(state.draftsByJobId).length);
+  const runtimeDataMode = useRuntimeDataStore((state) => state.mode);
+  const runtimeDataLoading = useRuntimeDataStore((state) => state.loading);
+  const runtimeDataError = useRuntimeDataStore((state) => state.error);
   const { showToast } = useToast();
   const startUpdate = useStartUpdate();
   const version = useVersionInfo();
@@ -210,6 +215,8 @@ export function ValidationPage() {
           onStartUpdate={startUpdate}
         />
       </section>
+
+      <RuntimeDataStatusPanel error={runtimeDataError} loading={runtimeDataLoading} mode={runtimeDataMode} />
 
       <section className="grid gap-4 xl:grid-cols-[1fr_1fr]">
         <DemoDataStatusPanel

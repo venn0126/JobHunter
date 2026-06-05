@@ -26,7 +26,26 @@ import type {
   SprintTask,
 } from "@/types/demo";
 
-export const demoData = {
+export interface DemoBootstrapData {
+  careerPersonas: typeof careerPersonas;
+  careerVault: { items: CareerVaultItem[] };
+  dashboard: {
+    metrics: DashboardMetric[];
+    pipeline: PipelineSummary[];
+    radar: DashboardRadarItem[];
+  };
+  decisionCards: { items: JobDecisionCard[] };
+  feedbackReview: ApplicationFeedbackReview;
+  interviewGuide: { items: InterviewGuide[] };
+  jobs: { items: DemoJob[] };
+  market: OpportunityMarket;
+  recruiterLens: { items: RecruiterLens[] };
+  resumeLab: ResumeLab;
+  resumeStudio: { items: ResumeStudioDraft[] };
+  sprint: { today: SprintTask[] };
+}
+
+export const demoData: DemoBootstrapData = {
   careerPersonas,
   careerVault: careerVault as { items: CareerVaultItem[] },
   dashboard: dashboard as {

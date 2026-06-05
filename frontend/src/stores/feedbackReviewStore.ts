@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { demoData } from "@/data/demoData";
+import { getRuntimeData } from "@/stores/runtimeDataStore";
 import type { ApplicationFeedbackOutcome, ApplicationFeedbackRecord } from "@/types/demo";
 
 export interface FeedbackDraftInput {
@@ -18,7 +18,7 @@ interface FeedbackReviewState {
 }
 
 function createDemoFeedbackRecords() {
-  return demoData.feedbackReview.records.map(cloneRecord);
+  return getRuntimeData().feedbackReview.records.map(cloneRecord);
 }
 
 function cloneRecord(record: ApplicationFeedbackRecord): ApplicationFeedbackRecord {

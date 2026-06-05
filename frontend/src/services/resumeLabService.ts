@@ -1,10 +1,10 @@
-import { demoData } from "@/data/demoData";
+import { getRuntimeData } from "@/stores/runtimeDataStore";
 import type { CareerVaultItem, DemoJob, ResumeLab, ResumeLabVersion } from "@/types/demo";
 
 export const defaultCompareVersionLimit = 2;
 
 export function getResumeLab(): ResumeLab {
-  return demoData.resumeLab;
+  return getRuntimeData().resumeLab;
 }
 
 export function getResumeLabPath(versionId?: string, compareVersionIds: string[] = []) {
@@ -123,7 +123,7 @@ export function getResumeVersionEvidence(version: ResumeLabVersion, vaultItems: 
 
 export function getResumeVersionJobs(version: ResumeLabVersion): DemoJob[] {
   return version.target_job_ids
-    .map((jobId) => demoData.jobs.items.find((job) => job.id === jobId))
+    .map((jobId) => getRuntimeData().jobs.items.find((job) => job.id === jobId))
     .filter((job): job is DemoJob => Boolean(job));
 }
 

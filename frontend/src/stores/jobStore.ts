@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { demoData } from "@/data/demoData";
+import { getRuntimeData } from "@/stores/runtimeDataStore";
 import type { Priority } from "@/types/common";
 import type { DemoJob } from "@/types/demo";
 
@@ -30,7 +30,7 @@ export const emptyJobFilters: JobFilters = {
 };
 
 function cloneDemoJobs() {
-  return demoData.jobs.items.map((job) => ({
+  return getRuntimeData().jobs.items.map((job) => ({
     ...job,
     source: { ...job.source },
   }));

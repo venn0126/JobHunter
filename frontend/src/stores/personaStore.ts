@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { demoData } from "@/data/demoData";
+import { getRuntimeData } from "@/stores/runtimeDataStore";
 import { storageKeys } from "@/lib/storageKeys";
 
 export interface CareerPersona {
@@ -36,7 +36,7 @@ function clearPersonaSwitchTimer() {
 }
 
 function cloneDemoPersonas() {
-  return demoData.careerPersonas.personas.map((persona) => ({
+  return getRuntimeData().careerPersonas.personas.map((persona) => ({
     ...persona,
     core_skills: [...persona.core_skills],
     preferred_cities: [...persona.preferred_cities],
@@ -46,7 +46,7 @@ function cloneDemoPersonas() {
 
 function createDemoPersonaState() {
   return {
-    activePersonaId: demoData.careerPersonas.active_persona_id,
+    activePersonaId: getRuntimeData().careerPersonas.active_persona_id,
     isSwitchingPersona: false,
     personaError: "",
     personas: cloneDemoPersonas(),
@@ -54,9 +54,9 @@ function createDemoPersonaState() {
 }
 
 function normalizeActivePersonaId(personaId: unknown) {
-  return typeof personaId === "string" && demoData.careerPersonas.personas.some((persona) => persona.id === personaId)
+  return typeof personaId === "string" && getRuntimeData().careerPersonas.personas.some((persona) => persona.id === personaId)
     ? personaId
-    : demoData.careerPersonas.active_persona_id;
+    : getRuntimeData().careerPersonas.active_persona_id;
 }
 
 function normalizePersistedPersonas(personas: unknown) {
@@ -64,7 +64,7 @@ function normalizePersistedPersonas(personas: unknown) {
     return undefined;
   }
 
-  const demoPersonaIds = new Set(demoData.careerPersonas.personas.map((persona) => persona.id));
+  const demoPersonaIds = new Set(getRuntimeData().careerPersonas.personas.map((persona) => persona.id));
   const normalizedPersonas = personas.filter(
     (persona): persona is CareerPersona =>
       Boolean(persona) &&
@@ -88,7 +88,7 @@ function isStringList(value: unknown): value is string[] {
 function normalizeActivePersonaIdByList(personaId: unknown, personas: CareerPersona[]) {
   return typeof personaId === "string" && personas.some((persona) => persona.id === personaId)
     ? personaId
-    : demoData.careerPersonas.active_persona_id;
+    : getRuntimeData().careerPersonas.active_persona_id;
 }
 
 export const usePersonaStore = create<PersonaState>()(

@@ -4,6 +4,7 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { ToastViewport } from "@/components/ui/ToastViewport";
 import { useDemoModeClass } from "@/hooks/useDemoModeClass";
 import { useDemoResetFromQuery } from "@/hooks/useDemoResetFromQuery";
+import { useRuntimeDataSync } from "@/hooks/useRuntimeDataSync";
 
 export function AppProviders({ children }: PropsWithChildren) {
   return (
@@ -20,5 +21,6 @@ export function AppProviders({ children }: PropsWithChildren) {
 function AppRuntimeEffects() {
   useDemoModeClass();
   useDemoResetFromQuery();
+  useRuntimeDataSync();
   return null;
 }

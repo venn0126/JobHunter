@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { Panel } from "@/components/ui/Panel";
-import { demoData } from "@/data/demoData";
 import { useToast } from "@/hooks/useToast";
 import { getPipelineAddToast } from "@/services/pipelineNoticeService";
 import { useAppStore } from "@/stores/appStore";
 import { getPipelineSummary, usePipelineStore } from "@/stores/pipelineStore";
+import { useRuntimeData } from "@/stores/runtimeDataStore";
 import type { DemoJob } from "@/types/demo";
 
 export function DashboardPage() {
@@ -24,7 +24,7 @@ export function DashboardPage() {
   const { showToast } = useToast();
   const pipelineEntries = usePipelineStore((state) => state.entries);
   const addJobToPipeline = usePipelineStore((state) => state.addJob);
-  const { dashboard, jobs, market, sprint } = demoData;
+  const { dashboard, jobs, market, sprint } = useRuntimeData();
   const topJobs = jobs.items.slice(0, 3);
   const pipelineSummary = useMemo(() => getPipelineSummary(pipelineEntries), [pipelineEntries]);
 

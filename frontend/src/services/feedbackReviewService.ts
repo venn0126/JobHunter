@@ -1,4 +1,4 @@
-import { demoData } from "@/data/demoData";
+import { getRuntimeData } from "@/stores/runtimeDataStore";
 import type { BadgeTone } from "@/components/ui/Badge";
 import type { PipelineStatus } from "@/types/common";
 import type {
@@ -52,7 +52,7 @@ export const feedbackOutcomeOptions: ApplicationFeedbackOutcome[] = [
 ];
 
 export function getFeedbackReview(): ApplicationFeedbackReview {
-  return demoData.feedbackReview;
+  return getRuntimeData().feedbackReview;
 }
 
 export function parseFeedbackTags(value: string) {
@@ -88,9 +88,9 @@ export function getDefaultFeedbackNextAction(outcome: ApplicationFeedbackOutcome
 
 export function getFeedbackRecordViews(records: ApplicationFeedbackRecord[]): FeedbackRecordView[] {
   return records.map((record) => ({
-    job: demoData.jobs.items.find((job) => job.id === record.job_id),
+    job: getRuntimeData().jobs.items.find((job) => job.id === record.job_id),
     record,
-    resumeVersion: demoData.resumeLab.versions.find((version) => version.id === record.resume_version_id),
+    resumeVersion: getRuntimeData().resumeLab.versions.find((version) => version.id === record.resume_version_id),
   }));
 }
 
@@ -128,7 +128,7 @@ export function getFeedbackOutcomeRows(records: ApplicationFeedbackRecord[]) {
 }
 
 export function getResumeVersionFeedbackRows(records: ApplicationFeedbackRecord[]) {
-  return demoData.resumeLab.versions
+  return getRuntimeData().resumeLab.versions
     .map((version) => {
       const versionRecords = records.filter((record) => record.resume_version_id === version.id);
       const metrics = getFeedbackMetrics(versionRecords);

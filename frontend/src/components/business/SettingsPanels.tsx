@@ -61,6 +61,38 @@ export function DataModeSettingsPanel({
   );
 }
 
+export function RuntimeDataStatusPanel({
+  error,
+  loading,
+  mode,
+}: {
+  error: string;
+  loading: boolean;
+  mode: "api" | "mock";
+}) {
+  return (
+    <Panel title="运行时数据源">
+      <Card surface="subtle" className="p-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone={mode === "api" ? "cyan" : "blue"}>{mode}</Badge>
+              {loading ? <Badge tone="warning">同步中</Badge> : <Badge tone="muted">已就绪</Badge>}
+            </div>
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              api / hybrid 模式会优先从后端 `/api/mock/bootstrap` 同步数据；hybrid 失败时自动回退本地 Mock。
+            </p>
+            {error ? <div className="mt-3 break-all text-xs text-risk-medium">{error}</div> : null}
+          </div>
+          <div className="break-all rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-slate-500">
+            {appConfig.apiBaseUrl}/mock/bootstrap
+          </div>
+        </div>
+      </Card>
+    </Panel>
+  );
+}
+
 export function AccountVersionPanel({
   dataMode,
   onLogout,

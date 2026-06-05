@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { demoData } from "@/data/demoData";
+import { getRuntimeData } from "@/stores/runtimeDataStore";
 import type { CareerVaultItem } from "@/types/demo";
 
 interface CareerVaultState {
@@ -14,7 +14,7 @@ interface CareerVaultState {
 }
 
 function cloneVaultItems() {
-  return demoData.careerVault.items.map((item) => ({
+  return getRuntimeData().careerVault.items.map((item) => ({
     ...item,
     skills: [...item.skills],
     star: { ...item.star },

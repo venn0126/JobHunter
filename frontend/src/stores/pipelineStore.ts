@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { demoData } from "@/data/demoData";
+import { getRuntimeData } from "@/stores/runtimeDataStore";
 import type { PipelineStatus } from "@/types/common";
 import type { DemoJob } from "@/types/demo";
 
@@ -19,6 +19,7 @@ interface PipelineState {
   entries: PipelineEntry[];
   addJob: (job: DemoJob, status?: PipelineStatus) => AddPipelineResult;
   moveEntry: (jobId: string, nextStatus: PipelineStatus) => MovePipelineResult;
+  replaceEntries: (entries: PipelineEntry[]) => void;
   resetDemo: () => void;
   syncEntry: (job: DemoJob, status: PipelineStatus, nextAction?: string) => SyncPipelineResult;
 }
@@ -89,7 +90,7 @@ export function getNextPipelineStatuses(status: PipelineStatus) {
 }
 
 function createInitialEntries(): PipelineEntry[] {
-  const [firstJob, secondJob, thirdJob] = demoData.jobs.items;
+  const [firstJob, secondJob, thirdJob] = getRuntimeData().jobs.items;
   const now = Date.now();
   return [
     createEntry(firstJob, "interested", new Date(now - 1000 * 60 * 18).toISOString(), "补充 RAG 项目量化成果"),
@@ -185,6 +186,7 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
     }));
     return "moved";
   },
+  replaceEntries: (entries) => set({ entries: entries.map(cloneEntry) }),
   resetDemo: () => set({ entries: createInitialEntries() }),
   syncEntry: (job, status, nextAction) => {
     const now = new Date().toISOString();
@@ -221,3 +223,10 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
     return "synced";
   },
 }));
+
+function cloneEntry(entry: PipelineEntry): PipelineEntry {
+  return {
+    ...entry,
+    job: cloneJob(entry.job),
+  };
+}

@@ -1,14 +1,14 @@
-import { demoData } from "@/data/demoData";
+import { getRuntimeData } from "@/stores/runtimeDataStore";
 import { getInterviewGuidePath } from "@/services/interviewGuideService";
 import type { DemoJob, JobDecisionCard, RecruiterLens } from "@/types/demo";
 
 export function getJobById(jobId: string) {
-  return demoData.jobs.items.find((item) => item.id === jobId) ?? demoData.jobs.items[0];
+  return getRuntimeData().jobs.items.find((item) => item.id === jobId) ?? getRuntimeData().jobs.items[0];
 }
 
 export function getDecisionCard(job: DemoJob): JobDecisionCard {
   return (
-    demoData.decisionCards.items.find((item) => item.job_id === job.id) ?? {
+    getRuntimeData().decisionCards.items.find((item) => item.job_id === job.id) ?? {
       job_id: job.id,
       decision: job.match >= 85 ? "推荐" : "观望",
       priority: job.priority,
@@ -47,7 +47,7 @@ export function getDecisionCard(job: DemoJob): JobDecisionCard {
 
 export function getRecruiterLens(job: DemoJob): RecruiterLens {
   return (
-    demoData.recruiterLens.items.find((item) => item.job_id === job.id) ?? {
+    getRuntimeData().recruiterLens.items.find((item) => item.job_id === job.id) ?? {
       job_id: job.id,
       first_impression: "招聘官会优先查看岗位关键词、项目证据和最近经历是否匹配。",
       highlights: ["方向相关", "具备可迁移项目经验", "适合进入进一步评估"],

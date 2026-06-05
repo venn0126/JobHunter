@@ -1,10 +1,10 @@
-import { demoData } from "@/data/demoData";
+import { getRuntimeData } from "@/stores/runtimeDataStore";
 import type { CareerVaultItem, InterviewGuide, InterviewGuideQuestion } from "@/types/demo";
 
 export function getInterviewGuide(jobId?: string): InterviewGuide {
   return (
-    demoData.interviewGuide.items.find((item) => item.job_id === jobId) ??
-    demoData.interviewGuide.items[0] ??
+    getRuntimeData().interviewGuide.items.find((item) => item.job_id === jobId) ??
+    getRuntimeData().interviewGuide.items[0] ??
     createFallbackInterviewGuide(jobId)
   );
 }

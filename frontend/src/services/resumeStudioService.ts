@@ -1,11 +1,11 @@
-import { demoData } from "@/data/demoData";
+import { getRuntimeData } from "@/stores/runtimeDataStore";
 import type { CareerVaultItem, ResumeStudioDraft, ResumeStudioSection } from "@/types/demo";
 
 export type ResumeSectionDecision = "accepted" | "revoked";
 export type ResumeSectionDecisionMap = Record<string, ResumeSectionDecision>;
 
 export function getResumeStudioDraft(jobId?: string): ResumeStudioDraft {
-  return demoData.resumeStudio.items.find((item) => item.job_id === jobId) ?? demoData.resumeStudio.items[0];
+  return getRuntimeData().resumeStudio.items.find((item) => item.job_id === jobId) ?? getRuntimeData().resumeStudio.items[0];
 }
 
 export function getResumeStudioPath(jobId?: string) {

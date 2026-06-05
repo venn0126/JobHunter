@@ -20,11 +20,12 @@ import {
   type FeedbackRecordView,
 } from "@/services/feedbackReviewService";
 import { useFeedbackReviewStore } from "@/stores/feedbackReviewStore";
-import { demoData } from "@/data/demoData";
+import { useRuntimeData } from "@/stores/runtimeDataStore";
 import type { FeedbackStrategySuggestion } from "@/types/demo";
 
 export function FeedbackPage() {
   const review = getFeedbackReview();
+  const runtimeData = useRuntimeData();
   const records = useFeedbackReviewStore((state) => state.records);
   const metrics = getFeedbackMetrics(records);
   const outcomeRows = getFeedbackOutcomeRows(records);
@@ -85,7 +86,7 @@ export function FeedbackPage() {
       </Card>
 
       <Panel title="记录反馈并同步管线">
-        <FeedbackEntryForm jobs={demoData.jobs.items} resumeVersions={demoData.resumeLab.versions} />
+        <FeedbackEntryForm jobs={runtimeData.jobs.items} resumeVersions={runtimeData.resumeLab.versions} />
       </Panel>
 
       {records.length > 0 ? (
