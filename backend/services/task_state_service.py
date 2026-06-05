@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Literal
 
-from redis.exceptions import RedisError
-
 from core.config import get_settings
-from core.redis_client import create_redis_client, safe_close_redis
 from core.redis_keys import task_events_key, task_state_key
+from services.redis_service import REDIS_RECOVERABLE_ERRORS, redis_degraded_result, run_with_redis
+from services.result import ServiceResult
 
 TaskStatus = Literal[
     "pending",
@@ -21,12 +19,26 @@ TaskStatus = Literal[
     "cancelled",
 ]
 
+TASK_EVENT_DEFAULT_LIMIT = 100
+TASK_EVENT_MAX_LIMIT = 500
 
-@dataclass(frozen=True)
-class TaskServiceResult:
-    status: str
-    data: Any = None
-    message: str | None = None
+
+TaskServiceResult = ServiceResult
+TASK_READ_ERRORS = REDIS_RECOVERABLE_ERRORS + (json.JSONDecodeError,)
+TASK_WRITE_ERRORS = REDIS_RECOVERABLE_ERRORS + (TypeError,)
+
+
+def clamp_event_limit(
+    limit: int,
+    *,
+    default: int = TASK_EVENT_DEFAULT_LIMIT,
+    max_limit: int = TASK_EVENT_MAX_LIMIT,
+) -> int:
+    try:
+        parsed_limit = int(limit)
+    except (TypeError, ValueError):
+        return default
+    return max(1, min(parsed_limit, max_limit))
 
 
 def utc_now() -> str:
@@ -60,32 +72,24 @@ class RedisTaskStateStore:
         self.ttl_seconds = ttl_seconds or get_settings().task_state_ttl_seconds
 
     def set_state(self, state: dict[str, Any]) -> TaskServiceResult:
-        client = None
         task_id = state["task_id"]
         try:
-            client = create_redis_client()
-            client.setex(task_state_key(task_id), self.ttl_seconds, json.dumps(state, ensure_ascii=False))
+            serialized_state = json.dumps(state, ensure_ascii=False)
+            run_with_redis(lambda client: client.setex(task_state_key(task_id), self.ttl_seconds, serialized_state))
             return TaskServiceResult(status="stored", data=state)
-        except (RedisError, TypeError) as exc:
-            return TaskServiceResult(status="degraded", data=state, message=str(exc))
-        finally:
-            safe_close_redis(client)
+        except TASK_WRITE_ERRORS as exc:
+            return redis_degraded_result(exc, data=state)
 
     def get_state(self, task_id: str) -> TaskServiceResult:
-        client = None
         try:
-            client = create_redis_client()
-            raw = client.get(task_state_key(task_id))
+            raw = run_with_redis(lambda client: client.get(task_state_key(task_id)))
             if raw is None:
                 return TaskServiceResult(status="miss")
             return TaskServiceResult(status="hit", data=json.loads(raw))
-        except (RedisError, json.JSONDecodeError) as exc:
-            return TaskServiceResult(status="degraded", message=str(exc))
-        finally:
-            safe_close_redis(client)
+        except TASK_READ_ERRORS as exc:
+            return redis_degraded_result(exc)
 
     def append_event(self, task_id: str, event_type: str, message: str, payload: dict | None = None) -> TaskServiceResult:
-        client = None
         event = {
             "task_id": task_id,
             "event_type": event_type,
@@ -94,24 +98,20 @@ class RedisTaskStateStore:
             "created_at": utc_now(),
         }
         try:
-            client = create_redis_client()
-            key = task_events_key(task_id)
-            client.rpush(key, json.dumps(event, ensure_ascii=False))
-            client.expire(key, self.ttl_seconds)
+            def append(client) -> None:
+                key = task_events_key(task_id)
+                client.rpush(key, json.dumps(event, ensure_ascii=False))
+                client.expire(key, self.ttl_seconds)
+
+            run_with_redis(append)
             return TaskServiceResult(status="stored", data=event)
-        except (RedisError, TypeError) as exc:
-            return TaskServiceResult(status="degraded", data=event, message=str(exc))
-        finally:
-            safe_close_redis(client)
+        except TASK_WRITE_ERRORS as exc:
+            return redis_degraded_result(exc, data=event)
 
     def list_events(self, task_id: str, *, limit: int = 100) -> TaskServiceResult:
-        client = None
-        safe_limit = max(1, min(limit, 500))
+        safe_limit = clamp_event_limit(limit)
         try:
-            client = create_redis_client()
-            raw_events = client.lrange(task_events_key(task_id), -safe_limit, -1)
+            raw_events = run_with_redis(lambda client: client.lrange(task_events_key(task_id), -safe_limit, -1))
             return TaskServiceResult(status="hit", data=[json.loads(item) for item in raw_events])
-        except (RedisError, json.JSONDecodeError) as exc:
-            return TaskServiceResult(status="degraded", data=[], message=str(exc))
-        finally:
-            safe_close_redis(client)
+        except TASK_READ_ERRORS as exc:
+            return redis_degraded_result(exc, data=[])

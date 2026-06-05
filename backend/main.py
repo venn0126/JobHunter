@@ -18,4 +18,4 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.api_prefix)
-mount_frontend(app, settings.frontend_dist)
+mount_frontend(app, settings.frontend_dist, api_prefix=settings.api_prefix)

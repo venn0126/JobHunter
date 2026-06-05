@@ -852,6 +852,9 @@ P3-C 完成记录：
 - [x] 已新增任务状态封装：`services/task_state_service.py`，支持任务状态、任务事件、TTL 和状态枚举；
 - [x] 已新增任务查询接口：`GET /api/tasks/{task_id}`、`GET /api/tasks/{task_id}/events`；
 - [x] 已新增 `make verify-redis-cache`，覆盖 Redis 缓存读写、模式失效、任务状态读写和事件读取；
+- [x] 已完成 Review 优化：任务 ID / event limit 增加入参约束，任务接口绑定 `ApiResponse<T>` schema，验证脚本改用统一 TTL 配置并输出 API 复验命令；
+- [x] 已完成 Review 重构：Redis 操作执行、降级返回和 ServiceResult 收敛到公共封装，避免缓存服务与任务状态服务重复写连接关闭逻辑；
+- [x] 已修复 API 路由未命中时被 SPA fallback 返回 HTML 的边界，`/api/*` 未命中统一返回 JSON 404，避免 `json.tool` 解析空值或 HTML；
 - [ ] 待远程服务器验证：执行 `make verify-redis-cache && make health`。
 
 ---

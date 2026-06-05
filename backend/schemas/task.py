@@ -30,3 +30,7 @@ class TaskEventResponse(BaseModel):
     message: str
     payload: dict[str, Any] = Field(default_factory=dict)
     created_at: str
+
+
+class TaskEventsResponse(BaseModel):
+    items: list[TaskEventResponse] = Field(default_factory=list)
