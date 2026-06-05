@@ -27,6 +27,7 @@ wait_for_backend_health "$PORT"
 
 python3 - "$PORT" <<'PY'
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -34,6 +35,8 @@ import urllib.request
 
 port = sys.argv[1]
 base_url = f"http://127.0.0.1:{port}/api"
+os.environ["no_proxy"] = "127.0.0.1,localhost,*"
+opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
 def request(method, path, body=None, headers=None):
@@ -43,7 +46,7 @@ def request(method, path, body=None, headers=None):
         data = json.dumps(body, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(base_url + path, data=data, headers=req_headers, method=method)
     try:
-        with urllib.request.urlopen(req, timeout=8) as response:
+        with opener.open(req, timeout=8) as response:
             payload = json.loads(response.read().decode("utf-8"))
             return response.status, payload
     except urllib.error.HTTPError as exc:

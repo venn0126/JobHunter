@@ -5,10 +5,14 @@
     "frontend/src/mocks/career-personas.json",
     "frontend/src/mocks/career-vault.json",
     "frontend/src/mocks/dashboard.json",
+    "frontend/src/mocks/feedback-review.json",
+    "frontend/src/mocks/interview-guide.json",
     "frontend/src/mocks/job-decision-cards.json",
     "frontend/src/mocks/jobs.json",
     "frontend/src/mocks/opportunity-market.json",
     "frontend/src/mocks/recruiter-lens.json",
+    "frontend/src/mocks/resume-lab.json",
+    "frontend/src/mocks/resume-studio.json",
     "frontend/src/mocks/sprint-plan.json"
   ],
   "browserStateKeys": [

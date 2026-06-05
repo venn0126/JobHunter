@@ -1,11 +1,34 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
+from sqlalchemy.orm import Session
 
-from core.responses import ok
+from core.dependencies import get_db
+from core.responses import fail, ok
+from schemas.common import ApiResponse
+from schemas.demo import DemoResetResponse, DemoSummaryResponse
+from services.demo_seed_service import seed_demo_identity
 from services.mock_data_service import get_demo_summary
 
 router = APIRouter(prefix="/demo", tags=["demo"])
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=ApiResponse[DemoSummaryResponse])
 def demo_summary(request: Request):
     return ok(data=get_demo_summary(), request=request)
+
+
+@router.post("/reset", response_model=ApiResponse[DemoResetResponse])
+def demo_reset(request: Request, db: Session = Depends(get_db)):
+    try:
+        result = seed_demo_identity(db)
+    except RuntimeError as exc:
+        return fail(code="DEMO_RESET_ERROR", message=str(exc), request=request, status_code=500)
+
+    return ok(
+        data={
+            "reset": True,
+            "demo_user_id": result["demo_user_id"],
+            "active_persona_id": result["active_persona_id"],
+            "personas_created": result["personas_created"],
+        },
+        request=request,
+    )

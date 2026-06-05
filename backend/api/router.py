@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from api import auth, debug, demo, health, personas, system, tasks, version
+from api import auth, debug, demo, health, mock, personas, system, tasks, version
 
 api_router = APIRouter()
 api_router.include_router(health.router)
@@ -11,3 +11,4 @@ api_router.include_router(system.router)
 api_router.include_router(tasks.router)
 api_router.include_router(auth.router)
 api_router.include_router(personas.router)
+api_router.include_router(mock.router)
