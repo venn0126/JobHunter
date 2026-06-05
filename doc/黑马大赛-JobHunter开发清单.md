@@ -649,7 +649,7 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 | ID | 任务 | 优先级 | 状态 | 验收标准 |
 |---|---|---|---|---|
 | P3-01 | 后端工程分层与配置 | P3 | 待验收 | Router / Service / Repository / Model / Schema 分层清晰，配置集中 |
-| P3-02 | PostgreSQL 接入与 Alembic 迁移 | P3 | 待验收 | 可执行 migration，核心表可创建，可重复迁移 |
+| P3-02 | PostgreSQL 接入与 Alembic 迁移 | P3 | 已完成 | 可执行 migration，核心表可创建，可重复迁移 |
 | P3-03 | Redis 接入与缓存 / 任务状态抽象 | P3 | 待验收 | 有统一 Redis client、key 规范、TTL 和降级策略 |
 | P3-04 | 统一响应、异常、request_id、中间件 | P3 | 待验收 | 所有接口返回统一 `ApiResponse<T>`，异常不裸露堆栈 |
 | P3-05 | Auth / 用户资料 API | P3 | 未开始 | 登录、注册、刷新、退出、个人资料读写可用 |
@@ -693,9 +693,9 @@ P3 接口契约必须优先兼容当前前端 Mock 类型和页面调用习惯�
 
 | 小节 | 覆盖任务 | 状态 | 主要交付 | 验收标准 |
 |---|---|---|---|---|
-| P3-A 后端基础架构与一键启动 | P3-01、P3-04、P3-16 | 待验收 | 分层目录、配置、依赖、Docker Compose、`make dev`、`make deploy-local` | 一条命令可启动开发环境和完整部署环境，端口占用和 Docker 缺失有明确提示 |
-| P3-B PostgreSQL 数据模型与迁移 | P3-02 | 待验收 | SQLAlchemy、Alembic、核心表、索引、迁移脚本 | migration 可重复执行，核心表和索引符合前端数据需要 |
-| P3-C Redis 缓存与任务状态 | P3-03、P3-13 | 未开始 | Redis client、key 规范、TTL、任务状态抽象 | 缓存可读写，Redis 不可用时有明确降级，写入后能失效相关缓存 |
+| P3-A 后端基础架构与一键启动 | P3-01、P3-04、P3-16 | 已完成 | 分层目录、配置、依赖、Docker Compose、`make dev`、`make deploy-local` | 一条命令可启动开发环境和完整部署环境，端口占用和 Docker 缺失有明确提示 |
+| P3-B PostgreSQL 数据模型与迁移 | P3-02 | 已完成 | SQLAlchemy、Alembic、核心表、索引、迁移脚本 | migration 可重复执行，核心表和索引符合前端数据需要 |
+| P3-C Redis 缓存与任务状态 | P3-03、P3-13 | 待验收 | Redis client、key 规范、TTL、任务状态抽象 | 缓存可读写，Redis 不可用时有明确降级，写入后能失效相关缓存 |
 | P3-D Auth / User / Persona | P3-05、P3-06 | 未开始 | 认证、个人设置、身份列表、身份切换 | 登录注册、刷新、退出、资料编辑和 Persona 切换可用 |
 | P3-E Demo Seed / Bootstrap / Reset | P3-07 | 未开始 | Demo 数据入库、Bootstrap、Reset | API 返回结构覆盖当前 `frontend/src/mocks` 全量数据 |
 | P3-F 核心业务读接口 | P3-08、P3-09 | 未开始 | Dashboard、Market、Jobs、Vault、Resume Lab 读接口 | 前端核心读页面可切到 API 模式，列表分页 / 筛选 / 空状态稳定 |
@@ -839,9 +839,20 @@ P3-B 完成记录：
 - [x] 已新增 `0002_p3b_core_tables` Alembic migration，覆盖 22 张核心表、外键、唯一约束和查询索引；
 - [x] 已补齐 `source_site`、`source_url` 等前端岗位卡展示字段，避免 Jobs API 后续临时拼接；
 - [x] 已强制用户态 / 求职方向态核心表携带 `persona_id`，降低身份数据串台风险；
+- [x] 已完成 Review 重构：JSONB 数组 / 对象列定义收敛到 `jsonb_list_column`、`jsonb_dict_column`，避免后续模型重复写默认值；
 - [x] 已新增 `core/dependencies.py` 和 SQLAlchemy Session 工厂，为后续 Repository / Router 注入做准备；
 - [x] 已完成本地静态验证：`python3 -m compileall backend/core backend/api backend/models backend/services backend/migrations`、Alembic 离线 SQL 生成、`git diff --check`；
-- [ ] 待远程服务器验证：执行 `make migrate`，确认业务表可创建且重复执行不破坏数据。
+- [x] 已完成远程服务器验证：执行 `make migrate`、`make health`，确认 22 张业务表可创建且健康检查通过。
+
+P3-C 完成记录：
+
+- [x] 已新增 Redis key 规范：`core/redis_keys.py`，统一 `cache / task / lock / idempotency` 前缀；
+- [x] 已增强 Redis client：统一 `create_redis_client`、超时参数和安全关闭；
+- [x] 已新增 JSON 缓存封装：`services/cache_service.py`，支持 `get / set / delete_pattern` 和 Redis 不可用降级；
+- [x] 已新增任务状态封装：`services/task_state_service.py`，支持任务状态、任务事件、TTL 和状态枚举；
+- [x] 已新增任务查询接口：`GET /api/tasks/{task_id}`、`GET /api/tasks/{task_id}/events`；
+- [x] 已新增 `make verify-redis-cache`，覆盖 Redis 缓存读写、模式失效、任务状态读写和事件读取；
+- [ ] 待远程服务器验证：执行 `make verify-redis-cache && make health`。
 
 ---
 
@@ -922,8 +933,8 @@ P3 后台业务接口
 | 面试作战卡 |  | P1 | 已完成 |  | 2026-06-04 | 已完成公司简报、面试重点、高频问题、回答框架、关联证据、7 天计划、复习状态、复制回答要点和补素材跳转 |
 | 反馈复盘 |  | P1 | 已完成 |  | 2026-06-04 | 已完成反馈统计、结果分布、复盘趋势、版本表现、反馈录入、管线联动和下一轮策略建议 |
 | 后端基础架构与一键启动 |  | P3 | 已完成 |  | 2026-06-04 | 已完成 Docker Compose、PG/Redis 启动脚本、`make dev`、`make deploy-local`、后台部署脚本、health 增强和远程实跑 |
-| PostgreSQL 数据层 |  | P3 | 待验收 |  |  | 已建立 Alembic 基线和 `schema_migrations`；业务表进入 P3-B |
-| Redis 缓存与任务状态 |  | P3 | 待验收 |  |  | 已建立 Redis 连接与 health 检查；缓存 key 和任务状态业务封装进入 P3-C |
+| PostgreSQL 数据层 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 22 张业务表、索引、约束、ORM 模型和远程迁移验证 |
+| Redis 缓存与任务状态 |  | P3 | 待验收 |  |  | 已完成 Redis key 规范、JSON 缓存、任务状态封装和 `make verify-redis-cache`；待远程验证 |
 | 后台认证与用户身份 |  | P3 | 未开始 |  |  | 规划 Auth、User、Persona 和 `persona_id` 贯穿 |
 | 后台业务接口 |  | P3 | 未开始 |  |  | 规划 Dashboard、Market、Jobs、Vault、Pipeline、Feedback 等接口 |
 | 生成类后台接口 |  | P3 | 未开始 |  |  | 规划 Decision、Recruiter Lens、Tailor、Interview 的 Mock 生成、缓存和任务状态 |

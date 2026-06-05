@@ -3,10 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models.base import Base, BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin
+from models.base import Base, BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, jsonb_dict_column
 
 
 class SprintTask(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
@@ -24,7 +23,7 @@ class SprintTask(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(40), nullable=False, default="todo", server_default="todo")
     target_path: Mapped[str | None] = mapped_column(String(255))
     due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    source: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    source: Mapped[dict] = jsonb_dict_column()
 
 
 class InterviewCard(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
@@ -38,7 +37,7 @@ class InterviewCard(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
     persona_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("personas.id", ondelete="CASCADE"), nullable=False)
     resume_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("resumes.id", ondelete="SET NULL"))
     job_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("jobs.id", ondelete="SET NULL"))
-    card: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    card: Mapped[dict] = jsonb_dict_column()
     algorithm_version: Mapped[str | None] = mapped_column(String(120))
     input_hash: Mapped[str | None] = mapped_column(String(120))
 
@@ -60,7 +59,7 @@ class TaskState(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
     message: Mapped[str | None] = mapped_column(String(255))
     result_cache_key: Mapped[str | None] = mapped_column(String(255))
     error_code: Mapped[str | None] = mapped_column(String(80))
-    payload: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    payload: Mapped[dict] = jsonb_dict_column()
 
 
 class TaskEvent(BigIntPrimaryKeyMixin, TimestampMixin, Base):
@@ -70,4 +69,4 @@ class TaskEvent(BigIntPrimaryKeyMixin, TimestampMixin, Base):
     task_state_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("task_states.id", ondelete="CASCADE"), nullable=False)
     event_type: Mapped[str] = mapped_column(String(60), nullable=False)
     message: Mapped[str | None] = mapped_column(Text)
-    payload: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    payload: Mapped[dict] = jsonb_dict_column()

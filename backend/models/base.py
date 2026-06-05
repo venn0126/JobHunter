@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from sqlalchemy import BigInteger, DateTime, String, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -26,3 +27,11 @@ class TimestampMixin:
         server_default=func.now(),
         onupdate=func.now(),
     )
+
+
+def jsonb_list_column():
+    return mapped_column(JSONB, nullable=False, default=list, server_default="[]")
+
+
+def jsonb_dict_column():
+    return mapped_column(JSONB, nullable=False, default=dict, server_default="{}")

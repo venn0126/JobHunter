@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from sqlalchemy import BigInteger, ForeignKey, Index, String
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models.base import Base, BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin
+from models.base import Base, BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, jsonb_dict_column
 
 
 class JobDecisionCard(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
@@ -22,8 +21,8 @@ class JobDecisionCard(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base
     decision: Mapped[str] = mapped_column(String(40), nullable=False)
     priority: Mapped[str] = mapped_column(String(20), nullable=False)
     overall_grade: Mapped[str | None] = mapped_column(String(40))
-    scores: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
-    detail: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    scores: Mapped[dict] = jsonb_dict_column()
+    detail: Mapped[dict] = jsonb_dict_column()
     algorithm_version: Mapped[str | None] = mapped_column(String(120))
     input_hash: Mapped[str | None] = mapped_column(String(120))
 
@@ -38,7 +37,7 @@ class RecruiterLensReport(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, 
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     persona_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("personas.id", ondelete="CASCADE"), nullable=False)
     job_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False)
-    report: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    report: Mapped[dict] = jsonb_dict_column()
     algorithm_version: Mapped[str | None] = mapped_column(String(120))
     input_hash: Mapped[str | None] = mapped_column(String(120))
 
@@ -54,6 +53,6 @@ class TailorOutput(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
     persona_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("personas.id", ondelete="CASCADE"), nullable=False)
     resume_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("resumes.id", ondelete="SET NULL"))
     job_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("jobs.id", ondelete="SET NULL"))
-    output: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    output: Mapped[dict] = jsonb_dict_column()
     algorithm_version: Mapped[str | None] = mapped_column(String(120))
     input_hash: Mapped[str | None] = mapped_column(String(120))

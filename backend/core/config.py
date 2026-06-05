@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     debug_routes_enabled: bool = False
     database_url: str = "postgresql+psycopg://jobhunter:jobhunter@127.0.0.1:5432/jobhunter"
     redis_url: str = "redis://127.0.0.1:6379/0"
+    redis_key_prefix: str = "jobhunter"
+    cache_default_ttl_seconds: int = 300
+    generated_cache_ttl_seconds: int = 86400
+    task_state_ttl_seconds: int = 86400
+    idempotency_ttl_seconds: int = 300
     project_root: Path = PROJECT_ROOT
     frontend_dist: Path = PROJECT_ROOT / "frontend" / "dist"
     cors_origins: list[str] = Field(

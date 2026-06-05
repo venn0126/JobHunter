@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap-system init infra-up infra-down infra-logs dev start deploy-local deploy-start deploy-stop deploy-status deploy-logs migrate seed-demo upgrade health sync-version reset-demo rollback verify-version-cache verify-validation-sandbox verify-update-restore verify-browser-cache
+.PHONY: bootstrap-system init infra-up infra-down infra-logs dev start deploy-local deploy-start deploy-stop deploy-status deploy-logs migrate seed-demo upgrade health sync-version reset-demo rollback verify-redis-cache verify-version-cache verify-validation-sandbox verify-update-restore verify-browser-cache
 
 bootstrap-system:
 	./scripts/bootstrap-system.sh
@@ -58,6 +58,9 @@ reset-demo:
 
 rollback:
 	./scripts/rollback.sh
+
+verify-redis-cache:
+	./scripts/verify-redis-cache.sh
 
 verify-version-cache:
 	./scripts/verify-version-cache.sh

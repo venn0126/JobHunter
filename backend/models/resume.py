@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from sqlalchemy import BigInteger, ForeignKey, Index, Integer, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models.base import Base, BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin
+from models.base import Base, BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, jsonb_dict_column, jsonb_list_column
 
 
 class CareerVaultItem(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
@@ -19,8 +18,8 @@ class CareerVaultItem(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base
     item_type: Mapped[str] = mapped_column(String(40), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     content: Mapped[str | None] = mapped_column(Text)
-    tags: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
-    evidence: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    tags: Mapped[list[str]] = jsonb_list_column()
+    evidence: Mapped[dict] = jsonb_dict_column()
 
 
 class Resume(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
@@ -41,7 +40,7 @@ class ResumeProfile(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     persona_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("personas.id", ondelete="CASCADE"), nullable=False)
     resume_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("resumes.id", ondelete="CASCADE"))
-    profile: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    profile: Mapped[dict] = jsonb_dict_column()
 
 
 class ResumeVersion(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
@@ -54,7 +53,7 @@ class ResumeVersion(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
     source_job_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("jobs.id", ondelete="SET NULL"))
     name: Mapped[str] = mapped_column(String(160), nullable=False)
     content: Mapped[str | None] = mapped_column(Text)
-    sections: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
+    sections: Mapped[list[dict]] = jsonb_list_column()
 
 
 class ResumeVersionMetric(BigIntPrimaryKeyMixin, TimestampMixin, Base):
@@ -73,4 +72,4 @@ class ResumeVersionMetric(BigIntPrimaryKeyMixin, TimestampMixin, Base):
     no_response_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     rejected_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     offer_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
-    metrics: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    metrics: Mapped[dict] = jsonb_dict_column()

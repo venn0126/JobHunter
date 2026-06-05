@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from sqlalchemy import BigInteger, Float, ForeignKey, Index, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models.base import Base, BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin
+from models.base import Base, BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, jsonb_dict_column, jsonb_list_column
 
 
 class OpportunityMarketItem(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
@@ -18,8 +17,8 @@ class OpportunityMarketItem(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     heat_score: Mapped[float | None] = mapped_column(Float)
     growth_score: Mapped[float | None] = mapped_column(Float)
-    tags: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
-    filters: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    tags: Mapped[list[str]] = jsonb_list_column()
+    filters: Mapped[dict] = jsonb_dict_column()
     source_site: Mapped[str] = mapped_column(String(80), nullable=False, default="mock_seed", server_default="mock_seed")
     source_label: Mapped[str] = mapped_column(String(120), nullable=False, default="Mock 数据", server_default="Mock 数据")
     source_type: Mapped[str] = mapped_column(String(80), nullable=False, default="mock", server_default="mock")

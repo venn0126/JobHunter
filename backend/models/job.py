@@ -6,7 +6,7 @@ from sqlalchemy import BigInteger, DateTime, Float, ForeignKey, Index, Integer, 
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from models.base import Base, BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin
+from models.base import Base, BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, jsonb_list_column
 
 
 class JobSourceRecord(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
@@ -60,7 +60,7 @@ class Job(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
     department: Mapped[str | None] = mapped_column(String(255))
     business_group: Mapped[str | None] = mapped_column(String(255))
     city: Mapped[str | None] = mapped_column(String(120), index=True)
-    locations: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
+    locations: Mapped[list[str]] = jsonb_list_column()
     country: Mapped[str | None] = mapped_column(String(40))
     workplace_type: Mapped[str] = mapped_column(String(40), nullable=False, default="unknown", server_default="unknown")
     job_type: Mapped[str | None] = mapped_column(String(80))
@@ -76,10 +76,10 @@ class Job(BigIntPrimaryKeyMixin, PublicIdMixin, TimestampMixin, Base):
     salary_min: Mapped[int | None] = mapped_column(Integer)
     salary_max: Mapped[int | None] = mapped_column(Integer)
     description: Mapped[str | None] = mapped_column(Text)
-    responsibilities: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
-    requirements: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
-    skills: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
-    keywords: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
+    responsibilities: Mapped[list[str]] = jsonb_list_column()
+    requirements: Mapped[list[str]] = jsonb_list_column()
+    skills: Mapped[list[str]] = jsonb_list_column()
+    keywords: Mapped[list[str]] = jsonb_list_column()
     language: Mapped[str | None] = mapped_column(String(40))
     headcount: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(40), nullable=False, default="unknown", server_default="unknown", index=True)
