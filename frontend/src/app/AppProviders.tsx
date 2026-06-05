@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { BrowserRouter } from "react-router-dom";
+import { RuntimeRecoveryPanel } from "@/components/business/RuntimeRecoveryPanel";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { ToastViewport } from "@/components/ui/ToastViewport";
 import { useDemoModeClass } from "@/hooks/useDemoModeClass";
@@ -12,6 +13,7 @@ export function AppProviders({ children }: PropsWithChildren) {
       <BrowserRouter>
         <AppRuntimeEffects />
         {children}
+        <RuntimeRecoveryPanel />
         <ToastViewport />
       </BrowserRouter>
     </ErrorBoundary>

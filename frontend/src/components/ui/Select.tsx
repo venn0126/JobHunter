@@ -1,7 +1,12 @@
-import type { SelectHTMLAttributes } from "react";
+import type { ChangeEvent, SelectHTMLAttributes } from "react";
 import { cn } from "@/lib/classNames";
 
-export function Select({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+export function Select({ className, children, onChange, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    onChange?.(event);
+    event.currentTarget.blur();
+  };
+
   return (
     <select
       className={cn(
@@ -9,6 +14,7 @@ export function Select({ className, children, ...props }: SelectHTMLAttributes<H
         className,
       )}
       {...props}
+      onChange={handleChange}
     >
       {children}
     </select>

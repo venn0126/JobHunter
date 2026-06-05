@@ -11,6 +11,7 @@ import { InterviewGuidePage } from "@/pages/InterviewGuidePage";
 import { JobDecisionPage } from "@/pages/JobDecisionPage";
 import { JobsPage } from "@/pages/JobsPage";
 import { OpportunityPage } from "@/pages/OpportunityPage";
+import { OverlayDebugPage } from "@/pages/OverlayDebugPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
 import { PipelinePage } from "@/pages/PipelinePage";
 import { ResumeLabPage } from "@/pages/ResumeLabPage";
@@ -42,6 +43,7 @@ export function App() {
           <Route path="update" element={<UpdatePage />} />
           <Route path="settings" element={<ValidationPage />} />
           <Route path="debug" element={<ValidationPage />} />
+          <Route path="debug/overlay" element={<OverlayDebugPage />} />
           {primaryNavItems
             .filter((item) =>
               !["/", "/opportunity", "/jobs", "/pipeline", "/resume", "/interview", "/feedback", "/update", "/settings"].includes(item.path),

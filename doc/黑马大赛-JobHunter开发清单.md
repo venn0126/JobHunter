@@ -962,6 +962,10 @@ P3-J 进行中记录：
 - [x] 已修复 API 模式黑屏兜底：`api / hybrid` 同步失败统一回退 Mock、记录错误并结束 loading，不再抛未捕获异步异常；
 - [x] 已补齐运行时同步防竞态：快速切换 `mock / api / hybrid` 时，过期请求不会覆盖最新数据源状态；
 - [x] 已补充 `make verify-frontend-api-adapter` 的 API 失败回退断言，覆盖网络失败时 `mode=mock`、`loading=false`、错误可见；
+- [x] 已加强黑屏不可点击兜底：`Drawer` 关闭时不再挂载全屏层，避免隐藏遮罩残留拦截点击；
+- [x] 已修复原生 Select 切换后焦点层残留：统一 `Select` 在 `onChange` 后自动 `blur()`，避免浏览器下拉层导致页面变暗不可点击；
+- [x] 已新增运行时恢复入口：API / hybrid 或同步异常时显示“恢复 Mock / 定位遮罩”，保证远程联调可自救；
+- [x] 已新增 `/debug/overlay` 诊断页，用于远程查看视口中心元素栈和大面积 fixed 元素，快速定位遮罩来源；
 - [x] 已完成本地静态验证：`npm --prefix frontend run typecheck`、`npm --prefix frontend run build`、`bash -n scripts/*.sh scripts/lib/common.sh`、`git diff --check`；
 - [ ] 待远程服务器验证：本地 Docker 未运行，`make verify-frontend-api-adapter` 已在 `infra-up` 前置检查处停止；远程执行 `make verify-frontend-api-adapter && make health`。
 
