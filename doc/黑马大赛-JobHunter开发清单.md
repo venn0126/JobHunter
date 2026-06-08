@@ -1,9 +1,9 @@
 # JobHunter 黑马大赛开发清单
 
 > **项目方向**：AI 求职作战中枢  
-> **清单版本**：v1.2
-> **更新日期**：2026-06-04
-> **依据文档**：`doc/黑马大赛-JobHunter架构设计文档.md`、`doc/黑马大赛-JobHunter-UX设计文档.md`  
+> **清单版本**：v1.3
+> **更新日期**：2026-06-08
+> **依据文档**：`doc/黑马大赛-JobHunter架构设计文档.md`、`doc/黑马大赛-JobHunter-UX设计文档.md`、`doc/黑马大赛-JobHunter算法接口.md`
 > **使用目的**：作为开发执行清单、进度把控清单、演示前验收清单
 
 ---
@@ -46,6 +46,7 @@
 | M3 核心闭环完成 | 广场 → 岗位 → 决策卡 → 管线 | 必做 |
 | M4 演示增强完成 | 简历工作室、面试作战卡、反馈复盘 | 建议 |
 | M5 比赛稳定化 | 一键升级、更新提示、回滚兜底、演示模式 | 必做 |
+| M6 算法真实接入 | 真实岗位数据、决策、招聘官视角、简历定制、面试卡接入后台 | 下一阶段 |
 
 ### 3.1 Review 结论
 
@@ -77,10 +78,11 @@
 
 因此本次 review 后，补充以下原则：
 
-- 保留当前 P0 / P1 / P2 结构不变；
+- 保留当前 P0 / P1 / P2 / P3 结构不变；
 - 新增一批 Review 补充 P0；
 - 新增“边界 Case 验证门槛”和“高风险验证清单”；
 - 完整 Demo 控制台仍保持 P1，但最小验证入口必须前置到 P0。
+- P3 后台闭环完成后，新增 P4 算法接入清单，算法只做数据和结构化结果提供方，后台继续收口业务状态、缓存、降级和前端适配。
 
 ---
 
@@ -978,7 +980,166 @@ P3-J 完成记录：
 
 ---
 
-## 八、模块依赖关系
+## 八、P4 算法接入开发清单
+
+> P4 = 在 P3 后台闭环基础上接入真实算法 / 采集结果。
+> 原则：**算法只作为数据与结构化建议提供方；后台负责业务状态、缓存、降级、持久化、前端 API 适配。**
+
+### 8.1 P4 接入边界
+
+P4 不改变前端调用方式。前端仍只调用 `/api/*`，后台通过 Algorithm Adapter 决定调用真实算法、最近成功缓存或 Mock。
+
+算法侧负责：
+
+- 岗位原始数据；
+- 简历画像结构化结果；
+- 岗位决策结果；
+- 招聘官视角结果；
+- 简历定制建议；
+- 面试作战卡建议；
+- Sprint / 反馈复盘建议。
+
+后台负责：
+
+- 账号、Token、用户权限、Persona 隔离；
+- PostgreSQL 写入、去重、清洗、归一化；
+- Redis 缓存、任务状态、轻量锁和降级；
+- 算法输出字段校验和前端 `result` 适配；
+- 真实算法失败时回退最近成功缓存 / Mock；
+- 对前端继续暴露当前 P3 `/api/*` 接口。
+
+明确不做：
+
+- 算法服务直连前端；
+- 算法服务直接写 JobHunter 业务库；
+- 共享数据库作为算法和后台的主接口；
+- 为 P4 引入 Celery / RQ 等复杂队列；
+- 因算法不可用阻塞核心页面。
+
+### 8.2 P4 总任务清单
+
+| ID | 任务 | 优先级 | 状态 | 验收标准 |
+|---|---|---|---|---|
+| P4-01 | 算法接口契约冻结 | P4 | 未开始 | `doc/黑马大赛-JobHunter算法接口.md` 与算法同学确认，字段、错误码、版本号、批量交付方式稳定 |
+| P4-02 | Algorithm Client / Adapter 基础层 | P4 | 未开始 | 后端可通过配置调用算法服务，支持 token、超时、重试一次、统一错误映射和 Mock fallback |
+| P4-03 | 岗位原始数据导入 | P4 | 未开始 | 支持 JSONL / HTTP 批量导入，写入 `job_source_records`，导入报告可追踪脏数据和重复数据 |
+| P4-04 | 岗位清洗与前端岗位卡适配 | P4 | 未开始 | 原始岗位可清洗为 `/api/jobs` 当前结构，支持分页、筛选、来源标识和详情 |
+| P4-05 | 岗位决策算法接入 | P4 | 未开始 | `/api/jobs/{id}/decision` 可走真实 `job_decision`，失败回退缓存 / Mock，不白屏 |
+| P4-06 | 招聘官视角算法接入 | P4 | 未开始 | `/api/jobs/{id}/recruiter-lens` 可走真实 `recruiter_lens`，字段兼容当前前端 |
+| P4-07 | 简历定制算法接入 | P4 | 未开始 | `POST /api/tailor/run` 和 `/api/resume-studio` 可使用真实 `tailor_resume`，证据 ID 可追溯 |
+| P4-08 | 面试作战卡算法接入 | P4 | 未开始 | `POST /api/interview/start` 和 `/api/interview/cards` 可使用真实 `interview_card`，问题 / 计划结构兼容 |
+| P4-09 | 简历画像算法接入 | P4 | 未开始 | `/api/resumes/{id}/profile` 可返回真实画像，技能、短板、证据索引可被页面消费 |
+| P4-10 | Sprint / 反馈复盘算法接入 | P4 | 未开始 | `/api/sprint`、`/api/feedback` 可融合真实建议，无法生成时不影响用户已有状态 |
+| P4-11 | 算法缓存、任务状态和观测日志 | P4 | 未开始 | 算法结果缓存按 `user_id/persona_id/target_id/version/input_hash` 隔离，日志含 `request_id/task_id` |
+| P4-12 | P4 联调脚本与演示验收 | P4 | 未开始 | 新增聚合验证命令，覆盖算法健康、岗位导入、生成类接口、fallback 和前端 api / hybrid 验证 |
+
+### 8.3 P4 子小节拆分
+
+> P4 按以下小节逐步开发；每个小节完成后必须先 Review / 重构，再更新本文档并进入下一小节。
+
+| 小节 | 覆盖任务 | 状态 | 主要交付 | 验收标准 |
+|---|---|---|---|---|
+| P4-A 算法契约冻结与样例固化 | P4-01 | 未开始 | 契约确认、样例请求 / 响应、错误码、版本策略 | 算法同学能按文档独立开发，后端可用固定样例编写 adapter 测试 |
+| P4-B Algorithm Client / Adapter 基础层 | P4-02、P4-11 | 未开始 | `integrations/algorithm`、配置、token、超时、错误映射、缓存维度 | 算法不可用、超时、非 JSON、字段缺失均可回退，日志可追踪 |
+| P4-C 岗位数据导入与清洗 | P4-03、P4-04 | 未开始 | JSONL / HTTP 导入、导入报告、清洗到 Jobs、去重和来源追踪 | 真实岗位可进入 `/api/jobs`，脏数据不阻塞整批导入 |
+| P4-D 决策与招聘官视角接入 | P4-05、P4-06 | 未开始 | `job_decision`、`recruiter_lens` adapter、缓存、任务状态 | 岗位详情页可显示真实分析，失败回退 Mock / 最近缓存 |
+| P4-E 简历定制与面试卡接入 | P4-07、P4-08 | 未开始 | `tailor_resume`、`interview_card` adapter、证据校验 | 简历工作室和面试作战卡可使用真实算法结果，字段兼容当前前端 |
+| P4-F 简历画像 / Sprint / 反馈复盘接入 | P4-09、P4-10 | 未开始 | `resume_profile`、`sprint_plan`、`feedback_review` adapter | 增强模块可融合算法建议，缺算法时仍保留 P3 可用状态 |
+| P4-G 端到端联调与演示压测 | P4-12 | 未开始 | verify 脚本、演示数据包、fallback 验证、远程部署验证 | `make verify-p4 && make health` 通过，前端 api / hybrid 模式核心链路稳定 |
+
+P4 推荐开发顺序：
+
+```text
+P4-A 算法契约冻结与样例固化
+  ↓
+P4-B Algorithm Client / Adapter 基础层
+  ↓
+P4-C 岗位数据导入与清洗
+  ↓
+P4-D 决策与招聘官视角接入
+  ↓
+P4-E 简历定制与面试卡接入
+  ↓
+P4-F 简历画像 / Sprint / 反馈复盘接入
+  ↓
+P4-G 端到端联调与演示压测
+```
+
+### 8.4 P4 接口映射矩阵
+
+| 当前后台接口 | 算法能力 | 后台适配点 | fallback |
+|---|---|---|---|
+| `GET /api/jobs` | `job_source_records` | 原始岗位导入后清洗为岗位卡，补齐 `source`、`match`、`priority` | Demo Jobs |
+| `GET /api/jobs/{id}` | `job_source_records` | 详情保留来源、投递链接、JD 文本和清洗字段 | Demo Job |
+| `GET /api/jobs/{id}/decision` | `job_decision` | 英文枚举映射中文文案，补齐 6 个 score 分项 | 最近成功缓存 / Mock |
+| `GET /api/jobs/{id}/recruiter-lens` | `recruiter_lens` | 保证数组字段、至少 3 条问题、可改进 concerns | 最近成功缓存 / Mock |
+| `POST /api/tailor/run` | `tailor_resume` | `sections[].id` 稳定，证据 ID 校验，status 映射 | 最近成功缓存 / Mock |
+| `GET /api/resume-studio` | `tailor_resume` | 读取最近生成结果或按岗位生成兜底草稿 | Mock Resume Studio |
+| `POST /api/interview/start` | `interview_card` | `company_brief` 对象化，`tasks` 合并到 `focus` | 最近成功缓存 / Mock |
+| `GET /api/interview/cards` | `interview_card` | 读取最近生成结果，缺失时 fallback | Mock Interview Guide |
+| `GET /api/resumes/{id}/profile` | `resume_profile` | 技能、短板、证据索引适配当前画像展示 | Mock Profile |
+| `GET /api/sprint` | `sprint_plan` | 算法建议只能生成当前 Web 可达任务 | Mock Sprint |
+| `GET /api/feedback` | `feedback_review` | `target_path` 映射 `action_path`，避免单样本过度结论 | Mock Feedback Review |
+
+### 8.5 P4 每小节固定完成门槛
+
+- [ ] 新增代码完成 Review，确认无明显重复逻辑和散落配置；
+- [ ] 算法配置统一进入 `core/config.py`，包括 base URL、token、timeout、mode、version；
+- [ ] 算法调用统一进入 `integrations/algorithm` 或等价 adapter 层，Router 不直接调用算法服务；
+- [ ] 算法错误统一映射，不向前端暴露原始堆栈、HTML 错误页或内部提示词；
+- [ ] 算法结果写缓存前必须通过字段校验和前端兼容适配；
+- [ ] 缓存 key 必须包含 `user_id`、`persona_id`、`target_id`、`algorithm_version`、`input_hash`；
+- [ ] Redis 不可用、算法不可用、算法超时、算法返回空结果时均有 fallback；
+- [ ] 岗位导入支持局部失败报告，不能因少量脏数据阻塞整批入库；
+- [ ] 所有证据 ID 必须来自后端传入的素材库或简历上下文；
+- [ ] 算法输出不得编造无证据经历，不确定内容进入 `warnings`；
+- [ ] 用户 / Persona 切换后不得复用上一身份算法缓存；
+- [ ] 至少通过 `python -m compileall backend`、`git diff --check`、`make health`；
+- [ ] 有后端 smoke test 覆盖本小节关键路径和 fallback；
+- [ ] 完成后更新本清单状态和模块进度总表。
+
+### 8.6 P4 验证脚本目标
+
+P4 最终建议新增以下命令：
+
+```bash
+make verify-algorithm-contract     # 校验算法样例请求 / 响应 schema
+make verify-job-ingest             # 校验岗位 JSONL / HTTP 批量导入、去重、清洗和报告
+make verify-algorithm-generated    # 校验 decision / recruiter / tailor / interview 真实算法和 fallback
+make verify-p4                     # 聚合 P4 全量验证
+```
+
+`make verify-p4` 至少覆盖：
+
+- 算法健康检查；
+- 算法 token 缺失 / 错误；
+- 算法超时；
+- 算法返回非 JSON；
+- 算法返回字段缺失；
+- 岗位 JSONL 导入；
+- 岗位重复去重；
+- `/api/jobs` 可读取真实岗位；
+- `/api/jobs/{id}/decision` 真实结果、缓存命中、fallback；
+- `/api/jobs/{id}/recruiter-lens` 真实结果、fallback；
+- `/api/tailor/run` 真实结果、证据 ID 校验；
+- `/api/interview/start` 真实结果、字段适配；
+- Persona 切换后缓存不串台；
+- 前端 `api / hybrid` 模式核心页面不白屏。
+
+### 8.7 P4 Review 监督
+
+- [ ] 算法接口文档已经与算法同学确认；
+- [ ] 当前前端 Mock 类型与算法输出之间有 adapter 映射，不要求算法直接返回前端组件结构；
+- [ ] 真实岗位数据可以只由算法提供原始结构，后端负责清洗和业务化；
+- [ ] 决策、招聘官视角、简历定制、面试卡是 MVP 必接能力；
+- [ ] 简历画像、Sprint、反馈复盘允许后置，但不能破坏现有页面；
+- [ ] 算法失败时不影响登录、岗位列表、管线、素材库等非算法主链路；
+- [ ] 内网部署时算法服务不直接开放给浏览器；
+- [ ] 演示环境至少准备一份算法不可用时仍能完整演示的 Demo 数据包。
+
+---
+
+## 九、模块依赖关系
 
 建议按以下依赖顺序推进：
 
@@ -1010,6 +1171,8 @@ P3 后台基础架构 / PostgreSQL / Redis
 P3 后台业务接口
   ↓
 前端 API / hybrid 联调
+  ↓
+P4 算法契约 / Adapter / 真实数据接入
 ```
 
 强依赖说明：
@@ -1024,18 +1187,19 @@ P3 后台业务接口
 - P3 数据层依赖：PostgreSQL、Alembic、Demo seed、`user_id` / `persona_id` 贯穿原则；
 - P3 缓存层依赖：Redis key 规范、TTL、生成结果缓存和任务状态抽象；
 - P3 联调依赖：前端 service / store 统一适配，禁止页面散落请求逻辑。
+- P4 算法接入依赖：P3 后台接口稳定、算法接口契约、岗位原始数据样例、Redis 任务状态和缓存 fallback。
 
 ---
 
-## 九、每周 / 每日进度把控模板
+## 十、每周 / 每日进度把控模板
 
-### 9.1 每日站会记录模板
+### 10.1 每日站会记录模板
 
 | 日期 | 今日目标 | 完成情况 | 阻塞项 | 明日计划 |
 |---|---|---|---|---|
 | YYYY-MM-DD |  |  |  |  |
 
-### 9.2 模块进度总表
+### 10.2 模块进度总表
 
 | 模块 | 负责人 | 优先级 | 状态 | 预计完成时间 | 实际完成时间 | 备注 |
 |---|---|---|---|---|---|---|
@@ -1064,12 +1228,18 @@ P3 后台业务接口
 | 写入类后台接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Pipeline、Feedback、Vault、Resume Version 写接口和远程验证；Review 后已抽取文本归一化 |
 | 系统健康与更新任务接口 |  | P3 | 已完成 |  | 2026-06-05 | 已完成 Health、Version、Update Check / Apply / Status、Task Events、`make verify-system-api` 和远程验证 |
 | 前后端 API 联调 |  | P3 | 已完成 |  | 2026-06-05 | 已完成前端 apiClient、runtime data、API / hybrid 切换、接口矩阵补漏和远程 `make verify-p3` 聚合验收 |
+| 算法契约冻结与样例固化 |  | P4 | 未开始 |  |  | 待与算法同学确认接口文档、样例、错误码和版本策略 |
+| Algorithm Client / Adapter |  | P4 | 未开始 |  |  | 待实现算法调用、字段校验、前端 result 适配、fallback |
+| 岗位真实数据导入 |  | P4 | 未开始 |  |  | 待支持 JSONL / HTTP 批量导入、清洗、去重和报告 |
+| 真实算法生成类接入 |  | P4 | 未开始 |  |  | 待接入 Decision、Recruiter Lens、Tailor、Interview |
+| 算法增强能力接入 |  | P4 | 未开始 |  |  | 待接入 Resume Profile、Sprint、Feedback Review |
+| 算法端到端联调验收 |  | P4 | 未开始 |  |  | 待完成 `make verify-p4` 和远程演示验证 |
 
 ---
 
-## 十、阶段验收门槛
+## 十一、阶段验收门槛
 
-### 10.1 可开发门槛
+### 11.1 可开发门槛
 
 - [x] `make init` 可执行；
 - [x] `make dev` 可启动本地环境；
@@ -1077,14 +1247,14 @@ P3 后台业务接口
 - [x] 左侧导航和顶部栏可见；
 - [x] 登录 / 演示账号可进入系统。
 
-### 10.2 可联调门槛
+### 11.2 可联调门槛
 
 - [x] `mock / api / hybrid` 模式可切换；
 - [x] 核心页面都有假数据兜底；
 - [x] 决策卡和招聘官视角数据结构稳定；
 - [x] `persona_id` 已贯穿请求与状态。
 
-### 10.3 可演示门槛
+### 11.3 可演示门槛
 
 - [x] 首页驾驶舱可完整展示；
 - [x] 热度广场 → 岗位雷达 → 决策卡 → 管线链路可走通；
@@ -1093,7 +1263,7 @@ P3 后台业务接口
 - [x] 页面可显示更新提示；
 - [x] 升级失败有兜底，不会直接白屏。
 
-### 10.4 比赛前门槛
+### 11.4 比赛前门槛
 
 - [x] `make start` 可一键启动；
 - [x] `make upgrade` 可一键升级；
@@ -1103,7 +1273,7 @@ P3 后台业务接口
 - [ ] 录屏备份已准备；
 - [ ] 最近一个稳定 tag 已打好。
 
-### 10.5 P3 后端可联调门槛
+### 11.5 P3 后端可联调门槛
 
 - [x] `make dev` 可一键启动 Vite、FastAPI、PostgreSQL、Redis；
 - [x] `make deploy-local` 可构建前端并由 FastAPI 托管完整演示环境；
@@ -1116,7 +1286,20 @@ P3 后台业务接口
 - [x] 前端切到 `api` 模式时核心页面不缺接口；
 - [x] 前端切到 `hybrid` 模式时接口失败可回退 Mock 或显示明确兜底。
 
-### 10.6 边界 Case 验证门槛
+### 11.6 P4 算法可联调门槛
+
+- [ ] 算法接口文档已确认；
+- [ ] `GET /algorithm/health` 可用；
+- [ ] 后端算法配置支持 base URL、token、timeout、mode、version；
+- [ ] 算法服务不可用时后台生成类接口不白屏；
+- [ ] 岗位 JSONL / HTTP 批量导入至少一种方式跑通；
+- [ ] 真实岗位可进入 `/api/jobs`；
+- [ ] `job_decision`、`recruiter_lens`、`tailor_resume`、`interview_card` 至少各有一个固定样例通过；
+- [ ] 算法结果缓存按用户 / Persona / 版本隔离；
+- [ ] 算法字段缺失、空结果、非 JSON、超时均有 fallback；
+- [ ] 前端 `api / hybrid` 模式可消费真实算法结果，失败时回退稳定。
+
+### 11.7 边界 Case 验证门槛
 
 - [ ] 认证与用户边界已验证；
 - [ ] Persona 与冷启动边界已验证；
@@ -1128,8 +1311,9 @@ P3 后台业务接口
 - [ ] 更新提示与恢复逻辑边界已验证；
 - [ ] 一键启动 / 一键升级 / 一键迁移边界已验证；
 - [ ] 移动端 / 大屏 / 低性能设备边界已验证。
+- [ ] 算法服务边界已验证。
 
-### 10.7 高风险边界 Case 验证清单
+### 11.8 高风险边界 Case 验证清单
 
 > 以下清单优先级最高，比赛前必须逐项验证。
 
@@ -1169,10 +1353,21 @@ P3 后台业务接口
 | P3 部署 | `make deploy-local` 重复执行 | 高 | 连续执行两次 | 服务可用，端口和进程不冲突 | 未开始 |
 | P3 部署 | 前端独立服务跨域 | 中 | Vite 访问 FastAPI | CORS 正常，Auth Header 和请求头可通过 | 未开始 |
 | P3 部署 | Docker 未启动或端口占用 | 高 | 停止 Docker 或占用 8000 / 5173 / PG / Redis 端口 | 脚本给出明确提示并退出 | 未开始 |
+| P4 算法 | 算法服务不可用 | 高 | 停止算法服务后访问生成类接口 | 返回最近成功缓存或 Mock，页面不白屏 | 未开始 |
+| P4 算法 | 算法 token 错误 | 高 | 配置错误 token | 后台记录鉴权失败并 fallback，不泄露 token | 未开始 |
+| P4 算法 | 算法返回非 JSON | 高 | 模拟 HTML / 文本响应 | 后台识别异常并 fallback，日志含 request_id | 未开始 |
+| P4 算法 | 算法字段缺失 | 高 | 删除必填字段 | Adapter 拦截并使用 fallback，不写坏缓存 | 未开始 |
+| P4 算法 | 算法返回空结果 | 高 | 返回 `data=null` 或空数组 | 页面展示兜底内容，不崩溃 | 未开始 |
+| P4 算法 | 算法超时 | 高 | 模拟超过 timeout | 后台超时中止并返回任务状态 / 最近缓存 | 未开始 |
+| P4 算法 | 算法版本变化 | 高 | 修改 `ALGORITHM_VERSION` | 缓存失效，不混用旧版本结果 | 未开始 |
+| P4 算法 | Persona 缓存串台 | 高 | 切换 Persona 后请求决策 | 不返回上一身份算法结果 | 未开始 |
+| P4 岗位导入 | JSONL 部分脏数据 | 高 | 混入缺字段 / 非 JSON 行 | 生成导入报告，可用数据仍入库 | 未开始 |
+| P4 岗位导入 | 重复岗位 | 中 | 重复导入同一批岗位 | 基于 `dedupe_key` 去重，不重复展示 | 未开始 |
+| P4 证据链 | 算法引用不存在 evidence_id | 高 | 返回错误 evidence_id | 后台标记失效证据或 fallback，不显示错误链接 | 未开始 |
 | 适配 | 大屏模式 | 中 | `?mode=demo` 验证 | 字号、布局、主链路可讲 | 未开始 |
 | 适配 | 低性能设备 | 中 | 降级动效验证 | 页面可用，不明显卡顿 | 未开始 |
 
-### 10.8 建议验证顺序
+### 11.9 建议验证顺序
 
 建议按以下顺序执行边界验证：
 
@@ -1188,6 +1383,7 @@ P3 后台业务接口
 → Demo 重置
 → P3 后台接口
 → P3 极速部署
+→ P4 算法接入
 → 全平台适配
 ```
 
@@ -1199,7 +1395,7 @@ P3 后台业务接口
 
 ---
 
-## 十一、当前建议执行顺序
+## 十二、当前建议执行顺序
 
 建议实际按以下顺序开工：
 
@@ -1218,14 +1414,20 @@ P3 后台业务接口
 13. P3 后端基础架构与一键启动；
 14. P3 PostgreSQL / Redis 数据底座；
 15. P3 后台业务接口；
-16. P3 前端 API / hybrid 联调。
+16. P3 前端 API / hybrid 联调；
+17. P4 算法契约冻结；
+18. P4 Algorithm Adapter；
+19. P4 岗位真实数据导入；
+20. P4 决策 / 招聘官视角 / 简历定制 / 面试卡接入；
+21. P4 端到端联调和演示压测。
 
 ---
 
-## 十二、备注
+## 十三、备注
 
 1. 当前清单默认前端为主线，算法真实能力暂不阻塞开发；
-2. 后续如果算法同学开始交付真实数据，应在本清单中追加“联调清单”；
+2. 算法接入清单已进入 P4，后续按 P4 子小节逐步推进；
 3. 本文档建议作为后续每次同步进度时的唯一执行清单；
 4. 后续可以直接在本文档中维护状态，不需要另起新的待办文件；
-5. P3 后台接口优先完成最小闭环，暂不引入复杂队列、生产级监控和真实岗位爬虫。
+5. P3 后台接口已完成最小闭环，P4 仍暂不引入复杂队列和生产级监控；
+6. 真实岗位爬虫仍不作为后台主线任务，P4 优先接收算法 / 采集侧提供的原始岗位数据。
